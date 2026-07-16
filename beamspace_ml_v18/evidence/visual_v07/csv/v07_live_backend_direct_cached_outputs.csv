@@ -1,0 +1,4 @@
+case_name,direct_status,cached_status,direct_policy_name,cached_policy_name,direct_num_pairs,cached_num_pairs,direct_runtime_total_sec,cached_runtime_total_sec,direct_score,cached_score,score_diff_rel,cache_miss_count,fallback_used
+easy_noncoherent,ok,ok,EASY,EASY,9729,9729,0.298644,0.2572468,216589.664587449,216589.664587449,0,0,0
+strong_coherent,ok,ok,EASY,EASY,9729,9729,0.1208574,0.1782951,200136.980526299,200136.980526299,0,0,0
+low_snr_hard,ok,ok,NORMAL,NORMAL,23133,23133,0.2178115,0.2892551,99542.2840495634,99542.2840495634,0,0,0

@@ -1,0 +1,11 @@
+file_name,width,height,file_size,font_name,quality_warn
+fig_v07_00_font_test_cn.png,4247,2142,170051,Arial,0
+fig_v07_01_c05_likelihood_surface_easy_case.png,5351,3538,981873,Arial,0
+fig_v07_02_c05_decision_real_case.png,5860,3549,351165,Arial,0
+fig_v07_03_three_case_estimation_results.png,6437,1704,275739,Arial,0
+fig_v07_04_fixed_vs_c05_error_vectors.png,6437,2407,303320,Arial,0
+fig_v07_05_cache_mechanism_and_equivalence.png,5472,3506,281262,Arial,0
+fig_v07_06_backend_output_snapshot_clean.png,2952,2946,193852,Arial,0
+fig_v07_07_final_pipeline_clean.png,5047,2271,146094,Arial,0
+fig_v07_08_runtime_candidate_decomposition.png,6132,3595,255543,Arial,0
+fig_v07_09_old_baseline_relation_clean.png,4080,2441,187111,Arial,0

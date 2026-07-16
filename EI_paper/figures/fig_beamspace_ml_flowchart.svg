@@ -1,0 +1,461 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="880" viewBox="0 0 760 880">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#111"/>
+    </marker>
+    <style>
+      .box { fill: #fff; stroke: #111; stroke-width: 1.5; }
+      .round { fill: #fff; stroke: #111; stroke-width: 1.5; }
+      .arrow { stroke: #111; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+      .line { stroke: #111; stroke-width: 1.5; fill: none; }
+      .text { font-family: "SimSun", "Songti SC", "Noto Serif CJK SC", serif; font-size: 19px; fill: #111; text-anchor: middle; dominant-baseline: middle; }
+      .math { font-family: "Times New Roman", "Cambria Math", serif; font-size: 17px; fill: #111; text-anchor: middle; dominant-baseline: middle; font-style: normal; }
+      .maths { font-family: "Times New Roman", "Cambria Math", serif; font-size: 15px; fill: #111; text-anchor: middle; dominant-baseline: middle; font-style: normal; }
+      .sub { baseline-shift: sub; font-size: 70%; }
+      .sup { baseline-shift: super; font-size: 70%; }
+    </style>
+  </defs>
+
+  <rect class="box" x="260" y="24" width="240" height="72"/>
+  <text class="text" x="380" y="48">阵元域观测</text>
+  <text class="math" x="380" y="76">Y=A<tspan class="sub">cyl</tspan>(Θ)S+N</text>
+
+  <line class="arrow" x1="380" y1="96" x2="380" y2="126"/>
+  <rect class="box" x="250" y="126" width="260" height="72"/>
+  <text class="text" x="380" y="150">固定方位俯仰波束</text>
+  <text class="math" x="380" y="178">W=[w<tspan class="sub">1</tspan>,...,w<tspan class="sub">B</tspan>]</text>
+
+  <line class="arrow" x1="380" y1="198" x2="380" y2="228"/>
+  <rect class="box" x="260" y="228" width="240" height="72"/>
+  <text class="text" x="380" y="252">波束域白化矩阵</text>
+  <text class="math" x="380" y="280">T=(W<tspan class="sup">H</tspan>W)<tspan class="sup">-1/2</tspan></text>
+
+  <line class="line" x1="380" y1="300" x2="380" y2="338"/>
+  <line class="line" x1="220" y1="338" x2="580" y2="338"/>
+  <line class="arrow" x1="220" y1="338" x2="220" y2="400"/>
+  <line class="arrow" x1="580" y1="338" x2="580" y2="370"/>
+
+  <rect class="box" x="100" y="400" width="240" height="88"/>
+  <text class="text" x="220" y="425">波束域投影</text>
+  <text class="math" x="220" y="454">Z<tspan class="sub">0</tspan>=W<tspan class="sup">H</tspan>Y</text>
+  <text class="math" x="220" y="477">Z=TZ<tspan class="sub">0</tspan></text>
+
+  <rect class="box" x="435" y="370" width="290" height="96"/>
+  <text class="text" x="580" y="396">俯仰候选对</text>
+  <text class="math" x="580" y="427">Θ<tspan class="sub">ij</tspan>=(e<tspan class="sub">i</tspan>,e<tspan class="sub">j</tspan>), e<tspan class="sub">i</tspan>&lt;e<tspan class="sub">j</tspan></text>
+  <text class="math" x="580" y="452">az<tspan class="sub">1</tspan>=az<tspan class="sub">2</tspan>=az<tspan class="sub">0</tspan></text>
+
+  <line class="arrow" x1="580" y1="466" x2="580" y2="506"/>
+  <rect class="box" x="435" y="506" width="290" height="92"/>
+  <text class="text" x="580" y="532">波束域流形</text>
+  <text class="math" x="580" y="564">G(Θ<tspan class="sub">ij</tspan>)=TW<tspan class="sup">H</tspan>A<tspan class="sub">cyl</tspan>(Θ<tspan class="sub">ij</tspan>)</text>
+
+  <line class="line" x1="220" y1="488" x2="220" y2="644"/>
+  <line class="line" x1="580" y1="598" x2="580" y2="644"/>
+  <line class="line" x1="220" y1="644" x2="580" y2="644"/>
+  <line class="arrow" x1="380" y1="644" x2="380" y2="682"/>
+
+  <rect class="box" x="235" y="682" width="290" height="94"/>
+  <text class="text" x="380" y="707">确定性最大似然评分</text>
+  <text class="maths" x="380" y="740">P<tspan class="sub">G</tspan>=G(G<tspan class="sup">H</tspan>G)<tspan class="sup">-1</tspan>G<tspan class="sup">H</tspan></text>
+  <text class="maths" x="380" y="765">J(Θ)=tr(P<tspan class="sub">G</tspan>ZZ<tspan class="sup">H</tspan>)</text>
+
+  <line class="arrow" x1="380" y1="776" x2="380" y2="808"/>
+  <rect class="round" x="260" y="808" width="240" height="46" rx="20" ry="20"/>
+  <svg x="266" y="807" width="228" height="44" viewBox="0 0 195.84 33.84">
+<defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="formula_figure_1">
+<g id="formula_axes_1">
+   <g id="formula_text_1">
+    <!-- $\hat{\Theta}=\mathrm{arg}\,\mathrm{max}\;\mathrm{J}(\Theta)$ -->
+    <g transform="translate(44.48 22.92) scale(0.16 -0.16)">
+     <defs>
+      <path id="formula_TimesNewRomanPSMT-302" d="M 878 3294 
+L 781 3294 
+L -9 3959 
+L -788 3294 
+L -881 3294 
+L -291 4328 
+L 284 4328 
+L 878 3294 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-398" d="M 2353 4334 
+Q 3131 4334 3759 3732 
+Q 4388 3131 4388 2141 
+Q 4388 1156 3769 529 
+Q 3150 -97 2303 -97 
+Q 1363 -97 800 562 
+Q 238 1222 238 2134 
+Q 238 3122 870 3728 
+Q 1503 4334 2353 4334 
+z
+M 2294 4106 
+Q 1688 4106 1320 3604 
+Q 953 3103 953 2147 
+Q 953 1253 1297 689 
+Q 1641 125 2297 125 
+Q 2934 125 3303 620 
+Q 3672 1116 3672 2059 
+Q 3672 3016 3326 3561 
+Q 2981 4106 2294 4106 
+z
+M 1559 2875 
+L 1678 2875 
+Q 1678 2606 1787 2490 
+Q 1897 2375 2191 2375 
+L 2444 2375 
+Q 2722 2375 2834 2489 
+Q 2947 2603 2947 2875 
+L 3066 2875 
+L 3066 1366 
+L 2947 1366 
+Q 2947 1631 2837 1747 
+Q 2728 1863 2438 1863 
+L 2178 1863 
+Q 1900 1863 1789 1747 
+Q 1678 1631 1678 1366 
+L 1559 1366 
+L 1559 2875 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-3d" d="M 116 2759 
+L 3488 2759 
+L 3488 2503 
+L 116 2503 
+L 116 2759 
+z
+M 116 1741 
+L 3488 1741 
+L 3488 1484 
+L 116 1484 
+L 116 1741 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-61" d="M 1822 413 
+Q 1381 72 1269 19 
+Q 1100 -59 909 -59 
+Q 613 -59 420 144 
+Q 228 347 228 678 
+Q 228 888 322 1041 
+Q 450 1253 767 1440 
+Q 1084 1628 1822 1897 
+L 1822 2009 
+Q 1822 2438 1686 2597 
+Q 1550 2756 1291 2756 
+Q 1094 2756 978 2650 
+Q 859 2544 859 2406 
+L 866 2225 
+Q 866 2081 792 2003 
+Q 719 1925 600 1925 
+Q 484 1925 411 2006 
+Q 338 2088 338 2228 
+Q 338 2497 613 2722 
+Q 888 2947 1384 2947 
+Q 1766 2947 2009 2819 
+Q 2194 2722 2281 2516 
+Q 2338 2381 2338 1966 
+L 2338 994 
+Q 2338 584 2353 492 
+Q 2369 400 2405 369 
+Q 2441 338 2488 338 
+Q 2538 338 2575 359 
+Q 2641 400 2828 588 
+L 2828 413 
+Q 2478 -56 2159 -56 
+Q 2006 -56 1915 50 
+Q 1825 156 1822 413 
+z
+M 1822 616 
+L 1822 1706 
+Q 1350 1519 1213 1441 
+Q 966 1303 859 1153 
+Q 753 1003 753 825 
+Q 753 600 887 451 
+Q 1022 303 1197 303 
+Q 1434 303 1822 616 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-72" d="M 1038 2947 
+L 1038 2303 
+Q 1397 2947 1775 2947 
+Q 1947 2947 2059 2842 
+Q 2172 2738 2172 2600 
+Q 2172 2478 2090 2393 
+Q 2009 2309 1897 2309 
+Q 1788 2309 1652 2417 
+Q 1516 2525 1450 2525 
+Q 1394 2525 1328 2463 
+Q 1188 2334 1038 2041 
+L 1038 669 
+Q 1038 431 1097 309 
+Q 1138 225 1241 169 
+Q 1344 113 1538 113 
+L 1538 0 
+L 72 0 
+L 72 113 
+Q 291 113 397 181 
+Q 475 231 506 341 
+Q 522 394 522 644 
+L 522 1753 
+Q 522 2253 501 2348 
+Q 481 2444 426 2487 
+Q 372 2531 291 2531 
+Q 194 2531 72 2484 
+L 41 2597 
+L 906 2947 
+L 1038 2947 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-67" d="M 966 1044 
+Q 703 1172 562 1401 
+Q 422 1631 422 1909 
+Q 422 2334 742 2640 
+Q 1063 2947 1563 2947 
+Q 1972 2947 2272 2747 
+L 2878 2747 
+Q 3013 2747 3034 2739 
+Q 3056 2731 3066 2713 
+Q 3084 2684 3084 2613 
+Q 3084 2531 3069 2500 
+Q 3059 2484 3036 2475 
+Q 3013 2466 2878 2466 
+L 2506 2466 
+Q 2681 2241 2681 1891 
+Q 2681 1491 2375 1206 
+Q 2069 922 1553 922 
+Q 1341 922 1119 984 
+Q 981 866 932 777 
+Q 884 688 884 625 
+Q 884 572 936 522 
+Q 988 472 1138 450 
+Q 1225 438 1575 428 
+Q 2219 413 2409 384 
+Q 2700 344 2873 169 
+Q 3047 -6 3047 -263 
+Q 3047 -616 2716 -925 
+Q 2228 -1381 1444 -1381 
+Q 841 -1381 425 -1109 
+Q 191 -953 191 -784 
+Q 191 -709 225 -634 
+Q 278 -519 444 -313 
+Q 466 -284 763 25 
+Q 600 122 533 198 
+Q 466 275 466 372 
+Q 466 481 555 628 
+Q 644 775 966 1044 
+z
+M 1509 2797 
+Q 1278 2797 1122 2612 
+Q 966 2428 966 2047 
+Q 966 1553 1178 1281 
+Q 1341 1075 1591 1075 
+Q 1828 1075 1981 1253 
+Q 2134 1431 2134 1813 
+Q 2134 2309 1919 2591 
+Q 1759 2797 1509 2797 
+z
+M 934 0 
+Q 788 -159 713 -296 
+Q 638 -434 638 -550 
+Q 638 -700 819 -813 
+Q 1131 -1006 1722 -1006 
+Q 2284 -1006 2551 -807 
+Q 2819 -609 2819 -384 
+Q 2819 -222 2659 -153 
+Q 2497 -84 2016 -72 
+Q 1313 -53 934 0 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-6d" d="M 1050 2338 
+Q 1363 2650 1419 2697 
+Q 1559 2816 1721 2881 
+Q 1884 2947 2044 2947 
+Q 2313 2947 2506 2790 
+Q 2700 2634 2766 2338 
+Q 3088 2713 3309 2830 
+Q 3531 2947 3766 2947 
+Q 3994 2947 4170 2830 
+Q 4347 2713 4450 2447 
+Q 4519 2266 4519 1878 
+L 4519 647 
+Q 4519 378 4559 278 
+Q 4591 209 4675 161 
+Q 4759 113 4950 113 
+L 4950 0 
+L 3538 0 
+L 3538 113 
+L 3597 113 
+Q 3781 113 3884 184 
+Q 3956 234 3988 344 
+Q 4000 397 4000 647 
+L 4000 1878 
+Q 4000 2228 3916 2372 
+Q 3794 2572 3525 2572 
+Q 3359 2572 3192 2489 
+Q 3025 2406 2788 2181 
+L 2781 2147 
+L 2788 2013 
+L 2788 647 
+Q 2788 353 2820 281 
+Q 2853 209 2943 161 
+Q 3034 113 3253 113 
+L 3253 0 
+L 1806 0 
+L 1806 113 
+Q 2044 113 2133 169 
+Q 2222 225 2256 338 
+Q 2272 391 2272 647 
+L 2272 1878 
+Q 2272 2228 2169 2381 
+Q 2031 2581 1784 2581 
+Q 1616 2581 1450 2491 
+Q 1191 2353 1050 2181 
+L 1050 647 
+Q 1050 366 1089 281 
+Q 1128 197 1204 155 
+Q 1281 113 1516 113 
+L 1516 0 
+L 100 0 
+L 100 113 
+Q 297 113 375 155 
+Q 453 197 493 289 
+Q 534 381 534 647 
+L 534 1741 
+Q 534 2213 506 2350 
+Q 484 2453 437 2492 
+Q 391 2531 309 2531 
+Q 222 2531 100 2484 
+L 53 2597 
+L 916 2947 
+L 1050 2947 
+L 1050 2338 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-78" d="M 84 2863 
+L 1431 2863 
+L 1431 2747 
+Q 1303 2747 1251 2703 
+Q 1200 2659 1200 2588 
+Q 1200 2513 1309 2356 
+Q 1344 2306 1413 2200 
+L 1616 1875 
+L 1850 2200 
+Q 2075 2509 2075 2591 
+Q 2075 2656 2022 2701 
+Q 1969 2747 1850 2747 
+L 1850 2863 
+L 2819 2863 
+L 2819 2747 
+Q 2666 2738 2553 2663 
+Q 2400 2556 2134 2200 
+L 1744 1678 
+L 2456 653 
+Q 2719 275 2831 198 
+Q 2944 122 3122 113 
+L 3122 0 
+L 1772 0 
+L 1772 113 
+Q 1913 113 1991 175 
+Q 2050 219 2050 291 
+Q 2050 363 1850 653 
+L 1431 1266 
+L 972 653 
+Q 759 369 759 316 
+Q 759 241 829 180 
+Q 900 119 1041 113 
+L 1041 0 
+L 106 0 
+L 106 113 
+Q 219 128 303 191 
+Q 422 281 703 653 
+L 1303 1450 
+L 759 2238 
+Q 528 2575 401 2661 
+Q 275 2747 84 2747 
+L 84 2863 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-4a" d="M 638 4122 
+L 638 4238 
+L 2453 4238 
+L 2453 4122 
+L 2300 4122 
+Q 2041 4122 1922 3969 
+Q 1847 3869 1847 3488 
+L 1847 1416 
+Q 1847 938 1742 641 
+Q 1638 344 1381 123 
+Q 1125 -97 763 -97 
+Q 469 -97 300 48 
+Q 131 194 131 381 
+Q 131 534 209 613 
+Q 313 709 450 709 
+Q 550 709 629 643 
+Q 709 578 831 294 
+Q 903 125 1016 125 
+Q 1100 125 1173 228 
+Q 1247 331 1247 594 
+L 1247 3488 
+Q 1247 3809 1206 3913 
+Q 1175 3991 1075 4047 
+Q 941 4122 791 4122 
+L 638 4122 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-28" d="M 1988 -1253 
+L 1988 -1369 
+Q 1516 -1131 1200 -813 
+Q 750 -359 506 256 
+Q 263 872 263 1534 
+Q 263 2503 741 3301 
+Q 1219 4100 1988 4444 
+L 1988 4313 
+Q 1603 4100 1356 3731 
+Q 1109 3363 987 2797 
+Q 866 2231 866 1616 
+Q 866 947 969 400 
+Q 1050 -31 1165 -292 
+Q 1281 -553 1476 -793 
+Q 1672 -1034 1988 -1253 
+z
+" transform="scale(0.015625)"/>
+      <path id="formula_TimesNewRomanPSMT-29" d="M 144 4313 
+L 144 4444 
+Q 619 4209 934 3891 
+Q 1381 3434 1625 2820 
+Q 1869 2206 1869 1541 
+Q 1869 572 1392 -226 
+Q 916 -1025 144 -1369 
+L 144 -1253 
+Q 528 -1038 776 -670 
+Q 1025 -303 1145 264 
+Q 1266 831 1266 1447 
+Q 1266 2113 1163 2663 
+Q 1084 3094 967 3353 
+Q 850 3613 656 3853 
+Q 463 4094 144 4313 
+z
+" transform="scale(0.015625)"/>
+     </defs>
+     <use href="#formula_TimesNewRomanPSMT-302" transform="translate(44.819824 29.375)"/>
+     <use href="#formula_TimesNewRomanPSMT-398" transform="translate(0 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-3d" transform="translate(86.660156 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-61" transform="translate(157.5 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-72" transform="translate(201.884766 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-67" transform="translate(235.185547 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-6d" transform="translate(297.22192 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-61" transform="translate(375.005124 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-78" transform="translate(419.389889 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-4a" transform="translate(489.450271 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-28" transform="translate(528.366287 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-398" transform="translate(561.667068 0.625)"/>
+     <use href="#formula_TimesNewRomanPSMT-29" transform="translate(633.883865 0.625)"/>
+    </g>
+   </g>
+  </g>
+ </g>
+  </svg>
+</svg>

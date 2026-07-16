@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>圆柱阵波束级ML测角小论文初稿</title>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$'], ['\\[', '\\]']],
+    tags: 'ams'
+  },
+  svg: { fontCache: 'global' },
+  startup: {
+    ready: () => {
+      MathJax.startup.defaultReady();
+      MathJax.startup.promise.then(() => { window.mathjaxDone = true; });
+    }
+  }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+@page {
+  size: A4;
+  margin: 22mm 20mm 24mm 20mm;
+}
+html {
+  color: #111;
+  font-family: "Times New Roman", "SimSun", "宋体", serif;
+  font-size: 10.8pt;
+  line-height: 1.62;
+}
+body {
+  margin: 0 auto;
+  max-width: 168mm;
+}
+h1, h2, h3 {
+  font-family: "Times New Roman", "SimHei", "黑体", sans-serif;
+  font-weight: 700;
+  line-height: 1.35;
+  page-break-after: avoid;
+}
+h1 {
+  text-align: center;
+  font-size: 18pt;
+  margin: 0 0 15pt;
+}
+h2 {
+  text-align: left;
+  font-size: 14pt;
+  margin: 18pt 0 8pt;
+  border-bottom: 0.5pt solid #999;
+  padding-bottom: 2pt;
+}
+h3 {
+  text-align: left;
+  font-size: 12pt;
+  margin: 14pt 0 6pt;
+}
+p {
+  margin: 0 0 7pt;
+  text-align: justify;
+  text-indent: 2em;
+}
+.figure {
+  text-indent: 0;
+  text-align: center;
+  margin: 9pt 0 11pt;
+  page-break-inside: avoid;
+}
+.figure img {
+  display: block;
+  margin: 0 auto 4pt;
+}
+figcaption {
+  font-size: 9.5pt;
+  line-height: 1.45;
+  text-align: center;
+  color: #222;
+}
+img {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+table {
+  border-collapse: collapse;
+  margin: 8pt auto 11pt;
+  width: 96%;
+  font-size: 9.4pt;
+  page-break-inside: avoid;
+}
+th, td {
+  border: 0.5pt solid #777;
+  padding: 3pt 5pt;
+}
+th {
+  background: #f2f2f2;
+  font-weight: 700;
+}
+pre, code {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 9.4pt;
+}
+pre {
+  white-space: pre-wrap;
+  background: #f6f6f6;
+  border: 0.5pt solid #ccc;
+  padding: 7pt;
+}
+.mjx-container[jax="SVG"][display="true"] {
+  margin: 0.55em 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  font-size: 94% !important;
+}
+.mjx-container[jax="SVG"]:not([display="true"]) {
+  font-size: 96% !important;
+}
+.math-block {
+  text-align: center;
+  margin: 6pt 0 8pt;
+  text-indent: 0;
+}
+strong {
+  font-weight: 700;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+</style>
+</head>
+<body>
+<h1>面向圆柱阵的波束级最大似然估计测角方法</h1>
+<h2>摘要</h2>
+<p>针对单目标测角分辨率受限、阵元域最大似然估计计算量较大的问题，本文提出一种面向圆柱阵的波束级最大似然估计测角方法。该方法首先基于圆柱阵真实阵元坐标，将阵元域观测投影到波束域，实现波束域最大似然估计；其次给出波束转换矩阵的选择规则。该方法避免了阵元级最大似然估计复杂计算量，计算量大大降低，且对通过波束选择矩阵进一步提升了运算的效率。仿真结果证明了算法的有效性。</p>
+<p><strong>关键词：</strong> 圆柱阵；波束域；最大似然估计；超分辨测角</p>
+<h2>1 引言</h2>
+<p>随着雷达、电子侦察和通信感知系统的发展，对阵列测角提出了严峻的挑战。随着目标密度提高和雷达搜索场景的复杂，接收端常需处理角度间隔小于波束的目标。而圆柱阵由环向阵元和垂直孔径的结构，使其兼具方位和俯仰信息获取能力，适用于三维测角和空间态势感知[1-6]。</p>
+<p>传统峰值测角分辨能力受波束宽度和信噪比限制。当两个目标落入同一主瓣或半波束宽度内时，空间谱可能合并为单峰，导致角度偏差。最大似然方法直接利用阵列流形和观测残差，在相干源和低信噪比条件下具有优势[10,12-15]，但阵元域最大似然估计的计算量会随目标数和网格密度快速增长。</p>
+<p>近年来，波束域处理为降低计算量提供了可行路径。现有的波束域操作思路主要是先将阵元域观测投影到波束域，再完成参数估计，从而减少输入维度[7-9,18,21]。已有研究表明，波束域变换会影响流形保持、参数估计误差[21-23]，因此对于圆柱阵阵元建模，关键在于用少量波束保留真实圆柱阵流形，并在波束域进行最大似然估计。</p>
+<p>本文将圆柱阵真实流形与波束级最大似然估计结合，提出了针对圆柱阵的波束级最大似然估计的测角方法。该方法根据全息凝视雷达的工作模式选取工作子阵，以真实阵元坐标建立目标模型；再将阵元域观测投影到波束域；最后在波束域求解最大似然估计得到测角结果。本文方法从阵元域投影到波束域，在实现最大似然估计的条件下实现了数据降维，减少了求解时的计算量，提升了运算效率。仿真结果验证了所提出算法的有效性。</p>
+<h2>2 信号模型</h2>
+<h3>2.1 圆柱阵及工作阵元</h3>
+<p>设圆柱阵由 $N_{\phi}$ 个方位列和 $N_z$ 个俯仰层组成，圆柱半径为 $R_c$，垂直层间距为 $d_z$。则第 $n$ 个方位列在圆周上的角度为</p>
+<div class="math-block">$$
+\phi_n=\phi_{\mathrm{ref}}+(n-1)\Delta_{\phi}.
+$$</div>
+<p>其中，</p>
+<div class="math-block">$$
+\Delta_{\phi}=\frac{2\pi}{N_{\phi}},
+$$</div>
+<p>表示相邻方位列在圆周方向上的角间隔。该量由方位列总数决定，用于将离散方位列索引映射到实际圆周角度。</p>
+<p>第 $m$ 个俯仰层高度为</p>
+<div class="math-block">$$
+z_m=z_{\mathrm{ref}}+(m-1)d_z .
+$$</div>
+<p>其中，$\phi_{\mathrm{ref}}$ 和 $z_{\mathrm{ref}}$ 分别为方位参考角和高度参考点。</p>
+<p>圆柱阵第 $(n,m)$ 个阵元的位置向量为</p>
+<div class="math-block">$$
+\mathbf{r}_{n,m}=
+\left[
+R_c\cos\phi_n,\ 
+R_c\sin\phi_n,\ 
+z_m
+\right]^T .
+$$</div>
+<p>圆柱阵共有 $N_{\phi}N_z$ 个阵元。在圆柱阵工作模式下，会围绕当前扇区选取工作子阵。记圆周列角与 $az_0$ 的方位角度差为 $\mathrm{wrap}(\phi_n-az_0)$，则中心列索引为</p>
+<div class="math-block">$$
+n_c=\arg\min_n \left|\mathrm{wrap}(\phi_n-az_0)\right|.
+$$</div>
+<p>该式表示从所有方位列中选取与前端粗测方位中心 $az_0$ 最近的列作为工作子阵中心。由于圆柱阵在方位维度上首尾相接，角度差采用 $\mathrm{wrap}(\cdot)$ 计算，以避免在 $0$ 与 $2\pi$ 边界附近产生错误的距离判断。</p>
+<p>设工作扇区对应的方位列数为 $Q$，且 $Q=2q+1$。则以中心列 $n_c$ 为基准，两侧各取 $q$ 列，得到了根据当前工作扇区选定的工作列集合</p>
+<div class="math-block">$$
+\mathcal{I}_{\phi}=
+\left\{
+n_c-q,\ldots,n_c,\ldots,n_c+q
+\right\}\quad(\mathrm{mod}\ N_{\phi}).
+$$</div>
+<p>若工作子阵保留上述 $Q$ 个方位列和全部 $N_z$ 个俯仰层，则工作子阵阵元数为</p>
+<div class="math-block">$$
+M=QN_z .
+$$</div>
+<figure class="figure"><img src="file:///E:/matlab_code/bishe_quanxi_papers/beamspace_ml_paper/12_EI/figures/fig_cyl_model_left.png" alt="图 1 圆柱阵工作子阵与局部双目标建模示意图" style="max-height:8.5cm;"><figcaption>图 1 圆柱阵工作子阵与局部双目标建模示意图</figcaption></figure>
+
+<h3>2.2 圆柱阵真实流形与导向矢量</h3>
+<p>将工作子阵中的第 $i$ 个阵元坐标记为 $\mathbf{p}_i=[x_i,y_i,z_i]^T$，$i=1,2,\ldots,M$。目标方向由方位角 $az$ 和俯仰角 $el$ 表示，其单位方向向量为</p>
+<div class="math-block">$$
+\mathbf{u}(az,el)=
+\left[
+\cos el\cos az,\ 
+\cos el\sin az,\ 
+\sin el
+\right]^T .
+$$</div>
+<p>在窄带远场条件下，第 $i$ 个阵元相对于参考点的相位由阵元位置与入射方向的内积决定。引入相位比例因子 $\eta_{\mathrm{rt}}$ 描述接收链路中的等效传播相位模型，则圆柱阵单目标导向矢量可写为</p>
+<div class="math-block">$$
+\mathbf{a}_{\mathrm{cyl}}(az,el)=
+\left[
+\exp\left(j\eta_{\mathrm{rt}}\frac{2\pi}{\lambda}\mathbf{p}_1^T\mathbf{u}(az,el)\right),
+\cdots,
+\exp\left(j\eta_{\mathrm{rt}}\frac{2\pi}{\lambda}\mathbf{p}_M^T\mathbf{u}(az,el)\right)
+\right]^T .
+\tag{1}
+$$</div>
+<p>其中，$\lambda$ 为信号波长。若展开内积，有</p>
+<div class="math-block">$$
+\mathbf{p}_i^T\mathbf{u}(az,el)
+=
+x_i\cos el\cos az
++y_i\cos el\sin az
++z_i\sin el .
+$$</div>
+<p>式(1)保留了圆柱阵真实几何流形，其中 $x_i$、$y_i$ 和 $z_i$ 共同决定导向矢量随方位、俯仰变化的相位结构。若采用接收信号负相位约定，可对式(1)整体取共轭或改变相位符号；只要导向矩阵与观测数据使用同一约定，最大似然准则形式不受影响。</p>
+<h3>2.3 阵元域双目标观测模型</h3>
+<p>本文考虑前端检测后的局部未分辨双目标簇。设两个目标的角度分别为 $(az_1,el_1)$ 和 $(az_2,el_2)$，对应的阵元域导向矩阵为</p>
+<div class="math-block">$$
+A_{\mathrm{cyl}}(\Theta)=
+\left[
+\mathbf{a}_{\mathrm{cyl}}(az_1,el_1),
+\mathbf{a}_{\mathrm{cyl}}(az_2,el_2)
+\right],
+\tag{2}
+$$</div>
+<p>其中，$\Theta=\{az_1,el_1,az_2,el_2\}$ 表示双目标角度参数集合。若接收端在当前距离-多普勒单元或局部快拍集合中获得 $L$ 个快拍，则工作子阵阵元域观测矩阵可表示为</p>
+<div class="math-block">$$
+Y=A_{\mathrm{cyl}}(\Theta)S+N .
+\tag{3}
+$$</div>
+<p>式中，$Y\in\mathbb{C}^{M\times L}$ 为工作子阵阵元域观测矩阵，$S\in\mathbb{C}^{2\times L}$ 为双目标复包络信号矩阵，$N\in\mathbb{C}^{M\times L}$ 为阵元域噪声矩阵。对于确定性最大似然估计，$S$ 可视为待消元的未知确定性信号，而角度参数 $\Theta$ 通过导向矩阵影响观测子空间。</p>
+<p>局部未分辨双目标的困难在于两个导向矢量相关性较高。当角度间隔小、信号相干性强或弱目标幅度低时，单目标峰值检测、比幅测角和经验分裂规则容易失效。因此，本文在后端显式构造双目标导向矩阵，并以最大似然准则评价候选参数对观测数据的拟合能力。</p>
+<h3>2.4 波束矩阵与后端输入形式</h3>
+<p>为降低后端计算复杂度，引入波束矩阵 $W\in\mathbb{C}^{M\times B}$，其中 $B\ll M$。在固定方位俯仰切片中，$W$ 的列向量由局部俯仰波束中心生成。令第 $b$ 个波束中心为 $(az_0,el_b)$，构造与式(1)一致的圆柱阵导向矢量并归一化：</p>
+<div class="math-block">$$
+\mathbf{w}_b=
+\frac{\mathbf{a}_{\mathrm{cyl}}(az_0,el_b)}
+{\left\|\mathbf{a}_{\mathrm{cyl}}(az_0,el_b)\right\|_2},
+\qquad b=1,2,\ldots,B .
+$$</div>
+<p>也可由第5节所述选择策略从更大的俯仰候选波束池中筛选得到。阵元域观测经 $W$ 投影后得到波束域观测矩阵：</p>
+<div class="math-block">$$
+Z=W^{H}Y .
+\tag{4}
+$$</div>
+<p>将式(3)代入式(4)，有</p>
+<div class="math-block">$$
+Z=W^{H}A_{\mathrm{cyl}}(\Theta)S+W^{H}N .
+\tag{5}
+$$</div>
+<p>定义波束域导向矩阵</p>
+<div class="math-block">$$
+G(\Theta)=W^{H}A_{\mathrm{cyl}}(\Theta),
+\tag{6}
+$$</div>
+<p>则波束域观测模型可简写为</p>
+<div class="math-block">$$
+Z=G(\Theta)S+\widetilde{N},
+\tag{7}
+$$</div>
+<p>其中，$\widetilde{N}=W^{H}N$ 为波束域噪声项。式(7)构成后端算法输入：阵元域数据被压缩到 $B$ 维波束域，候选流形仍由真实圆柱阵导向矢量生成。若 $W$ 覆盖局部双目标簇的主要流形变化，则候选评分规模可显著降低，同时保留必要的角度分辨信息。</p>
+<p>需要注意的是，当 $W$ 的列向量并非严格正交时，波束域噪声不再天然满足白噪声假设。若阵元域噪声满足 $E[\mathbf{n}_l\mathbf{n}_l^H]=\sigma^2 I_M$，则原始波束域噪声的协方差为</p>
+<div class="math-block">$$
+E[\widetilde{\mathbf{n}}_l\widetilde{\mathbf{n}}_l^H]
+=
+\sigma^2 W^H W .
+$$</div>
+<p>本文在最大似然评分前对波束域观测和波束域流形同时进行白化。令</p>
+<div class="math-block">$$
+C_b=W^H W,\qquad T=C_b^{-1/2},
+$$</div>
+<p>则白化后的观测、流形和噪声分别为</p>
+<div class="math-block">$$
+\bar{Z}=T W^H Y,\qquad
+\bar{G}(\Theta)=T W^H A_{\mathrm{cyl}}(\Theta),\qquad
+\bar{N}=T W^H N .
+$$</div>
+<p>此时有</p>
+<div class="math-block">$$
+\bar{Z}=\bar{G}(\Theta)S+\bar{N},\qquad
+E[\bar{\mathbf{n}}_l\bar{\mathbf{n}}_l^H]=\sigma^2 I_B .
+$$</div>
+<p>因此，白化并不改变圆柱阵导向模型，而是消除非正交波束输出引入的噪声相关性，使后续确定性最大似然评分满足白噪声假设。为简化记号，后文若无特别说明，$Z$ 和 $G(\Theta)$ 均表示白化后的波束域观测和流形。</p>
+<p>本文不研究全空域盲多目标搜索，而以前端给出的局部先验为基础。设粗中心为 $(az_0,el_0)$，后端在局部窗口 $\Omega_{\mathrm{win}}$ 内搜索双目标参数。记窗口方位半宽和俯仰半宽分别为 $\Delta_{az}^{\mathrm{win}}$ 与 $\Delta_{el}^{\mathrm{win}}$，则</p>
+<div class="math-block">$$
+\Omega_{\mathrm{win}}=
+\left\{
+\Theta:
+az_i\in[az_0-\Delta_{az}^{\mathrm{win}},az_0+\Delta_{az}^{\mathrm{win}}],
+el_i\in[el_0-\Delta_{el}^{\mathrm{win}},el_0+\Delta_{el}^{\mathrm{win}}],
+i=1,2
+\right\}.
+\tag{8}
+$$</div>
+<p>局部窗口并不保证覆盖全局真实目标。若前端粗中心偏差过大，真实目标可能靠近窗口边界甚至落出窗口，后端最大似然无法弥补该先验错误。因此，本文方法的适用范围限定为前端已提供合理局部窗口后的双目标精估计。</p>
+<h2>3 基于圆柱阵真实流形的波束级最大似然测角算法</h2>
+<p>本节给出后端测角方法的评分准则与候选构造方式。该方法不重新进行全空域检测，而是在第2节定义的局部窗口内对未分辨双目标簇进行联合估计。</p>
+<h3>3.1 确定性最大似然评分准则</h3>
+<p>在波束域模型中，角度参数 $\Theta$ 只通过 $G(\Theta)$ 影响观测矩阵 $Z$。因此，可先消元未知复包络矩阵 $S$，再评价候选导向子空间对观测能量的解释能力。</p>
+<p>根据第2.4节的波束域白化处理，对第 $l$ 个快拍有</p>
+<div class="math-block">$$
+\mathbf{z}_l=G(\Theta)\mathbf{s}_l+\widetilde{\mathbf{n}}_l,\qquad
+\widetilde{\mathbf{n}}_l\sim\mathcal{CN}(\mathbf{0},\sigma^2I_B),
+\quad l=1,\ldots,L .
+\tag{9}
+$$</div>
+<p>给定 $\Theta$、$S$ 和噪声方差 $\sigma^2$ 时，全部快拍的条件概率密度为</p>
+<div class="math-block">$$
+p(Z\mid\Theta,S,\sigma^2)
+=
+\frac{1}{(\pi\sigma^2)^{BL}}
+\exp\left(
+-\frac{\left\|Z-G(\Theta)S\right\|_F^2}{\sigma^2}
+\right).
+\tag{10}
+$$</div>
+<p>记残差能量为</p>
+<div class="math-block">$$
+E(\Theta,S)=\left\|Z-G(\Theta)S\right\|_F^2 .
+\tag{11}
+$$</div>
+<p>最大化式(10)对应的集中似然等价于最小化残差能量：</p>
+<div class="math-block">$$
+\max_{\Theta,S,\sigma^2}\ell(\Theta,S,\sigma^2)
+\Longleftrightarrow
+\min_{\Theta,S}\left\|Z-G(\Theta)S\right\|_F^2 .
+\tag{12}
+$$</div>
+<p>在固定候选 $\Theta$ 时，$G(\Theta)$ 已知，未知信号矩阵 $S$ 的最小二乘估计为</p>
+<div class="math-block">$$
+\widehat{S}(\Theta)
+=
+\left(G^{H}(\Theta)G(\Theta)\right)^{-1}G^{H}(\Theta)Z .
+\tag{13}
+$$</div>
+<p>将式(13)代回残差项，可得</p>
+<div class="math-block">$$
+Z-G(\Theta)\widehat{S}(\Theta)
+=
+\left(I-P_G\right)Z
+=
+P_G^{\perp}Z ,
+\tag{14}
+$$</div>
+<p>其中，候选导向子空间的投影矩阵为</p>
+<div class="math-block">$$
+P_G
+=
+G(\Theta)
+\left(G^{H}(\Theta)G(\Theta)\right)^{-1}
+G^{H}(\Theta),
+\tag{15}
+$$</div>
+<p>且</p>
+<div class="math-block">$$
+P_G^{\perp}=I-P_G .
+\tag{16}
+$$</div>
+<p>因此，最小残差形式可写为</p>
+<div class="math-block">$$
+\widehat{\Theta}
+=
+\arg\min_{\Theta\in\Omega_{\mathrm{win}}}
+\mathrm{tr}\left(P_G^{\perp}ZZ^{H}\right).
+\tag{17}
+$$</div>
+<p>由于</p>
+<div class="math-block">$$
+\mathrm{tr}\left(P_G^{\perp}ZZ^{H}\right)
+=
+\mathrm{tr}\left(ZZ^{H}\right)
+-
+\mathrm{tr}\left(P_GZZ^{H}\right),
+\tag{18}
+$$</div>
+<p>且 $\mathrm{tr}(ZZ^{H})$ 与候选角度无关，故最小化噪声子空间残差等价于最大化候选导向子空间解释的观测能量。本文采用如下波束域确定性最大似然评分函数：</p>
+<div class="math-block">$$
+J(\Theta)=\mathrm{tr}\left(P_GZZ^{H}\right).
+\tag{19}
+$$</div>
+<p>最终角度估计由评分最大化给出：</p>
+<div class="math-block">$$
+\widehat{\Theta}
+=
+\arg\max_{\Theta\in\Omega_{\mathrm{win}}}
+J(\Theta).
+\tag{20}
+$$</div>
+<p>式(19)与阵元域确定性最大似然具有相同物理含义，但评分在 $B$ 维波束域中完成，而非 $M$ 维阵元空间。由此可分别讨论波束矩阵的流形保持能力和候选数量压缩。</p>
+<h3>3.2 固定方位俯仰成对候选构造</h3>
+<p>本文实验聚焦固定方位俯仰切片。设前端给出的局部方位中心为 $az_0$，两个目标在后端精估计阶段共享该方位：</p>
+<div class="math-block">$$
+az_1=az_2=az_0 .
+\tag{21}
+$$</div>
+<p>后端只在俯仰搜索网格</p>
+<div class="math-block">$$
+\mathcal{E}=\{e_1,e_2,\ldots,e_{N_g}\}
+\tag{22}
+$$</div>
+<p>上构造双目标成对候选。为避免目标编号互换造成重复评分，约定 $el_1<el_2$，即</p>
+<div class="math-block">$$
+\Omega_{\mathrm{pair\text{-}el}}
+=
+\left\{
+\Theta_{ij}=\{(az_0,e_i),(az_0,e_j)\}:
+1\le i<j\le N_g
+\right\}.
+\tag{23}
+$$</div>
+<p>式(23)表明，后端候选只包含两个俯仰角，方位角不参与搜索。该设置与前端已给出方位粗中心的工程链路一致，将问题限定为固定方位切片内的双目标俯仰分裂。本文由此检验少量白化俯仰波束输出是否仍能支撑同方位近邻双目标的最大似然分辨。</p>
+<figure class="figure"><img src="file:///E:/matlab_code/bishe_quanxi_papers/beamspace_ml_paper/12_EI/figures/fig_fixed_az_el_candidate_pair.png" alt="图 2 固定方位俯仰切片中的候选对构造示意图" style="max-width:90%;"><figcaption>图 2 固定方位俯仰切片中的候选对构造示意图</figcaption></figure>
+
+<h3>3.3 算法流程</h3>
+<p>波束级最大似然后端以阵元域观测 $Y$、波束矩阵 $W$、局部方位中心 $az_0$ 和俯仰搜索网格 $\mathcal{E}$ 为输入。算法先计算白化波束域观测 $Z=T W^{H}Y$；再对每个候选 $\Theta_{ij}$ 生成圆柱阵导向矩阵和白化波束域流形 $G(\Theta_{ij})$；随后根据式(19)计算评分，并输出评分最大的双目标俯仰角。</p>
+<p>图 3 概括了该处理链路：阵元域观测经波束投影和白化进入低维波束域，随后对俯仰成对候选逐一构造流形并计算确定性最大似然评分，最终输出最优双目标俯仰角。</p>
+<figure class="figure"><img src="file:///E:/matlab_code/bishe_quanxi_papers/beamspace_ml_paper/12_EI/figures/fig_beamspace_ml_flowchart.svg" alt="图 3 固定方位俯仰成对波束级最大似然后端流程图" style="max-width:82%;"><figcaption>图 3 固定方位俯仰成对波束级最大似然后端流程图</figcaption></figure>
+
+<p>算法 1 固定方位俯仰成对波束级最大似然测角流程</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>操作</th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>根据 $az_0$ 和俯仰搜索网格生成成对候选集合</td>
+<td>$\Omega_{\mathrm{pair\text{-}el}}$</td>
+</tr>
+<tr>
+<td>2</td>
+<td>计算 $T=(W^H W)^{-1/2}$ 与 $Z=T W^{H}Y$</td>
+<td>白化波束域观测</td>
+</tr>
+<tr>
+<td>3</td>
+<td>对每个候选构造 $A_{\mathrm{cyl}}(\Theta_{ij})$ 与 $G(\Theta_{ij})=T W^H A_{\mathrm{cyl}}(\Theta_{ij})$</td>
+<td>白化波束域流形</td>
+</tr>
+<tr>
+<td>4</td>
+<td>计算 $P_G$ 与确定性最大似然评分 $J(\Theta)$</td>
+<td>候选分数</td>
+</tr>
+<tr>
+<td>5</td>
+<td>取 $\arg\max_\Theta J(\Theta)$</td>
+<td>双目标角度估计</td>
+</tr>
+</tbody></table>
+<p>上述流程默认处理对象已位于固定方位局部窗口内，不包含自动单双目标判别，也不校正前端粗中心错误。若方位中心或俯仰窗口明显偏离真实目标，后端只能在给定窗口内返回最优候选。</p>
+<h3>3.4 复杂度分析</h3>
+<p>对每一个候选 $\Theta$，确定性最大似然后端需要构造 $G(\Theta)$、计算 $G^HG$、求逆并计算投影评分。令双目标数为 $K=2$，单次评分的主要矩阵运算可概括为</p>
+<div class="math-block">$$
+C_{\mathrm{score}}(B,K,L)
+=
+O(BK^2)+O(K^3)+O(BKL),
+\tag{24}
+$$</div>
+<p>其中，$B$ 为波束域维度，$L$ 为快拍数。由于 $K=2$ 固定，单次评分复杂度主要受 $B$、$L$ 和候选流形构造开销影响。若总候选数为 $N_{\mathrm{cand}}$，则</p>
+<div class="math-block">$$
+C_{\mathrm{total}}
+\approx
+N_{\mathrm{cand}}\,
+C_{\mathrm{score}}(B,K,L).
+\tag{25}
+$$</div>
+<p>在固定方位俯仰切片中，若俯仰搜索网格数为 $N_g$，采用 $el_1<el_2$ 的无序成对约束后，候选数量为</p>
+<div class="math-block">$$
+N_{\mathrm{pair\text{-}el}}
+=
+\frac{N_g(N_g-1)}{2}.
+\tag{26}
+$$</div>
+<p>与枚举 $N_g^2$ 个有序组合相比，式(26)去除了目标编号互换造成的重复候选。波束矩阵 $W$ 进一步将评分空间由 $M$ 维阵元域降至 $B$ 维白化波束域。后续还可结合第5节的波束选择准则压缩输入维度并控制运行成本。</p>
+<h2>4 仿真实验与结果分析</h2>
+<p>为验证第3节后端算法，本文在固定方位条件下进行俯仰向双目标切片仿真，检验低维俯仰波束输出能否支撑未分辨双目标最大似然分裂。实验重点包括三点：单目标波束峰值基线的失效边界、波束级最大似然与阵元级最大似然的性能差距，以及波束数对精度、分辨成功率和计算量的影响。</p>
+<h3>4.1 实验条件与对比对象</h3>
+<p>仿真采用第2节所述圆柱阵工作子阵：阵列半径 $0.4\ \mathrm{m}$，每层 $192$ 个方位阵元，垂直方向 $32$ 层，层间距 $17\ \mathrm{mm}$。载频取 $10\ \mathrm{GHz}$，波长为 $0.03\ \mathrm{m}$，双程相位因子为 $\eta_{\mathrm{rt}}=2$。前端粗中心设为 $az_0=8^\circ$、$el_0=10^\circ$，工作子阵包含连续 $65$ 个方位列和全部俯仰层，有效阵元数为 $M=2080$。每次 Monte Carlo 试验使用 $L=32$ 个快拍，双目标共享方位角并围绕 $el_0$ 对称设置。</p>
+<p>表 2 给出了主要仿真参数。固定方位切片中，先由工作子阵在 $(az_0,el_0)$ 处的归一化方向图测得俯仰向 3 dB 波束宽度，约为 $1.4188^\circ$；再以该宽度归一化双目标间隔和局部俯仰波束中心。默认波束数为 $B=10$，SNR-波束数对比中另取 $B=7$ 和 $B=6$。</p>
+<p>表 2 仿真参数设置</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>符号</th>
+<th>数值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>载频</td>
+<td>$f_c$</td>
+<td>$10\ \mathrm{GHz}$</td>
+</tr>
+<tr>
+<td>波长</td>
+<td>$\lambda$</td>
+<td>$0.03\ \mathrm{m}$</td>
+</tr>
+<tr>
+<td>圆柱阵半径</td>
+<td>$R_c$</td>
+<td>$0.4\ \mathrm{m}$</td>
+</tr>
+<tr>
+<td>方位列数</td>
+<td>$N_{\phi}$</td>
+<td>$192$</td>
+</tr>
+<tr>
+<td>垂直层数</td>
+<td>$N_z$</td>
+<td>$32$</td>
+</tr>
+<tr>
+<td>垂直层间距</td>
+<td>$d_z$</td>
+<td>$17\ \mathrm{mm}$</td>
+</tr>
+<tr>
+<td>工作方位列数</td>
+<td>$Q$</td>
+<td>$65$</td>
+</tr>
+<tr>
+<td>有效阵元数</td>
+<td>$M$</td>
+<td>$2080$</td>
+</tr>
+<tr>
+<td>快拍数</td>
+<td>$L$</td>
+<td>$32$</td>
+</tr>
+<tr>
+<td>粗中心方位角</td>
+<td>$az_0$</td>
+<td>$8^\circ$</td>
+</tr>
+<tr>
+<td>粗中心俯仰角</td>
+<td>$el_0$</td>
+<td>$10^\circ$</td>
+</tr>
+<tr>
+<td>俯仰向 3 dB 波束宽度</td>
+<td>$\mathrm{BW}_{3\mathrm{dB}}$</td>
+<td>$1.4188^\circ$</td>
+</tr>
+<tr>
+<td>默认信噪比</td>
+<td>$\mathrm{SNR}$</td>
+<td>$18\ \mathrm{dB}$</td>
+</tr>
+<tr>
+<td>SNR 扫描范围</td>
+<td>$\mathrm{SNR}$</td>
+<td>$-10:5:20\ \mathrm{dB}$</td>
+</tr>
+<tr>
+<td>默认波束数</td>
+<td>$B$</td>
+<td>$10$</td>
+</tr>
+<tr>
+<td>对比波束数</td>
+<td>$B$</td>
+<td>$10,7,6$</td>
+</tr>
+</tbody></table>
+<p>对比对象包括三类。第一类为单目标波束峰值基线，即固定方位一维波束扫描的峰值估计。该基线代表单目标局部测角或单峰检测思路；对于同一分辨单元内的未分辨双目标，经典单脉冲/比幅测角通常输出等效角度或合并峰值，若要分裂目标需引入专门双目标模型或附加通道[25,26]。因此，本文将其作为传统单目标测角基线的失效对照，而非同类双目标算法。第二类为阵元级最大似然，直接使用 $A_{\mathrm{cyl}}(\Theta)$ 和阵元域观测 $Y$ 进行双目标评分，作为性能参考。第三类为波束级最大似然，使用白化后的 $Z$ 和 $G(\Theta)$ 在同一候选集合上评分，用于验证低维波束域输入的估计能力。</p>
+<h3>4.2 评价指标与计算量定义</h3>
+<p>由于本节固定方位角，只统计俯仰向双目标误差。每次试验后，估计值和真实值均按俯仰角排序，以消除目标编号置换影响。记第 $n$ 次 Monte Carlo 试验中第 $i$ 个目标的俯仰误差为</p>
+<div class="math-block">$$
+e_{el,i}^{(n)}
+=
+\widehat{el}_{(i)}^{(n)}
+-
+el_{(i)}^{(n)},
+\qquad i=1,2 .
+\tag{27}
+$$</div>
+<p>在 $D$ 次 Monte Carlo 试验中，俯仰角均方根误差定义为</p>
+<div class="math-block">$$
+\mathrm{RMSE}_{el}
+=
+\sqrt{
+\frac{1}{2D}
+\sum_{n=1}^{D}
+\sum_{i=1}^{2}
+\left(e_{el,i}^{(n)}\right)^2
+}.
+\tag{28}
+$$</div>
+<p>除 RMSE 外，本文采用分辨成功率评价算法是否真正分裂出两个目标。记真实目标间隔为 $\Delta_{el}=|el_2-el_1|$，估计目标间隔为 $\widehat{\Delta}_{el}=|\widehat{el}_2-\widehat{el}_1|$，真实中心和估计中心分别为 $c_{el}$ 与 $\widehat{c}_{el}$。第 $n$ 次试验的分辨成功指示量定义为</p>
+<div class="math-block">$$
+I_{\mathrm{res}}^{(n)}
+=
+\mathbf{1}\left(
+\begin{aligned}
+&\widehat{\Delta}_{el}\ge
+\max(0.20\Delta_{el},0.03\mathrm{BW}_{3\mathrm{dB}}),\\
+&\left|\widehat{\Delta}_{el}-\Delta_{el}\right|
+\le
+\max(0.35\Delta_{el},0.08\mathrm{BW}_{3\mathrm{dB}}),\\
+&\left|\widehat{c}_{el}-c_{el}\right|
+\le
+0.12\mathrm{BW}_{3\mathrm{dB}}
+\end{aligned}
+\right).
+\tag{29}
+$$</div>
+<p>因此，分辨成功率为</p>
+<div class="math-block">$$
+P_{\mathrm{res}}
+=
+\frac{1}{D}
+\sum_{n=1}^{D}
+I_{\mathrm{res}}^{(n)} .
+\tag{30}
+$$</div>
+<p>计算量对比采用归一化在线计算量表示。固定俯仰搜索网格数为 $N_g=161$，双目标无序候选数为 $N_p=N_g(N_g-1)/2=12880$。阵元级最大似然在 $M$ 维阵元域对每个候选评分，其归一化计算量定义为 $1$。波束级最大似然的在线计算包括一次 $W^H Y$ 投影和 $N_p$ 个 $B$ 维候选评分，因此相对计算量定义为</p>
+<div class="math-block">$$
+\rho_{\mathrm{BML}}(B)
+=
+\frac{MB+N_pB}{N_pM}.
+\tag{31}
+$$</div>
+<p>对于单目标波束峰值基线，只进行单目标一维扫描，其相对双目标阵元级最大似然的候选评分比例定义为</p>
+<div class="math-block">$$
+\rho_{\mathrm{peak}}
+=
+\frac{N_g}{N_p}.
+\tag{32}
+$$</div>
+<p>式(31)和式(32)仅用于比较同一仿真设置下的计算量级，不等同于完整硬件耗时模型。实际运行时间还受矩阵缓存、并行计算、数据搬移和定点化实现影响。</p>
+<h3>4.3 半波束宽度双目标场景下的单次结果</h3>
+<p>图 4 给出了俯仰间隔为 $0.5\mathrm{BW}_{3\mathrm{dB}}$ 的代表性结果。左图中，两个真实目标位于同一主瓣范围内，一维扫描功率形成合并主峰，单目标峰值法返回的是等效位置而非双目标分裂结果。右图为波束级最大似然评分图，评分峰值位于真实双目标位置附近，表明波束域流形仍保留近邻双目标的子空间差异。</p>
+<figure class="figure"><img src="file:///E:/matlab_code/bishe_quanxi_papers/beamspace_ml_paper/12_EI/code/results/fig_single_case_half_bw.png" alt="图 4 半个 3 dB 波束宽度场景下的单目标波束峰值基线扫描曲线和波束级最大似然评分图" style=""><figcaption>图 4 半个 3 dB 波束宽度场景下的单目标波束峰值基线扫描曲线和波束级最大似然评分图</figcaption></figure>
+
+<p>该现象与未分辨目标单脉冲研究一致：传统单脉冲或比幅测角在单目标假设下可快速提取角度，但当一个分辨单元内存在近邻双目标时，输出往往对应合成回波的等效角度[25,26]。因此，图 4 的作用是说明单峰或单目标比幅信息不足以完成目标分裂；波束级最大似然则通过双目标导向子空间评分在同一观测中寻找两个候选方向。</p>
+<h3>4.4 不同目标间隔下的测角误差与分辨成功率</h3>
+<p>在 $B=10$、$\mathrm{SNR}=18\ \mathrm{dB}$ 和 $D=50$ 次 Monte Carlo 条件下，进一步考察双目标俯仰间隔从 $0.1\mathrm{BW}_{3\mathrm{dB}}$ 到 $1.0\mathrm{BW}_{3\mathrm{dB}}$ 变化时的统计结果。为避免完全网格匹配带来的过理想误差，两个真实目标统一加入 $0.5$ 个俯仰搜索网格间隔的固定 off-grid 偏移。图 5 左图为俯仰角 RMSE，右图为分辨成功率。</p>
+<figure class="figure"><img src="file:///E:/matlab_code/bishe_quanxi_papers/beamspace_ml_paper/12_EI/code/results/fig_rmse_resolution_vs_separation.png" alt="图 5 固定 off-grid 条件下不同双目标俯仰间隔的测角误差和分辨成功率对比" style=""><figcaption>图 5 固定 off-grid 条件下不同双目标俯仰间隔的测角误差和分辨成功率对比</figcaption></figure>
+
+<p>图 5 显示，在固定 off-grid 条件下，波束级最大似然在所测试间隔内保持较小误差；真实角度位于搜索网格之间，因此曲线存在网格离散化误差底。单目标波束峰值基线的误差随间隔增大而上升，原因在于其仍以合并能量中心或局部峰值描述观测，无法稳定返回一对真实角度。分辨成功率呈现相同趋势：波束级最大似然未出现分辨失败样本，而单目标波束峰值基线在小于一个 3 dB 波束宽度的大部分场景下不能满足式(29)。</p>
+<p>需要指出的是，图 5 仍属于固定方位切片和模型匹配验证：局部搜索窗口覆盖真实目标，波束域流形与数据生成模型一致，且 off-grid 偏移不超过半个俯仰搜索网格间隔。因此，该结果说明白化波束级最大似然后端在轻微离网条件下具备双目标分裂能力，但不等价于任意离网误差、强弱目标或前端粗中心偏差下的鲁棒性结论。</p>
+<h3>4.5 off-grid 弱目标条件下不同 SNR 与不同波束数的影响</h3>
+<p>为进一步检验非理想条件下的表现，本文补充 off-grid 弱目标压力实验。双目标间隔固定为 $0.5\mathrm{BW}_{3\mathrm{dB}}$，第二个目标幅度相对第一个目标降低 $10\ \mathrm{dB}$，且每次 Monte Carlo 试验中两个目标均在半个俯仰搜索网格间隔内随机离网。SNR 从 $-10\ \mathrm{dB}$ 扫描至 $20\ \mathrm{dB}$，并比较 $B=10$、$B=7$ 和 $B=6$ 三种波束数。每个组合进行 $D=30$ 次 Monte Carlo 试验，结果如图 6 所示。</p>
+<figure class="figure"><img src="file:///E:/matlab_code/bishe_quanxi_papers/beamspace_ml_paper/12_EI/code/results/fig_offgrid_weak_snr_beam_comparison.png" alt="图 6 固定 off-grid 弱目标条件下不同 SNR 和不同波束数的波束级最大似然测角性能" style=""><figcaption>图 6 固定 off-grid 弱目标条件下不同 SNR 和不同波束数的波束级最大似然测角性能</figcaption></figure>
+
+<p>图 6 表明，引入离网扰动和 $-10\ \mathrm{dB}$ 弱目标后，三种波束数下的 RMSE 不再接近零，而是随 SNR 提高整体下降，并逐渐接近由网格离散化和弱目标估计偏差共同决定的误差底。所测试 SNR 范围内未出现分辨失败样本，说明在当前半波束宽度和局部窗口覆盖条件下，弱目标和轻微离网尚未破坏双目标分裂能力。</p>
+<p>不同波束数之间的差异较小：$B=6$、$B=7$ 和 $B=10$ 的 RMSE 曲线在多数 SNR 点上接近，说明少量波束已捕获当前固定方位切片中的主要局部流形信息。较多波束增加观测维度，但也可能增大 $W^H W$ 条件数和波束域噪声相关性；较少波束降低维数和计算量，但过少会损失流形信息。因此，图 6 更支持“波束数存在任务相关折中”，而非波束数越多越优。</p>
+<h3>4.6 阵元级最大似然与波束级最大似然的复杂度对比</h3>
+<p>为验证低复杂度优势，本文在 $\mathrm{SNR}=0\ \mathrm{dB}$、双目标间隔为 $0.5\mathrm{BW}_{3\mathrm{dB}}$、$D=30$ 次 Monte Carlo 条件下，对阵元级最大似然、波束级最大似然和单目标波束峰值基线进行性能-复杂度对比。图 7 横轴为式(31)和式(32)定义的归一化在线计算量，纵轴为俯仰角 RMSE。</p>
+<figure class="figure"><img src="file:///E:/matlab_code/bishe_quanxi_papers/beamspace_ml_paper/12_EI/code/results/fig_performance_complexity_tradeoff.png" alt="图 7 阵元级最大似然、波束级最大似然与单目标波束峰值基线的性能-复杂度折中" style=""><figcaption>图 7 阵元级最大似然、波束级最大似然与单目标波束峰值基线的性能-复杂度折中</figcaption></figure>
+
+<p>图 7 显示，阵元级最大似然的归一化计算量为 $1$，RMSE 为 $0.0123^\circ$；波束级最大似然在 $B=10$、$B=7$ 和 $B=6$ 时获得相同量级的 RMSE，而相对计算量分别降至 $0.00558$、$0.00391$ 和 $0.00335$。在当前固定方位切片实验中，波束级最大似然以约 $0.34\%\sim0.56\%$ 的归一化在线计算量达到接近阵元级最大似然的精度。单目标波束峰值基线虽计算量较低，但 RMSE 为 $0.3565^\circ$ 且分辨成功率为 $0$，说明其并不具备双目标精估计能力。</p>
+<p>表 3 汇总了主要数值。波束级最大似然的关键优势并非在所有条件下超过阵元级最大似然，而是在已知局部窗口和合理波束矩阵条件下，以显著更低的输入维度和在线计算量逼近阵元域双目标最大似然性能。该结果支持本文判断：将真实圆柱阵流形压缩到白化低维波束域后，模型匹配的固定方位切片仍可保留局部未分辨双目标的主要分辨信息。</p>
+<p>表 3 性能-复杂度折中实验结果</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th align="right">输入维度</th>
+<th align="right">候选数</th>
+<th align="right">归一化在线计算量</th>
+<th align="right">俯仰 RMSE / deg</th>
+<th align="right">分辨成功率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>阵元级最大似然</td>
+<td align="right">2080</td>
+<td align="right">12880</td>
+<td align="right">1.00000</td>
+<td align="right">0.0123</td>
+<td align="right">1.00</td>
+</tr>
+<tr>
+<td>波束级最大似然，$B=10$</td>
+<td align="right">10</td>
+<td align="right">12880</td>
+<td align="right">0.00558</td>
+<td align="right">0.0123</td>
+<td align="right">1.00</td>
+</tr>
+<tr>
+<td>波束级最大似然，$B=7$</td>
+<td align="right">7</td>
+<td align="right">12880</td>
+<td align="right">0.00391</td>
+<td align="right">0.0123</td>
+<td align="right">1.00</td>
+</tr>
+<tr>
+<td>波束级最大似然，$B=6$</td>
+<td align="right">6</td>
+<td align="right">12880</td>
+<td align="right">0.00335</td>
+<td align="right">0.0123</td>
+<td align="right">1.00</td>
+</tr>
+<tr>
+<td>单目标波束峰值基线</td>
+<td align="right">2080</td>
+<td align="right">161</td>
+<td align="right">0.01250</td>
+<td align="right">0.3565</td>
+<td align="right">0.00</td>
+</tr>
+</tbody></table>
+<p>综上，实验给出三点证据。首先，单目标波束峰值基线在未分辨双目标场景下易退化为合并峰或等效角度。其次，固定方位切片中的波束级最大似然在固定 off-grid 间隔扫描和 off-grid 弱目标 SNR 扫描中均保持了双目标分辨能力，但误差受网格离散、信噪比和弱目标幅度影响。最后，波束级最大似然以两个数量级以上的计算量压缩保持了接近阵元级最大似然的 RMSE。后续仍需扩展到完全相干目标、前端粗中心偏差和更大离网误差场景。</p>
+<h2>5 低复杂度扩展：波束选择准则</h2>
+<p>第3节已通过波束域投影和俯仰成对候选约束降低后端计算量。本节进一步概述面向最大似然后端的波束矩阵选择准则，作为后续实验和工程实现的扩展方向。</p>
+<h3>5.1 面向最大似然后端的波束矩阵选择</h3>
+<p>在波束级最大似然中，$W$ 同时决定输入维度和局部流形保持程度。波束过多会增加候选评分规模；波束过少或覆盖不合理则可能损失双目标可分辨信息。因此，$W$ 选择不是单纯降维问题，而是面向后端最大似然性能的输入设计问题。</p>
+<p>设候选波束池为</p>
+<div class="math-block">$$
+W_{\mathrm{pool}}
+=
+\left[
+\mathbf{w}_1,\mathbf{w}_2,\cdots,\mathbf{w}_{B_0}
+\right],
+\tag{33}
+$$</div>
+<p>需要从中选取 $B$ 个波束组成后端输入矩阵：</p>
+<div class="math-block">$$
+W=
+\left[
+\mathbf{w}_{i_1},\mathbf{w}_{i_2},\cdots,\mathbf{w}_{i_B}
+\right].
+\tag{34}
+$$</div>
+<p>可从三类指标诊断 $W$ 是否适合当前后端。第一，局部流形投影损失可写为</p>
+<div class="math-block">$$
+\mathcal{L}_{\mathrm{proj}}(W)
+=
+1-
+\frac{\left\|P_W\mathcal{A}_{\mathrm{local}}\right\|_F^2}
+{\left\|\mathcal{A}_{\mathrm{local}}\right\|_F^2},
+\tag{35}
+$$</div>
+<p>其中，$\mathcal{A}_{\mathrm{local}}$ 表示局部窗口内采样得到的圆柱阵导向流形集合，$P_W$ 为所选波束子空间的投影矩阵。第二，投影后双目标候选流形的最大相关性可定义为</p>
+<div class="math-block">$$
+C_{\mathrm{corr}}(W)
+=
+\max_{(\theta_1,\theta_2)\in\mathcal{P}_{\mathrm{local}}}
+\frac{
+\left|\mathbf{g}_{W}^{H}(\theta_1)\mathbf{g}_{W}(\theta_2)\right|
+}
+{
+\left\|\mathbf{g}_{W}(\theta_1)\right\|_2
+\left\|\mathbf{g}_{W}(\theta_2)\right\|_2
+},
+\tag{36}
+$$</div>
+<p>其中，$\mathbf{g}_{W}(\theta)=W^H\mathbf{a}_{\mathrm{cyl}}(\theta)$。第三，可用格拉姆矩阵条件数诊断所选波束的数值稳定性：</p>
+<div class="math-block">$$
+C_{\mathrm{cond}}(W)
+=
+\log_{10}
+\left(
+\max\left(\kappa(W^H W),1\right)
+\right).
+\tag{37}
+$$</div>
+<p>基于上述指标，可采用综合贪婪选择策略逐步选择波束。设第 $k$ 步的试探矩阵为 $W_i^{(k)}=[W_{k-1},\mathbf{w}_i]$，综合评分可写为</p>
+<div class="math-block">$$
+\mathrm{score}\!\left(W_i^{(k)}\right)
+=
+\alpha \mathcal{L}_{\mathrm{proj}}\!\left(W_i^{(k)}\right)
++
+\beta C_{\mathrm{corr}}\!\left(W_i^{(k)}\right)
++
+\gamma C_{\mathrm{cond}}\!\left(W_i^{(k)}\right).
+\tag{38}
+$$</div>
+<p>每一步选取评分最小的候选波束：</p>
+<div class="math-block">$$
+i_k=
+\arg\min_{i\in\mathcal{I}_{\mathrm{remain}}}
+\mathrm{score}\!\left(W_i^{(k)}\right).
+\tag{39}
+$$</div>
+<p>该策略用于在局部流形保持、投影后低相关和数值稳定性之间折中。它不构成全局最优证明，也不作为本文仿真实验的额外约束；其意义在于为后续波束数选择、波束中心布设和在线计算量控制提供可量化准则。后续可在更多 SNR、目标间隔、粗中心偏差和波束数条件下，比较不同 $W$ 选择策略对 RMSE、分辨成功率、条件数和运行时间的影响。</p>
+<h2>6 结束语</h2>
+<p>本文围绕圆柱阵局部未分辨双目标测角问题，建立了固定方位俯仰切片下的波束级最大似然框架。该框架将阵元域观测投影到白化低维波束域，在 $az_1=az_2=az_0$ 条件下构造俯仰成对候选，并通过确定性最大似然评分完成局部双目标估计。</p>
+<p>固定方位俯仰切片结果表明，单目标波束峰值基线在半波束宽度双目标场景下易退化为合并峰或等效角度，而波束级最大似然能够在同一局部窗口内给出双目标估计。在固定 off-grid 和弱目标压力实验中，波束级最大似然的 RMSE 随 SNR 提高而下降，并在所测试条件下保持分辨成功率。与阵元级最大似然相比，波束级最大似然取得了接近的俯仰 RMSE 和分辨成功率，同时将归一化在线计算量降至阵元级最大似然的 $0.34\%\sim0.56\%$。这说明，在当前固定方位切片验证中，真实圆柱阵流形与白化波束级最大似然结合后，可以在保持接近阵元级最大似然精度的同时降低后端计算规模。</p>
+<p>需要指出的是，本文实验仍属于固定方位下的俯仰向模型匹配可行性验证。虽然已加入轻微 off-grid 和强弱目标切片实验，但尚未覆盖完全相干目标、前端粗中心偏差、更大离网误差和完整二维联合搜索。后续工作将结合第5节所述波束选择准则，补充不同切片条件下的运行时间、波束数选择和工程实现约束分析。</p>
+<h2>参考文献</h2>
+<p>[1] Capon J. High-resolution frequency-wavenumber spectrum analysis[J]. Proceedings of the IEEE, 1969, 57(8): 1408-1418. DOI: 10.1109/PROC.1969.7278.</p>
+<p>[2] Schmidt R O. Multiple emitter location and signal parameter estimation[J]. IEEE Transactions on Antennas and Propagation, 1986, 34(3): 276-280. DOI: 10.1109/TAP.1986.1143830.</p>
+<p>[3] Roy R, Kailath T. ESPRIT-estimation of signal parameters via rotational invariance techniques[J]. IEEE Transactions on Acoustics, Speech, and Signal Processing, 1989, 37(7): 984-995. DOI: 10.1109/29.32276.</p>
+<p>[4] Krim H, Viberg M. Two decades of array signal processing research: the parametric approach[J]. IEEE Signal Processing Magazine, 1996, 13(4): 67-94. DOI: 10.1109/79.526899.</p>
+<p>[5] Pesavento M, Trinh-Hoang M P, Viberg M. Three more decades in array signal processing research: an optimization and structure exploitation perspective[J]. IEEE Signal Processing Magazine, 2023, 40(4): 92-106. DOI: 10.1109/MSP.2023.3255558.</p>
+<p>[6] Godara L C. Application of antenna arrays to mobile communications. II. Beam-forming and direction-of-arrival considerations[J]. Proceedings of the IEEE, 1997, 85(8): 1195-1245. DOI: 10.1109/5.622504.</p>
+<p>[7] Zoltowski M D, Lee T S. Maximum likelihood based sensor array signal processing in the beamspace domain for low angle radar tracking[J]. IEEE Transactions on Signal Processing, 1991, 39(3): 656-671. DOI: 10.1109/78.80885.</p>
+<p>[8] Zoltowski M D, Kautz G M, Silverstein S D. Beamspace Root-MUSIC[J]. IEEE Transactions on Signal Processing, 1993, 41(1): 344-364. DOI: 10.1109/TSP.1993.193151.</p>
+<p>[9] Xu G, Silverstein S D, Roy R H, Kailath T. Beamspace ESPRIT[J]. IEEE Transactions on Signal Processing, 1994, 42(2): 349-356. DOI: 10.1109/78.275607.</p>
+<p>[10] Van Trees H L. Optimum Array Processing: Part IV of Detection, Estimation, and Modulation Theory[M]. New York: Wiley, 2002.</p>
+<p>[11] 陈生, 熊竹林, 许波, 庞晓宇. 米波 MIMO 雷达波束空间精确最大似然算法[J]. 系统工程与电子技术, 2022, 44(5): 1520-1527. DOI: 10.12305/j.issn.1001-506X.2022.05.24.</p>
+<p>[12] Ziskind I, Wax M. Maximum likelihood localization of multiple sources by alternating projection[J]. IEEE Transactions on Acoustics, Speech, and Signal Processing, 1988, 36(10): 1553-1560. DOI: 10.1109/29.7543.</p>
+<p>[13] Stoica P, Nehorai A. MUSIC, maximum likelihood, and Cramer-Rao bound[J]. IEEE Transactions on Acoustics, Speech, and Signal Processing, 1989, 37(5): 720-741. DOI: 10.1109/29.17564.</p>
+<p>[14] Stoica P, Sharman K C. Maximum likelihood methods for direction-of-arrival estimation[J]. IEEE Transactions on Acoustics, Speech, and Signal Processing, 1990, 38(7): 1132-1143. DOI: 10.1109/29.57542.</p>
+<p>[15] Stoica P, Nehorai A. MUSIC, maximum likelihood, and Cramer-Rao bound: further results and comparisons[J]. IEEE Transactions on Acoustics, Speech, and Signal Processing, 1990, 38(12): 2140-2150. DOI: 10.1109/29.61541.</p>
+<p>[16] Shan T J, Wax M, Kailath T. On spatial smoothing for direction-of-arrival estimation of coherent signals[J]. IEEE Transactions on Acoustics, Speech, and Signal Processing, 1985, 33(4): 806-811. DOI: 10.1109/TASSP.1985.1164649.</p>
+<p>[17] Pillai S U, Kwon B H. Forward/backward spatial smoothing techniques for coherent signal identification[J]. IEEE Transactions on Acoustics, Speech, and Signal Processing, 1989, 37(1): 8-15. DOI: 10.1109/29.17496.</p>
+<p>[18] Lee H B, Wengrovitz M S. Resolution threshold of beamspace MUSIC for two closely spaced emitters[J]. IEEE Transactions on Acoustics, Speech, and Signal Processing, 1990, 38(9): 1545-1559. DOI: 10.1109/29.60074.</p>
+<p>[19] Mathews C P, Zoltowski M D. Eigenstructure techniques for 2-D angle estimation with uniform circular arrays[J]. IEEE Transactions on Signal Processing, 1994, 42(9): 2395-2407. DOI: 10.1109/78.317861.</p>
+<p>[20] Belloni F, Koivunen V. Beamspace transform for UCA: error analysis and bias reduction[J]. IEEE Transactions on Signal Processing, 2006, 54(8): 3078-3089. DOI: 10.1109/TSP.2006.877664.</p>
+<p>[21] Belloni F, Richter A, Koivunen V. DoA estimation via manifold separation for arbitrary array structures[J]. IEEE Transactions on Signal Processing, 2007, 55(10): 4800-4810. DOI: 10.1109/TSP.2007.896115.</p>
+<p>[22] Hassanien A, Elkader S A, Gershman A B, Wong K M. Convex optimization based beam-space preprocessing with improved robustness against out-of-sector sources[J]. IEEE Transactions on Signal Processing, 2006, 54(5): 1587-1595. DOI: 10.1109/TSP.2006.870564.</p>
+<p>[23] Khabbazibasmenj A, Hassanien A, Vorobyov S A, Morency M W. Efficient transmit beamspace design for search-free based DOA estimation in MIMO radar[J]. IEEE Transactions on Signal Processing, 2014, 62(6): 1490-1500. DOI: 10.1109/TSP.2014.2299513.</p>
+<p>[24] Gurbuz A C, Cevher V, McClellan J H. Bearing estimation via spatial sparsity using compressive sensing[J]. IEEE Transactions on Aerospace and Electronic Systems, 2012, 48(2): 1358-1369. DOI: 10.1109/TAES.2012.6178067.</p>
+<p>[25] Wang Z, Sinha A, Willett P, Bar-Shalom Y. Angle estimation for two unresolved targets with monopulse radar[J]. IEEE Transactions on Aerospace and Electronic Systems, 2004, 40(3): 998-1019. DOI: 10.1109/TAES.2004.1337470.</p>
+<p>[26] Rezaei H, Sebt M A, Zarei N, Saadati Moghadam G. Unambiguous direction estimation and localization of two unresolved targets via monopulse radar[J]. Electronics, 2022, 11(22): 3780. DOI: 10.3390/electronics11223780.</p>
+
+</body>
+</html>

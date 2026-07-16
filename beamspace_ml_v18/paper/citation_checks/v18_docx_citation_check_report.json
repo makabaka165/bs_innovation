@@ -1,0 +1,308 @@
+{
+  "reference_count": 41,
+  "references_are_1_to_n": true,
+  "missing_reference_numbers": [],
+  "extra_reference_numbers": [],
+  "cited_not_in_references": [],
+  "references_not_cited": [],
+  "first_appearance_order": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41
+  ],
+  "first_appearance_is_1_to_n": true,
+  "invalid_ranges": [],
+  "citation_occurrence_count": 23,
+  "cite_occurrences": [
+    {
+      "paragraph": 13,
+      "raw": "[1-6]",
+      "expanded": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "paragraph": 14,
+      "raw": "[6-11]",
+      "expanded": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "paragraph": 16,
+      "raw": "[7,10,12-15]",
+      "expanded": [
+        7,
+        10,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    {
+      "paragraph": 17,
+      "raw": "[13-18]",
+      "expanded": [
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ]
+    },
+    {
+      "paragraph": 19,
+      "raw": "[2,8,16-19]",
+      "expanded": [
+        2,
+        8,
+        16,
+        17,
+        18,
+        19
+      ]
+    },
+    {
+      "paragraph": 20,
+      "raw": "[7-9,13-15,20-22]",
+      "expanded": [
+        7,
+        8,
+        9,
+        13,
+        14,
+        15,
+        20,
+        21,
+        22
+      ]
+    },
+    {
+      "paragraph": 22,
+      "raw": "[7,11-15,20-24]",
+      "expanded": [
+        7,
+        11,
+        12,
+        13,
+        14,
+        15,
+        20,
+        21,
+        22,
+        23,
+        24
+      ]
+    },
+    {
+      "paragraph": 33,
+      "raw": "[10,20-22,25]",
+      "expanded": [
+        10,
+        20,
+        21,
+        22,
+        25
+      ]
+    },
+    {
+      "paragraph": 36,
+      "raw": "[20-22]",
+      "expanded": [
+        20,
+        21,
+        22
+      ]
+    },
+    {
+      "paragraph": 38,
+      "raw": "[12-15]",
+      "expanded": [
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    {
+      "paragraph": 43,
+      "raw": "[12-18]",
+      "expanded": [
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18
+      ]
+    },
+    {
+      "paragraph": 45,
+      "raw": "[6-9,11,21]",
+      "expanded": [
+        6,
+        7,
+        8,
+        9,
+        11,
+        21
+      ]
+    },
+    {
+      "paragraph": 53,
+      "raw": "[6-11,21]",
+      "expanded": [
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        21
+      ]
+    },
+    {
+      "paragraph": 141,
+      "raw": "[21-22,26-27]",
+      "expanded": [
+        21,
+        22,
+        26,
+        27
+      ]
+    },
+    {
+      "paragraph": 145,
+      "raw": "[21,27-28]",
+      "expanded": [
+        21,
+        27,
+        28
+      ]
+    },
+    {
+      "paragraph": 150,
+      "raw": "[29-32]",
+      "expanded": [
+        29,
+        30,
+        31,
+        32
+      ]
+    },
+    {
+      "paragraph": 153,
+      "raw": "[23,32-33]",
+      "expanded": [
+        23,
+        32,
+        33
+      ]
+    },
+    {
+      "paragraph": 163,
+      "raw": "[32,34-35]",
+      "expanded": [
+        32,
+        34,
+        35
+      ]
+    },
+    {
+      "paragraph": 180,
+      "raw": "[12,14,36-37]",
+      "expanded": [
+        12,
+        14,
+        36,
+        37
+      ]
+    },
+    {
+      "paragraph": 207,
+      "raw": "[38-39]",
+      "expanded": [
+        38,
+        39
+      ]
+    },
+    {
+      "paragraph": 213,
+      "raw": "[39-41]",
+      "expanded": [
+        39,
+        40,
+        41
+      ]
+    },
+    {
+      "paragraph": 228,
+      "raw": "[37]",
+      "expanded": [
+        37
+      ]
+    },
+    {
+      "paragraph": 232,
+      "raw": "[23,29-30,32-33]",
+      "expanded": [
+        23,
+        29,
+        30,
+        32,
+        33
+      ]
+    }
+  ]
+}
