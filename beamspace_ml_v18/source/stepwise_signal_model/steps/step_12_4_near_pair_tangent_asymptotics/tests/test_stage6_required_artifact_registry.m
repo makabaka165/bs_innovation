@@ -1,0 +1,52 @@
+function table_out = test_stage6_required_artifact_registry()
+%TEST_STAGE6_REQUIRED_ARTIFACT_REGISTRY Verify explicit artifact validation.
+
+registry = stage6_required_artifact_registry();
+required = registry(registry.required_by_runner, :);
+temp_dir = tempname;
+mkdir(temp_dir);
+cleanup = onCleanup(@() rmdir(temp_dir, 's'));
+for index = 1:height(required)
+    path_now = fullfile(temp_dir, char(required.relative_path(index)));
+    parent = fileparts(path_now);
+    if exist(parent, 'dir') ~= 7, mkdir(parent); end
+    fid = fopen(path_now, 'w');
+    if fid < 0
+        error('test_stage6_required_artifact_registry:Fixture', ...
+            'Unable to create artifact fixture.');
+    end
+    fclose(fid);
+end
+extra_path = fullfile(temp_dir, 'results', 'unregistered_extra.csv');
+fid = fopen(extra_path, 'w');
+fclose(fid);
+complete = validate_stage6_required_artifacts(temp_dir, registry, ...
+    struct('throw_on_missing', false));
+
+delete(fullfile(temp_dir, char(required.relative_path(1))));
+missing = validate_stage6_required_artifacts(temp_dir, registry, ...
+    struct('throw_on_missing', false));
+throws_on_missing = false;
+try
+    validate_stage6_required_artifacts(temp_dir, registry, ...
+        struct('throw_on_missing', true));
+catch exception
+    throws_on_missing = strcmp(exception.identifier, ...
+        'validate_stage6_required_artifacts:Missing');
+end
+
+registered_ids = string(registry.artifact_id);
+case_id = ["NO_CSV_COUNT_CONTRACT"; "EXTRA_FILE_ALLOWED"; ...
+    "MISSING_REQUIRED_DETECTED"; "MISSING_REQUIRED_THROWS"; ...
+    "PROVENANCE_FILES_REGISTERED"; "RUNTIME_FILE_CLASSIFIED"];
+pass_flag = [height(registry) > 15; all(complete.pass_flag); ...
+    nnz(~missing.pass_flag) == 1; throws_on_missing; ...
+    all(ismember(["stage6_source_manifest"; ...
+    "stage6_dependency_manifest"; "stage6_provenance_contract"], ...
+    registered_ids)); ...
+    registry.evidence_class(registered_ids == ...
+    "stage6_runtime_diagnostics") == "RUNTIME_DIAGNOSTIC"];
+table_out = table(case_id, pass_flag);
+assert(all(pass_flag), 'test_stage6_required_artifact_registry:Failed', ...
+    'Required artifact registry contract failed.');
+end

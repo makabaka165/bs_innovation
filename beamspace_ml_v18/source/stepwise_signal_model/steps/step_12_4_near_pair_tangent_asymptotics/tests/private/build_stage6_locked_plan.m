@@ -1,17 +1,23 @@
-function plan = build_stage6_locked_plan()
+function plan = build_stage6_locked_plan(repo_dir, opts)
 %BUILD_STAGE6_LOCKED_PLAN Return the complete pre-result stage-6 registry.
 
-[status, commit_text] = system('git rev-parse HEAD');
-if status ~= 0
-    error('build_stage6_locked_plan:Git', ...
-        'Unable to read the current git commit.');
+if nargin < 1 || isempty(repo_dir)
+    repo_dir = pwd;
 end
-current_git_commit = strtrim(commit_text);
+if nargin < 2 || isempty(opts), opts = struct(); end
+if ~(isstruct(opts) && isscalar(opts))
+    error('build_stage6_locked_plan:Options', 'opts must be a scalar struct.');
+end
+allowed = {'git_provenance_options'};
+unknown = setdiff(fieldnames(opts), allowed);
+if ~isempty(unknown)
+    error('build_stage6_locked_plan:UnknownOption', ...
+        'Unknown option: %s.', unknown{1});
+end
+if ~isfield(opts, 'git_provenance_options')
+    opts.git_provenance_options = struct();
+end
 baseline_commit = '0430f25272690a3ddf378dcf0bab465ca93edb68';
-if ~strcmp(current_git_commit, baseline_commit)
-    error('build_stage6_locked_plan:Baseline', ...
-        'Stage 6 must run from baseline commit %s.', baseline_commit);
-end
 
 controls = struct();
 controls.phase_factor = 1;
@@ -42,8 +48,6 @@ controls.theory_coherence_constant = 1;
 controls.theory_normalized_gram_constant = 4;
 controls.method_version_id = 'STEP12_4_TANGENT_ASYMPTOTICS_V1';
 controls.measurement_version_id = 'FIXED_SEQUENTIAL_DBFFACTOR1_V1';
-controls.baseline_commit = baseline_commit;
-controls.current_git_commit = current_git_commit;
 
 configs = repmat(empty_config_local(), 5, 1);
 configs(1) = config_local('SEQ_3X3_WHITE', [7.4, 8.0, 8.6], ...
@@ -69,12 +73,22 @@ directions(4) = struct('direction_id', 'V_DIAG_NEG', ...
     'vector_rad', [1; -1] / sqrt(2));
 separation_deg = 0.4 * 2 .^ (-(0:8));
 
-stage6_controls_hash = stable_stage6_hash(controls);
-stage6_measurement_plan_hash = stable_stage6_hash(configs, ...
-    controls.measurement_version_id, controls.phase_factor, current_git_commit);
-stage6_experiment_plan_hash = stable_stage6_hash(configs, centers_deg, ...
-    directions, separation_deg, controls, stage6_controls_hash, ...
-    stage6_measurement_plan_hash, current_git_commit);
+plan_inputs = struct();
+plan_inputs.baseline_commit = baseline_commit;
+plan_inputs.controls = controls;
+plan_inputs.configs = configs;
+plan_inputs.centers_deg = centers_deg;
+plan_inputs.directions = directions;
+plan_inputs.separation_deg = separation_deg;
+plan_inputs.matlab_release_contract = 'MATLAB_R2022b';
+if ~strcmp(version('-release'), '2022b')
+    error('build_stage6_locked_plan:MatlabReleaseContract', ...
+        'STAGE6_MATLAB_RELEASE_CONTRACT requires MATLAB R2022b.');
+end
+contract_options = struct( ...
+    'git_provenance_options', opts.git_provenance_options);
+contract = build_stage6_provenance_contract( ...
+    repo_dir, plan_inputs, contract_options);
 
 plan = struct();
 plan.controls = controls;
@@ -83,17 +97,31 @@ plan.centers_deg = centers_deg;
 plan.directions = directions;
 plan.separation_deg = separation_deg;
 plan.separation_rad = deg2rad(separation_deg);
-plan.stage6_controls_hash = stage6_controls_hash;
-plan.stage6_measurement_plan_hash = stage6_measurement_plan_hash;
-plan.stage6_experiment_plan_hash = stage6_experiment_plan_hash;
-plan.current_git_commit = current_git_commit;
-plan.baseline_commit = baseline_commit;
+plan.baseline_commit = contract.baseline_commit;
+plan.runtime_head_commit = contract.runtime_head_commit;
+plan.baseline_ancestor_flag = contract.baseline_ancestor_flag;
+plan.working_tree_clean_at_start = contract.working_tree_clean_at_start;
+plan.stage6_source_tree_hash = contract.stage6_source_tree_hash;
+plan.stage6_dependency_tree_hash = contract.stage6_dependency_tree_hash;
+plan.stage6_controls_hash = contract.stage6_controls_hash;
+plan.stage6_measurement_plan_hash = contract.stage6_measurement_plan_hash;
+plan.stage6_experiment_plan_hash = contract.stage6_experiment_plan_hash;
+plan.stage6_provenance_hash = contract.stage6_provenance_hash;
+plan.provenance_contract_version = contract.provenance_contract_version;
+plan.source_scope_version = contract.source_scope_version;
+plan.dependency_scope_version = contract.dependency_scope_version;
+plan.matlab_release_contract = contract.matlab_release_contract;
+plan.source_manifest = contract.source_manifest;
+plan.dependency_manifest = contract.dependency_manifest;
+plan.git_status_porcelain_at_start = contract.git_status_porcelain;
+plan.provenance_status = contract.provenance_status;
 plan.statistical_scope = 'DETERMINISTIC_GEOMETRIC_VALIDATION';
 end
 
 function config = empty_config_local()
 config = struct('config_id', '', 'az_beam_deg', [], 'el_beam_deg', [], ...
     'az_beam_indices', [], 'el_beam_indices', [], ...
+    'az_beam_global_indices', [], 'el_beam_global_indices', [], ...
     'noise_covariance_id', '', 'rho_el', 0, 'rho_az', 0, ...
     'is_primary_configuration', false, 'diagnostic_role', '');
 end
@@ -106,9 +134,23 @@ config.az_beam_deg = az;
 config.el_beam_deg = el;
 config.az_beam_indices = 1:numel(az);
 config.el_beam_indices = 1:numel(el);
+config.az_beam_global_indices = global_indices_local(az, [7.4, 8.0, 8.6]);
+config.el_beam_global_indices = global_indices_local(el, [9.6, 10.0, 10.4]);
 config.noise_covariance_id = covariance_id;
 config.rho_el = rho_el;
 config.rho_az = rho_az;
 config.is_primary_configuration = primary;
 config.diagnostic_role = role;
+end
+
+function indices = global_indices_local(values, registered_bank)
+indices = zeros(size(values));
+for index = 1:numel(values)
+    match = find(registered_bank == values(index));
+    if numel(match) ~= 1
+        error('build_stage6_locked_plan:GlobalBeamIndex', ...
+            'Every beam center must occur once in the registered 3-by-3 parent bank.');
+    end
+    indices(index) = match;
+end
 end

@@ -1,5 +1,16 @@
 # 阶段 6 固定白化近双目标切向理论验证审计
 
+## 0. 阶段 6.1A provenance 修订状态
+
+- 当前状态：`STAGE6_PROVENANCE_PATCH_IMPLEMENTED_EVIDENCE_RERUN_PENDING`。
+- 本文第 1–10 节及全部结果 SHA-256 清单仍审计提交 `17c2022aea3be4d1c6b090aa771e7253c79c858e` 生成的阶段 6 历史数值证据；6.1A 没有重新生成或改写任何 `results/` CSV/Markdown 或 `figures/` PNG。
+- `17c2022` 中的 `build_stage6_locked_plan.m` 要求 `HEAD==0430f25`，导致阶段 6 证据提交自身无法在干净 checkout 执行；其稳定 controls/measurement/experiment hash 还包含 runtime HEAD。该缺陷不改变已运行的几何公式值，但使原复现合同不闭合。
+- 6.1A 将 baseline 语义改为“阶段 5 通过提交必须是 runtime HEAD 的祖先”，正式 runner 起点必须是干净工作树；runtime HEAD 只进入独立 runtime diagnostics。
+- 阶段 6 可执行源码和 14 个显式直接依赖使用排序的 Git mode/blob/path manifest 识别，避免 CRLF/LF checkout 差异。controls、measurement plan、experiment plan、source tree、dependency tree 和 provenance 分别哈希。
+- `fixed_measurement_hash` 只表达物理测量对象及 measurement-plan 身份，不包含 runtime HEAD、日期、运行时间或结果文件 hash。
+- 未来稳定 CSV schema 将增加 baseline、source/dependency trees、controls/measurement/experiment/provenance hashes、合同版本、祖先/干净树标志等字段；wall-clock 和内存从稳定 keypoints/report 隔离到 `stage6_runtime_diagnostics.csv`。
+- 只有后续独立授权的阶段 6.1B 从 6.1A 干净代码提交重跑、比较并冻结新证据后，才能把本状态改为“复现修订已验证完成”。本轮不授权阶段 6.1B 或阶段 7。
+
 ## 1. 审计结论与冻结边界
 
 - 阶段结论：`PASS`。

@@ -1858,6 +1858,23 @@ J. 下一阶段判定
 
 > **执行状态（2026-07-17）：阶段 6 已完成并停止。** 固定测量合同、导数、投影几何、精确恒等式、144 个非退化注册尾区、三类不变性和 synthetic exact-null 六阶候选全部通过；理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`。1296 个主 secant case 全部保留，三条 ratio 最大尾区误差为 `4.0102e-6 / 1.0421e-5 / 6.1180e-6`。四个主物理配置均无 exact tangent null，单通道仅为 `EXACT_MEASUREMENT_COLLAPSE`。本状态记录不授权或执行阶段 7。
 
+> **阶段 6.1A provenance 修订状态（2026-07-18）：`STAGE6_PROVENANCE_PATCH_IMPLEMENTED_EVIDENCE_RERUN_PENDING`。** 提交 `17c2022` 的锁定计划错误要求 `HEAD==0430f25`，并把运行时 HEAD 混入稳定计划哈希，导致该证据提交不能从干净 checkout 自复现。6.1A 代码合同已改为“阶段 5 baseline 必须是 runtime HEAD 的祖先 + 正式运行起点工作树必须干净”，并将 runtime HEAD 与 Git blob source/dependency manifests、稳定 controls/measurement/experiment/provenance hashes 分离。本状态不表示数值证据已按新合同重跑；现有 CSV/Markdown/PNG 保留为 `17c2022` 历史证据，阶段 6.1B 必须另行授权并从干净代码提交运行。本修订不改变阶段 6 理论公式、注册配置、数值门限或数值结论，也不授权阶段 7。
+
+## 阶段 6.1A 固定白化切向证据复现合同
+
+后续阶段 6.1B 的正式证据运行必须同时满足：
+
+1. `baseline_commit=0430f25272690a3ddf378dcf0bab465ca93edb68` 是 runtime HEAD 的祖先，不要求两者相等；非祖先返回 `STAGE6_BASELINE_NOT_ANCESTOR`。
+2. runner 写入任何证据前，`git status --porcelain=v1 --untracked-files=all` 必须为空；否则返回 `STAGE6_DIRTY_WORKTREE_AT_START`。
+3. `runtime_head_commit` 只进入独立 `stage6_runtime_diagnostics.csv` 和人类审计，不进入任何稳定计划、measurement、provenance 或 deterministic-evidence hash。
+4. `stage6_source_tree_hash` 只覆盖阶段 6 目录内 Git 跟踪的 `*.m` 与根 `README.md`；`results/`、`figures/` 和生成证据全部排除。
+5. `stage6_dependency_tree_hash` 使用显式直接依赖清单，覆盖 Step12.0 接收流形/导数、Step12.1 顺序 DBF 与 canonical permutation、Step12.2 PSD 白化/数值秩、Step12.3 完整顺序流形及其数值秩 helper、`sim_cfg.m` 和 `arr_cyl.m`。
+6. source/dependency tree 均按相对路径字典序，对 Git `mode + NUL + blob hash + NUL + relative path` 记录计算 SHA-256，不读取 checkout 文本作为跨平台身份。
+7. `stage6_controls_hash`、`stage6_measurement_plan_hash`、`stage6_experiment_plan_hash` 按控制、物理测量和实验身份分别构造；`stage6_provenance_hash` 绑定 baseline、source/dependency trees、三类稳定计划、`phase_factor=1` 和 MATLAB R2022b 合同。
+8. 稳定数值 CSV 不再保存 wall-clock、进程峰值内存或 runtime HEAD；这些信息只写入 `stage6_runtime_diagnostics.csv`，且不参与数值复现相等门。
+9. runner 使用显式 required artifact registry，不再以“CSV 文件数量必须等于 15”作为 schema 合同。
+10. 阶段 6.1A 只验证 provenance 代码与静态协议；不得运行完整阶段 6 runner、不得生成新 CSV/PNG、不得覆盖 `17c2022` 证据。
+
 ## 可直接复制的提示词
 
 ```text

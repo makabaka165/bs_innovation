@@ -28,7 +28,7 @@ if cfg.beam.spatialPhaseFactor ~= 1
         'Stage 6 requires receive spatial phase_factor=1.');
 end
 validation_tic = tic;
-context = prepare_stage6_context(cfg, step_dir, package_dir);
+context = prepare_stage6_context(cfg, step_dir, package_dir, repo_dir);
 evidence = run_stage6_registered_experiments(context);
 
 tests = struct();
@@ -44,6 +44,13 @@ tests.physical_null = test_physical_tangent_null(context, evidence);
 tests.invariances = test_geometry_invariances(context, evidence);
 tests.column_asymmetry = test_column_norm_asymmetry(context, evidence);
 tests.scope = test_stage6_scope_rules(step_dir);
+tests.baseline_ancestry = test_stage6_baseline_ancestry_contract(repo_dir);
+tests.source_manifest = test_stage6_source_manifest_determinism();
+tests.dependency_manifest = test_stage6_dependency_manifest_contract(repo_dir);
+tests.runtime_head_exclusion = ...
+    test_stage6_stable_hash_excludes_runtime_head(repo_dir);
+tests.clean_tree_guard = test_stage6_clean_tree_guard();
+tests.required_artifact_registry = test_stage6_required_artifact_registry();
 [tests.stage5_frozen, stage5_context] = verify_stage5_frozen_results(package_dir);
 [tests.step11_frozen, step11_context] = verify_step11_frozen_results(package_dir);
 
@@ -72,9 +79,14 @@ validation.overall_pass = overall_pass;
 outputs = write_stage6_results_bundle( ...
     result_dir, figure_dir, context, evidence, validation);
 
-[schema_pass, schema_message] = csv_schema_local(result_dir);
+[schema_pass, schema_message] = csv_schema_local( ...
+    result_dir, stage6_required_artifact_registry());
 hash_consistency_pass = measurement_hash_consistency_local(evidence);
-output_files_pass = all(structfun(@(path_now) exist(path_now, 'file') == 2, outputs));
+artifact_check = validate_stage6_required_artifacts( ...
+    step_dir, stage6_required_artifact_registry(), ...
+    struct('throw_on_missing', false));
+output_files_pass = all(artifact_check.pass_flag) && ...
+    all(structfun(@(path_now) exist(path_now, 'file') == 2, outputs));
 overall_pass = overall_pass && schema_pass && hash_consistency_pass && output_files_pass;
 validation.overall_pass = overall_pass;
 if ~overall_pass
@@ -135,23 +147,59 @@ flag = true;
 for index = 1:numel(names), flag = flag && all(tests.(names{index}).pass_flag); end
 end
 
-function [pass, message] = csv_schema_local(result_dir)
-files = dir(fullfile(result_dir, '*.csv'));
-required = {'phase_factor','fixed_measurement_hash','stage6_controls_hash', ...
-    'stage6_experiment_plan_hash','theory_status','prior_art_status','pass_flag'};
-pass = numel(files) == 15;
+function [pass, message] = csv_schema_local(result_dir, registry)
+stable = registry(registry.required_by_runner & ...
+    registry.artifact_type == "CSV" & ...
+    registry.schema_contract == "STABLE_PROVENANCE_CSV", :);
+required = {'baseline_commit','stage6_source_tree_hash', ...
+    'stage6_dependency_tree_hash','stage6_controls_hash', ...
+    'stage6_measurement_plan_hash','stage6_experiment_plan_hash', ...
+    'stage6_provenance_hash','provenance_contract_version', ...
+    'baseline_ancestor_flag','working_tree_clean_at_start','phase_factor', ...
+    'theory_status','prior_art_status','pass_flag'};
+pass = true;
 message = '';
-for index = 1:numel(files)
-    table_now = readtable(fullfile(files(index).folder, files(index).name), ...
+for index = 1:height(stable)
+    filename = char(stable.relative_path(index));
+    filename = erase(filename, ['results', filesep]);
+    filename = erase(filename, 'results/');
+    path_now = fullfile(result_dir, filename);
+    if exist(path_now, 'file') ~= 2
+        pass = false;
+        message = sprintf('%s is missing', filename);
+        return;
+    end
+    table_now = readtable(path_now, ...
         'TextType', 'string');
     missing = setdiff(required, table_now.Properties.VariableNames);
     if ~isempty(missing)
         pass = false;
-        message = sprintf('%s missing %s', files(index).name, strjoin(missing, ','));
+        message = sprintf('%s missing %s', filename, strjoin(missing, ','));
         return;
     end
     if any(table_now.phase_factor ~= 1)
-        pass = false; message = sprintf('%s has non-factor-1 rows', files(index).name); return;
+        pass = false; message = sprintf('%s has non-factor-1 rows', filename); return;
+    end
+end
+runtime = registry(registry.required_by_runner & ...
+    registry.schema_contract == "RUNTIME_PROVENANCE_CSV", :);
+for index = 1:height(runtime)
+    filename = char(runtime.relative_path(index));
+    filename = erase(filename, ['results', filesep]);
+    filename = erase(filename, 'results/');
+    path_now = fullfile(result_dir, filename);
+    if exist(path_now, 'file') ~= 2
+        pass = false;
+        message = sprintf('%s is missing', filename);
+        return;
+    end
+    table_now = readtable(path_now, 'TextType', 'string');
+    runtime_required = [required, {'runtime_head_commit'}];
+    missing = setdiff(runtime_required, table_now.Properties.VariableNames);
+    if ~isempty(missing)
+        pass = false;
+        message = sprintf('%s missing %s', filename, strjoin(missing, ','));
+        return;
     end
 end
 end

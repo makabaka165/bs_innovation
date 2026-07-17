@@ -17,6 +17,8 @@ beam design.
 
 - Stage result: `PASS`
 - Theory status: `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`
+- Provenance patch status:
+  `STAGE6_PROVENANCE_PATCH_IMPLEMENTED_EVIDENCE_RERUN_PENDING`
 - Statistical scope: `DETERMINISTIC_GEOMETRIC_VALIDATION`
 - Primary physical exact-null status: `NO_EXACT_PHYSICAL_TANGENT_NULL_FOUND`
 - Synthetic null status: sixth-order relation supported with fitted order 6
@@ -27,6 +29,32 @@ as a new information matrix. The retained claim is limited to the explicit
 use of one quadratic form for the second singular value, normalized
 coherence deficit and normalized-Gram condition on the present fixed
 sequential cylindrical receive manifold.
+
+The numerical result above is the retained evidence from commit `17c2022`.
+That commit's locked plan incorrectly required `HEAD` to equal the stage-5
+baseline and included runtime `HEAD` in stable plan hashes. Stage 6.1A fixes
+the code contract but intentionally does not regenerate any CSV, report, or
+PNG. The retained evidence must therefore be rerun from a clean checkout in
+a separately authorized stage 6.1B before the provenance patch is called
+evidence-validated.
+
+## Reproduction Contract
+
+- The stage-5 baseline remains
+  `0430f25272690a3ddf378dcf0bab465ca93edb68` and must be an ancestor of
+  runtime `HEAD`; equality is not required.
+- Formal evidence execution starts only from an empty
+  `git status --porcelain=v1 --untracked-files=all` result.
+- `runtime_head_commit` is written only to runtime diagnostics and is
+  excluded from stable controls, measurement, experiment, provenance, and
+  deterministic-evidence identities.
+- Executable stage-6 source and direct dependencies are identified from
+  sorted Git mode/blob/path manifests, so checkout CRLF/LF conversion does
+  not change their hashes.
+- Controls, physical measurement plan, experiment plan, executable source,
+  dependencies, and runtime diagnostics have separate identities.
+- The stable provenance hash binds the baseline, source/dependency trees,
+  stable plans, `phase_factor=1`, and the MATLAB R2022b release contract.
 
 ## Registered Plan
 
@@ -51,9 +79,11 @@ From the repository root:
 run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/run_step12_4_tangent_asymptotics_validation.m')
 ```
 
-The runner executes the 14 required tests, MATLAB Code Analyzer, public scope
-scan, CSV schema scan, fixed-measurement hash scan, stage-5 result SHA-256
-verification and the official 351-file Step11 frozen-result verification.
+After the pending clean-checkout rerun, the runner will execute the original
+14 registered checks plus six provenance contract test groups, MATLAB Code
+Analyzer, public scope scan, explicit artifact/schema scans, fixed-measurement
+hash scan, stage-5 result SHA-256 verification and the official 351-file
+Step11 frozen-result verification.
 
 ## Key Results
 
@@ -75,9 +105,12 @@ beam configuration was changed after observing tangent eigenvalues.
 
 ## Outputs
 
-`results/` contains 15 CSV files, the prior-art mapping and the A-J validation
-report. `figures/` contains the seven registered PNGs. No output in stage 4,
-stage 5 or Step11 is modified by this runner.
+The retained `17c2022` evidence in `results/` contains 15 CSV files, the
+prior-art mapping and the A-J validation report; `figures/` contains seven
+PNGs. Stage 6.1B will additionally generate source/dependency manifests, a
+stable provenance contract and an isolated runtime diagnostics CSV through
+an explicit artifact registry rather than a fixed CSV-count assertion. No
+output in stage 4, stage 5 or Step11 may be modified by that runner.
 
 The next unimplemented phase is Step12.5 exact-subset FIM beam design. It may
 only start after separate user authorization.

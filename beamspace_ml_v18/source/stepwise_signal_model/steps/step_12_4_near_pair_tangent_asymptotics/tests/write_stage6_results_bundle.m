@@ -1,6 +1,7 @@
 function outputs = write_stage6_results_bundle( ...
     result_dir, figure_dir, context, evidence, validation)
 %WRITE_STAGE6_RESULTS_BUNDLE Write all registered stage-6 artifacts.
+% This function writes evidence; stage 6.1A changes only this generator.
 
 if exist(result_dir, 'dir') ~= 7, mkdir(result_dir); end
 if exist(figure_dir, 'dir') ~= 7, mkdir(figure_dir); end
@@ -34,6 +35,25 @@ keypoints_path = fullfile(result_dir, 'stage6_keypoints.csv');
 writetable(keypoints, keypoints_path);
 outputs.stage6_keypoints = keypoints_path;
 
+source_manifest = manifest_output_local( ...
+    context.plan.source_manifest, context, "SOURCE_MANIFEST");
+source_manifest_path = fullfile(result_dir, 'stage6_source_manifest.csv');
+writetable(source_manifest, source_manifest_path);
+outputs.stage6_source_manifest = source_manifest_path;
+dependency_manifest = manifest_output_local( ...
+    context.plan.dependency_manifest, context, "DEPENDENCY_MANIFEST");
+dependency_manifest_path = fullfile(result_dir, 'stage6_dependency_manifest.csv');
+writetable(dependency_manifest, dependency_manifest_path);
+outputs.stage6_dependency_manifest = dependency_manifest_path;
+contract_table = provenance_contract_table_local(context);
+contract_path = fullfile(result_dir, 'stage6_provenance_contract.csv');
+writetable(contract_table, contract_path);
+outputs.stage6_provenance_contract = contract_path;
+runtime_table = runtime_diagnostics_table_local(context, evidence, validation);
+runtime_path = fullfile(result_dir, 'stage6_runtime_diagnostics.csv');
+writetable(runtime_table, runtime_path);
+outputs.stage6_runtime_diagnostics = runtime_path;
+
 prior_art_path = fullfile(result_dir, 'stage6_prior_art_mapping.md');
 write_prior_art_local(prior_art_path, context);
 outputs.stage6_prior_art_mapping = prior_art_path;
@@ -47,14 +67,6 @@ for index = 1:numel(figure_names)
     outputs.(figure_names{index}) = figure_paths.(figure_names{index});
 end
 
-[data_bytes, figure_bytes] = volume_local(result_dir, figure_dir);
-keypoints = append_keypoint_local(keypoints, 'result_data_volume_bytes', ...
-    data_bytes, 'byte', true, context);
-keypoints = append_keypoint_local(keypoints, 'figure_volume_bytes', ...
-    figure_bytes, 'byte', true, context);
-keypoints = append_keypoint_local(keypoints, 'figure_count', ...
-    numel(figure_names), 'count', numel(figure_names) == 7, context);
-writetable(keypoints, keypoints_path);
 end
 
 function table_out = append_validation_keypoints_local(table_in, evidence, validation)
@@ -88,19 +100,78 @@ row.unit = string(unit);
 if pass, row.status = "PASS"; else, row.status = "FAIL"; end
 row.pass_flag = logical(pass);
 row.fixed_measurement_hash = "MULTIPLE_REGISTERED_MODELS";
-row.stage6_controls_hash = string(context.plan.stage6_controls_hash);
-row.stage6_experiment_plan_hash = string(context.plan.stage6_experiment_plan_hash);
-row.phase_factor = 1;
-row.theory_status = string(context.theory_status);
-row.prior_art_status = string(context.prior_art_status);
+row = add_stage6_provenance_metadata(row, context, ...
+    "MULTIPLE_REGISTERED_MODELS");
 table_out = [table_in; row];
+end
+
+function table_out = manifest_output_local(manifest, context, artifact_id)
+table_out = manifest;
+table_out.manifest_artifact_id = repmat(artifact_id, height(table_out), 1);
+table_out = add_stage6_provenance_metadata(table_out, context, ...
+    "NOT_APPLICABLE");
+end
+
+function table_out = provenance_contract_table_local(context)
+plan = context.plan;
+table_out = table(string(plan.baseline_commit), ...
+    string(plan.stage6_source_tree_hash), ...
+    string(plan.stage6_dependency_tree_hash), ...
+    string(plan.stage6_controls_hash), ...
+    string(plan.stage6_measurement_plan_hash), ...
+    string(plan.stage6_experiment_plan_hash), ...
+    string(plan.stage6_provenance_hash), ...
+    string(plan.provenance_contract_version), ...
+    string(plan.source_scope_version), ...
+    string(plan.dependency_scope_version), ...
+    string(plan.matlab_release_contract), ...
+    logical(plan.baseline_ancestor_flag), ...
+    logical(plan.working_tree_clean_at_start), 1, ...
+    string(context.theory_status), string(context.prior_art_status), true, ...
+    "NOT_APPLICABLE", 'VariableNames', { ...
+    'baseline_commit','stage6_source_tree_hash', ...
+    'stage6_dependency_tree_hash','stage6_controls_hash', ...
+    'stage6_measurement_plan_hash','stage6_experiment_plan_hash', ...
+    'stage6_provenance_hash','provenance_contract_version', ...
+    'source_scope_version','dependency_scope_version', ...
+    'matlab_release_contract','baseline_ancestor_flag', ...
+    'working_tree_clean_at_start','phase_factor','theory_status', ...
+    'prior_art_status','pass_flag','fixed_measurement_hash'});
+end
+
+function table_out = runtime_diagnostics_table_local(context, evidence, validation)
+[process_peak_memory_bytes, memory_status] = process_peak_memory_local();
+table_out = table(string(context.plan.runtime_head_commit), ...
+    evidence.complexity.runtime_sec, "REGISTERED_EXPERIMENTS_ONLY", ...
+    process_peak_memory_bytes, string(memory_status), ...
+    evidence.complexity.fixed_model_memory_bytes, ...
+    string(version('-release')), string(computer), 1, ...
+    logical(validation.overall_pass), ...
+    'VariableNames', {'runtime_head_commit', ...
+    'registered_experiment_runtime_sec','runtime_scope', ...
+    'matlab_process_peak_memory_bytes','peak_memory_status', ...
+    'fixed_model_memory_bytes','matlab_release','computer_architecture', ...
+    'phase_factor','pass_flag'});
+table_out = add_stage6_provenance_metadata(table_out, context, ...
+    "MULTIPLE_REGISTERED_MODELS");
+end
+
+function [bytes, status] = process_peak_memory_local()
+try
+    process = System.Diagnostics.Process.GetCurrentProcess();
+    bytes = double(process.PeakWorkingSet64);
+    status = 'PROCESS_PEAK_WORKING_SET';
+catch
+    bytes = NaN;
+    status = 'PROCESS_PEAK_MEMORY_UNAVAILABLE';
+end
 end
 
 function write_prior_art_local(path_now, context)
 fid = fopen(path_now, 'w');
 cleanup = onCleanup(@() fclose(fid));
 fprintf(fid, '# Stage-6 Prior-Art Incremental Mapping\n\n');
-fprintf(fid, '> Access date: 2026-07-17  \n');
+fprintf(fid, '> Access date: 2026-07-17\n');
 fprintf(fid, '> Scope: bounded formula-targeted retrieval, not an exhaustive patent or full-text search.\n\n');
 fprintf(fid, '## Claim mapping\n\n');
 fprintf(fid, '| Item | Label | Boundary |\n|---|---|---|\n');
@@ -134,8 +205,18 @@ fid = fopen(path_now, 'w');
 cleanup = onCleanup(@() fclose(fid));
 fprintf(fid, '---\nphase_factor: 1\ntheory_status: %s\n', evidence.theory_status);
 fprintf(fid, 'statistical_scope: DETERMINISTIC_GEOMETRIC_VALIDATION\n');
-fprintf(fid, 'stage6_controls_hash: %s\nstage6_experiment_plan_hash: %s\n---\n\n', ...
-    context.plan.stage6_controls_hash, context.plan.stage6_experiment_plan_hash);
+fprintf(fid, 'baseline_commit: %s\n', context.plan.baseline_commit);
+fprintf(fid, 'stage6_source_tree_hash: %s\n', context.plan.stage6_source_tree_hash);
+fprintf(fid, 'stage6_dependency_tree_hash: %s\n', ...
+    context.plan.stage6_dependency_tree_hash);
+fprintf(fid, 'stage6_controls_hash: %s\n', context.plan.stage6_controls_hash);
+fprintf(fid, 'stage6_measurement_plan_hash: %s\n', ...
+    context.plan.stage6_measurement_plan_hash);
+fprintf(fid, 'stage6_experiment_plan_hash: %s\n', ...
+    context.plan.stage6_experiment_plan_hash);
+fprintf(fid, 'stage6_provenance_hash: %s\n', context.plan.stage6_provenance_hash);
+fprintf(fid, 'provenance_contract_version: %s\n---\n\n', ...
+    context.plan.provenance_contract_version);
 fprintf(fid, '# Step12.4 Fixed-Whitening Tangent-Asymptotic Validation\n\n');
 fprintf(fid, '## A. Stage conclusion\n\n');
 fprintf(fid, '**%s.** Theory status: `%s`. The three nondegenerate asymptotic relations and the synthetic sixth-order exact-null extension passed. Physical status: `%s`. A separately authorized phase 7 is technically permissible; this run stops at phase 6.\n\n', ...
@@ -153,7 +234,7 @@ fprintf(fid, '- `build_stage6_fixed_measurement_model`: fixed `Wseq/Cseq/Tseq` a
 fprintf(fid, '## E. Dimensions, units and fixed objects\n\n');
 fprintf(fid, 'The four primary configurations have 9, 9, 6 and 6 sequential outputs; the diagnostic has one. `Wseq` is `2080 x B`, `Cseq` is `B x B`, `Tseq` is `rank(Cseq) x B`, `g` is `rank(Cseq) x 1`, `J` is `rank(Cseq) x 2`, `G2` is `rank(Cseq) x 2`, and `T` is `2 x 2`. External angles use degree; derivatives, directions and separations use radian.\n\n');
 fprintf(fid, '## F. Tests and command\n\n');
-fprintf(fid, 'The unified runner executed 14 required tests, Code Analyzer, scope/schema/hash scans, 14-file stage-5 SHA-256 verification and 351-file Step11 official-manifest verification. Command: `run(''beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/run_step12_4_tangent_asymptotics_validation.m'')`. Analyzer messages: %d.\n\n', validation.analyzer_count);
+fprintf(fid, 'The unified runner executed the registered numerical and provenance tests, Code Analyzer, scope/schema/hash scans, 14-file stage-5 SHA-256 verification and 351-file Step11 official-manifest verification. Command: `run(''beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/run_step12_4_tangent_asymptotics_validation.m'')`. Analyzer messages: %d.\n\n', validation.analyzer_count);
 fprintf(fid, '## G. Key results\n\n');
 fprintf(fid, '- Maximum first/second/third derivative relative errors: %.6g / %.6g / %.6g.\n', ...
     value('maximum_first_derivative_relative_error'), ...
@@ -170,12 +251,11 @@ fprintf(fid, '- Minimum tail point count: %d; maximum unsaturated exact-identity
 fprintf(fid, '- Synthetic exact-null order: %.6g; maximum sixth-order ratio error: %.6g. No statistical confidence interval is reported because this is deterministic geometry validation.\n\n', ...
     value('synthetic_null_fitted_order'), value('maximum_synthetic_null_ratio_error'));
 fprintf(fid, '## H. Complexity\n\n');
-fprintf(fid, 'Registered secant SVDs: %d; metric eigendecompositions: %d; derivative cases: %d; receive-manifold evaluations: %d; runtime: %.6f s; fixed-model memory: %d bytes.\n\n', ...
+fprintf(fid, 'Registered secant SVDs: %d; metric eigendecompositions: %d; derivative cases: %d; receive-manifold evaluations: %d. Runtime and memory diagnostics are isolated in `stage6_runtime_diagnostics.csv`.\n\n', ...
     evidence.complexity.secant_svd_count, ...
     evidence.complexity.metric_eigendecomposition_count, ...
     evidence.complexity.derivative_evaluation_count, ...
-    evidence.complexity.receive_manifold_evaluation_count, ...
-    evidence.complexity.runtime_sec, evidence.complexity.fixed_model_memory_bytes);
+    evidence.complexity.receive_manifold_evaluation_count);
 fprintf(fid, '## I. Risks and unfinished work\n\n');
 fprintf(fid, 'No exact tangent null occurred in the four primary physical configurations; the single-channel case is only an exact measurement collapse. The sixth-order extension is therefore physically untested here despite analytic-fixture support. Finite-sample resolution, threshold SNR, source coherence, model order, FIM beam selection, patent search and paid-database full-text/cited-by review remain outside this stage.\n\n');
 fprintf(fid, '## J. Next-stage decision\n\n');
@@ -248,13 +328,6 @@ semilogx(table_in.separation_norm_deg, table_in.(variable), '.', ...
 xlabel('Separation norm (degree)'); ylabel(label); title(['Registered ', label]);
 exportgraphics(figure_handle, path_now, 'Resolution', 180);
 close(figure_handle);
-end
-
-function [data_bytes, figure_bytes] = volume_local(result_dir, figure_dir)
-data = dir(fullfile(result_dir, '*'));
-data_bytes = sum([data(~[data.isdir]).bytes]);
-figures = dir(fullfile(figure_dir, '*.png'));
-figure_bytes = sum([figures.bytes]);
 end
 
 function text = pass_fail_local(flag)
