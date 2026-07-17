@@ -1,10 +1,10 @@
 # v0.19 顺序测角修订范围说明
 
-> 版本：Step12.3 阶段 4 修订，2026-07-17
+> 版本：Step12.3 阶段 5 修订，2026-07-17
 > 活跃相位模型：`phase_factor=1`
 > 当前结论：接收流形、真实先俯仰后方位 DBF、稳定 SVD-DML，以及
 > oracle-Q 注册局部网格下的俯仰组 DML、matrix-normal 行/列白化、
-> 三层状态语义和物理环向组数据恢复已通过确定性工程验证；阶段 5 尚未开始。
+> 三层状态语义、物理环向组恢复、条件方位 DML 和固定完整顺序流形修正已通过技术与 Pareto 工程门；所有有噪声结果仍未统计校准。
 
 ## 1. 系统层级
 
@@ -103,6 +103,19 @@ Frobenius 误差、子空间弦距、串扰和 mixing 误差只由
 `tests/private/evaluate_group_recovery_against_truth.m` 计算，不进入候选评分、
 搜索域构造或停止条件。
 
+阶段 5 的条件路径只使用阶段 4 恢复的 `Xphi_hat{q}` 形成初始化；最终联合
+评分回到原始 factor=1 阵元数据，并固定 `Wseq`、`Cseq`、`Tseq` 和物理角域。
+公共角域构造器只接受常规中心与冻结工程偏移，不接受真值。目标 Hungarian/
+最小代价匹配、`truth_in_domain_flag`、错误局部峰、local-full 对应关系和成功
+判定均在测试评价层。只有上游 `estimate_returned_flag` 与
+`structural_gate_pass_flag` 同时为真，条件和分组联合链才运行；否则返回
+`UPSTREAM_GROUP_STAGE_UNCERTIFIED`，不扩窗、不降低秩门。
+
+阶段 5 的固定全孔径维度为：`Xphi [65,L]`、`Uq [65,3]`、
+`Zphi [3,L]`、`Tphi [3,3]`、`Wseq [2080,9]`、`Zseq [9,L]`、
+`Tseq [9,9]`、`Gphi [3,Kq]` 和 `Gseq [9,K]`。所有固定对象和统一角域
+均保存 hash；有噪声输出统一为 `NOT_CALIBRATED_STAGE5`。
+
 ## 6. 当前证据
 
 | 主张 | 证据 | 状态 |
@@ -117,14 +130,20 @@ Frobenius 误差、子空间弦距、串扰和 mixing 误差只由
 | 精确系数秩反例语义正确 | `rank(Ge)=2`、`rank(Ce)=1`，返回 MMV-rank uncertified | supported |
 | 相关行/列噪声精确建模 | `T_col` 已应用，行/列误差 `7.941e-13 / 3.052e-15` | supported for specified separable covariance |
 | 同俯仰 Q1/K2 组内叠加恢复 | 相对误差 `3.891e-15` | supported |
-| 条件方位、联合修正和等预算 AP/PR 比较 | 无 | not started |
+| 组恢复噪声传播 | 20,000 样本完整协方差误差 `1.448e-2`，保留组间相关项 | supported |
+| 条件方位流形与弧度导数 | 公式/导数误差 `3.606e-15 / 5.618e-10` | supported |
+| 条件方位白化 | 30,000 样本协方差误差 `4.862e-3` | supported |
+| 完整顺序数据、协方差和流形 | staged 误差 `3.697e-15`，协方差 MC 误差 `1.490e-2`，流形误差 0 | supported |
+| 联合修正 | 单调违规 0，确定性主链/local-full score gap `8.106e-16` | supported |
+| normal holdout | 主链 205/205，Wilson 95% `[0.9816,1]` | supported within registered domain |
+| stress holdout | 主链 45/250，Wilson 95% `[0.1373,0.2324]` | recorded limitation |
+| 主链相对两初值直接 AP | 成功率差区间 `[0,0]`，score calls 减少 `44.95%` | Pareto scheme 1 passed |
+| 相干弱目标核心 stress | 主链/直接 AP/local-full 均 `0/200` | registered failure boundary |
+| PR-DML 与 Kim 2012 | `EXACT_REPRODUCTION_UNAVAILABLE` | open baseline gap |
 | FIM、bootstrap、自动 Q、K=3 | 无 | not started |
 
-上述真值角主要用于 grid-aligned 实现验证；当前不能据此声称 off-grid
-超分辨性能。AP/PR-DML 的准确复现缺口仍保留，没有用自定义简化版本替代。
+阶段 5 另含方位/俯仰半网格、同时 off-grid、边界、部分出域、极近、弱目标、相干、相关噪声、缩孔径和 `L=1/L>1` 场景。成功判定使用固定最终网格门；出域样本不扩窗并计入无条件失败。AP 属经典方法，PR-DML/Kim 的准确复现缺口仍保留，没有用自定义简化版本替代。
 
 ## 7. 后续阶段门
 
-阶段 4 修订通过技术验收，但本轮必须停止。只有用户后续单独授权，才可进入
-阶段 5 验证条件方位 DML、完整顺序流形联合修正和等预算 baseline。局部
-渐近理论、exact-subset FIM、bootstrap、自动 Q 与 K=3 均不属于本轮。
+阶段 5 已通过技术门和 Pareto 方案 1，但本轮必须停止。只有用户后续单独授权，才可进入阶段 6。局部渐近理论、exact-subset FIM、模型阶数 bootstrap、自动 Q、K=3、cache 与硬件映射均未实现。

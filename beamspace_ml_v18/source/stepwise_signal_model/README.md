@@ -1,6 +1,6 @@
 # 分步信号模型
 
-> **v0.19 active/legacy boundary (2026-07-17):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS；修订后的 Step12.3A-C 在 oracle-Q、注册局部网格下验证了 matrix-normal 行/列白化、俯仰组 DML、三层状态语义和物理环向组数据恢复。有噪声结果仅为未校准结构支持；结构秩反例只否定当前注册 MMV 分组/恢复链的认证。条件方位、联合修正、FIM、bootstrap、自动 Q 和 K=3 均未实现，阶段 5 尚未开始。
+> **v0.19 active/legacy boundary (2026-07-17):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS；Step12.3A-C 已验证 oracle-Q 俯仰组恢复和 matrix-normal 行/列白化；Step12.3D-E 已在 oracle-Kq、统一注册角域下验证条件方位和固定完整顺序流形修正，并通过技术门与 Pareto 方案 1。主链相对两初值直接 AP 保持配对成功率且 score calls 减少 44.95%，但相干弱目标核心 stress 场景中主链、直接 AP 和 local full 均为 0/200。所有有噪声输出为 `NOT_CALIBRATED_STAGE5`；FIM、模型阶数 bootstrap、自动 Q/K、K=3、cache 和硬件映射均未实现。
 
 ## 1. 目的
 
@@ -92,6 +92,12 @@ demo_joint_2d_mtd
 ```
 
 方式 2：直接打开 `steps/` 下的某个 demo 运行。独立脚本不依赖路径设置；调用 `core/` 函数的 demo 会在开头调用 `setup_paths.m`。
+
+当前 Step12.3 阶段 5 的独立验证入口为：
+
+```matlab
+run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_3_grouped_conditional_dml/run_step12_3_stage5_validation.m')
+```
 
 ## 4. 步骤概览
 

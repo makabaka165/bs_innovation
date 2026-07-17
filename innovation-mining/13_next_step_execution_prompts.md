@@ -510,11 +510,15 @@ RSS 只允许对机器精度量级的负值做 0 截断；
 
 # 阶段 4：核心创新点 1A——俯仰目标组 DML 与可辨识性
 
+> **历史初始提示词，已由提交 `89d8c056` 的阶段 4 修订合同替代。**
+> 下方文本仅保留用于审计，不再作为 active 执行要求；其中旧的统一失败状态和
+> 未校准置信字段不得被后续阶段恢复。
+
 ## 目标
 
 在 Q 已知的 oracle 条件下验证俯仰分组估计和组数据恢复。当前阶段不自动选择 Q，不进入 FIM。
 
-## 可直接复制的提示词
+## 历史初始提示词（不得直接执行）
 
 ```text
 [附上“所有阶段共同使用的总约束”]
@@ -607,89 +611,1243 @@ results/elevation_group_report.md
 
 完成 Q/Kq 已知条件下的分组条件估计链，并证明其收益不是候选域泄漏或未计入多初值成本造成的。
 
+> **执行状态（2026-07-17）：阶段 5 已完成并停止。** 技术测试与 Pareto 方案 1 通过；455 个 holdout 配对中，主链与两初值直接 AP 的成功率差 95% 区间为 `[0,0]`，主链端到端 score calls 减少 44.95%。所有有噪声输出为 `NOT_CALIBRATED_STAGE5`；相干弱目标核心 stress 场景中主链、直接 AP 和 local full 均为 `0/200`。本状态记录不授权或执行阶段 6。
+
 ## 可直接复制的提示词
 
 ```text
-[附上“所有阶段共同使用的总约束”]
+默认 GitHub 仓库为：
 
-执行 Step12.3 子阶段 D/E：条件方位单/多目标 DML和完整顺序流形联合修正。Q 与每组 Kq 已知，不做模型阶数。
+makabaka165/bs_innovation
 
-必读：
-- 11 文档第 5.6、6、12 节
-- 12 文档 Step12.3 和复杂度要求
-- 06_algorithm_prior_art.md 的 A03–A05、复杂度和失败机制
-- Ziskind–Wax AP 与 PR-DML 最近工作说明
-- 阶段 4 全部结果
+本轮只执行阶段 5 / Step12.3D-E：
 
-实现：
+- 条件方位单目标/双目标 DML；
+- 完整固定顺序流形上的局部联合修正；
+- 同物理角域、同先验、同预算 baseline；
+- oracle 俯仰、估计俯仰和受扰俯仰误差传播验证。
 
-1. common/build_conditional_azimuth_manifold.m
-   方位流形必须包含 cos(eta)，并使用固定物理方位波束与固定白化器。
+本轮不执行：
 
-2. common/estimate_conditional_azimuth_dml.m
-   function [est,debug] = estimate_conditional_azimuth_dml(...)
-   - Kq=1 一维 DML；
-   - Kq=2 小局部 full reference/AP；
-   - SVD score/RSS；
-   - 输出 num_score_eval、num_svd、rank、runtime。
+- 自动 Q 选择；
+- 自动 K 或 Kq 选择；
+- Fisher 信息波束设计；
+- 近双目标切向理论；
+- bootstrap；
+- K=3；
+- cache；
+- FPGA/硬件实现；
+- C05、topK 或在线自适应 W/B。
 
-3. common/estimate_conditional_azimuth_prdml.m
-   准确复现 PR-DML 或明确记录无法复现的公式/接口缺口，不能使用自定义简化版冒充。
+当前阶段完成后必须停止，输出 A–J 报告，不得进入阶段 6。
 
-4. common/build_full_sequential_local_manifold.m
-   直接使用固定 Wseq' * a(az,el) 和固定 whitener，不使用独立一维近似。
+未经用户在当前会话明确授权：
 
-5. common/refine_joint_sequential_dml.m
-   - 目标 canonical order；
-   - 逐目标、逐维最大化；
-   - 每步 score 不下降；
-   - 记录 angle update、score/RSS、候选数；
-   - relative-score + max-angle 双停止条件；
-   - max_iter 未收敛返回 SEARCH_NOT_CONVERGED；
-   - 不按场景扩窗；
-   - 多初值 R 全部计入成本。
+- 不提交；
+- 不推送；
+- 不创建 PR；
+- 不新建或切换分支；
+- 不修改其他仓库；
+- 不覆盖 Step11 冻结结果。
 
-6. common/match_target_sets.m
-   使用 Hungarian/最小总角度代价，评价和搜索分离。
+============================================================
+一、必须阅读
+============================================================
 
-必须比较：
-- local full DML；
-- AP-DML；
-- PR-DML；
-- 不分组直接二维坐标上升；
-- 仅分组条件估计、不联合修正；
-- old controlled pair2d；
-- common-el；
-- 常规 DBF；
-- Kim 2012 准确实现或明确缺口。
+完整阅读：
 
-公平预算：
-- 同一物理角域；
-- 相同 K 先验；
-- 相同 score-call 或 wall-time；
-- 记录 SVD 次数、矩阵尺寸、迭代、多初值；
-- 不允许分组方法获得更窄且包含真值的候选域。
+1. innovation-mining/06_formula_prior_art.md
+2. innovation-mining/06_algorithm_prior_art.md
+3. innovation-mining/06_closest_work_matrix.md
+4. innovation-mining/10_current_paper_innovation_audit.md
+5. innovation-mining/11_sequential_beamspace_ml_innovations_theory.md
+   重点：第 5.6 节、第 6 节、第 12 节
+6. innovation-mining/12_experiment_system_code_structure_roadmap.md
+   重点：Step12.3、复杂度、数据划分和否决标准
+7. innovation-mining/13_next_step_execution_prompts.md
+8. innovation-mining/14_step12_preimplementation_inventory.md
+9. innovation-mining/FAILED_likelihood_discriminative_adaptive_wb.md
+10. beamspace_ml_v18/paper/full_manuscript_v0.19_sequential_dbf_revision.md
+11. beamspace_ml_v18/review/supporting_notes/sequential_revision_scope.md
+12. Step12.0、Step12.1、Step12.2 的 README、公共接口和结果
+13. Step12.3 阶段 4 修订后的全部：
+    - README.md
+    - common/
+    - tests/
+    - results/
+    - run_step12_3_elevation_group_validation.m
+14. 06_algorithm_prior_art.md 中：
+    - A03 条件方位 DML；
+    - A04 坐标最大化/AP；
+    - A05 分组初始化；
+    - 完整复杂度和相同失败机制。
+15. Ziskind–Wax alternating projection 和已定位的 PR-DML 资料。
 
-场景：
-Q2/K1+K1、Q1/K2 同俯仰、两维均近、初值偏差、功率失衡、相干、边界、模型失配。
+永久创新边界：
+
+- 条件 DML、AP、坐标上升、单调性、SVD 投影均是已有方法。
+- 候选贡献只允许定位为：
+  “实际顺序 DBF 接口上的俯仰组初始化、同俯仰组内多方位处理，
+   以及固定完整顺序流形修正的整体组织和工程效果。”
+- 不得把联合修正重新命名为新的优化器。
+- PR-DML 或 Kim 2012 若无法准确复现，只记录缺口，不得使用自定义简化版冒充。
+
+============================================================
+二、阶段 4 最终合同
+============================================================
+
+阶段 5 必须以提交：
+
+89d8c056a3dc23fa7a54c2e332063aa27f0fbc99
+
+中的阶段 4 合同为准。
+
+不得重新使用旧字段：
+
+- GROUP_UNIDENTIFIABLE
+- high_confidence_group_flag
+
+阶段 4 的上游状态包括：
+
+estimate_status
+support_status
+statistical_calibration_status
+registered_model_certified_flag
+structural_gate_pass_flag
+estimate_returned_flag
+
+阶段 5 只允许在：
+
+estimate_returned_flag == true
+且
+structural_gate_pass_flag == true
+
+时进入条件方位估计。
+
+若上游为：
+
+GROUP_MMV_RANK_UNCERTIFIED
+GROUP_MANIFOLD_RANK_UNCERTIFIED
+GROUP_REGISTERED_ALIAS_UNCERTIFIED
+GROUP_NO_FULL_RANK_CANDIDATE
+GROUP_NUMERICAL_FAILURE
+
+则阶段 5 不运行条件方位和联合修正，输出：
+
+UPSTREAM_GROUP_STAGE_UNCERTIFIED
+
+不得通过扩窗、改变 Q、降低 rank 门或增加特殊规则继续计算。
+
+所有阶段 5 输出固定：
+
+statistical_calibration_status = NOT_CALIBRATED_STAGE5
+
+不得使用：
+
+high confidence
+posterior
+probability
+calibrated confidence
+medium/low confidence
+
+============================================================
+三、阶段 5 开始时的两个预检修订
+============================================================
+
+1. 更新 innovation-mining/13_next_step_execution_prompts.md：
+
+   - 将旧阶段 4 提示词标记为：
+     “历史初始提示词，已由提交 89d8c056 的修订合同替代。”
+   - 不再保留会误导后续执行的 GROUP_UNIDENTIFIABLE 和
+     high_confidence_group_flag 作为 active 要求。
+
+2. 修正阶段 4 测试表中 elevation_beam_peak baseline 的状态作用域：
+
+   当前 baseline 不执行 registered-model structure diagnosis，
+   不应把 fixture 的结构认证解释成 baseline 方法认证。
+
+   新增字段：
+
+   upstream_group_support_status
+   method_status_scope
+
+   对 elevation_beam_peak：
+
+   method_status_scope = UPSTREAM_FIXTURE_ONLY
+   method_certification_status = NOT_APPLICABLE_BASELINE
+   registered_model_certified_flag = false
+
+   fixture 的状态只保留在：
+
+   upstream_group_support_status
+
+   该修订只涉及测试/结果语义，不改变阶段 4 主估计器。
+
+完成后重新运行阶段 4 runner，确认：
+
+- 全部测试仍通过；
+- Step11 哈希不变；
+- 阶段 4 数值结果没有实质变化。
+
+============================================================
+四、阶段 5 的数据流
+============================================================
+
+阶段 5 必须区分两个不同的数据路径。
+
+------------------------------------------------------------
+4.1 条件方位初始化路径
+------------------------------------------------------------
+
+输入来自阶段 4 恢复的每个俯仰组：
+
+Xphi_hat{q} [Nphi,L]
+
+该路径用于：
+
+- Kq=1 条件方位一维 DML；
+- Kq=2 同俯仰双目标方位 DML；
+- 生成完整联合修正的初始化。
+
+它不是最终完整顺序 DML 的评分数据。
+
+------------------------------------------------------------
+4.2 完整顺序联合修正路径
+------------------------------------------------------------
+
+联合修正必须回到：
+
+- 原始 factor=1 阵元数据；
+- Step12.1 固定的物理顺序波束矩阵 Wseq；
+- 原始固定顺序 DBF 观测 Zseq；
+- 固定的完整顺序噪声协方差和白化器。
+
+联合修正不得以：
+
+- Xphi_hat；
+- Ce_hat；
+- 条件方位波束输出；
+
+作为最终完整似然的观测。
+
+原因：组恢复数据包含估计误差、组间耦合和噪声传播。
+最终修正必须由原始完整顺序观测重新评分。
+
+============================================================
+五、组恢复噪声传播
+============================================================
+
+阶段 4 在行白化坐标中：
+
+Z_recovery = Ge * Ce + N
+
+使用：
+
+H_e = Ge^\dagger
+
+恢复：
+
+Ce_hat = H_e * Z_recovery
+
+在行噪声已经白化的条件下，组恢复噪声混合矩阵为：
+
+R_group = H_e * H_e^H
+
+不得直接计算 inv(Ge^H*Ge)；
+必须使用 Step12.2 的稳定 SVD 求解或伪逆接口。
+
+对第 q 个组：
+
+alpha_q = real(R_group(q,q))
+
+其物理环向列噪声协方差为：
+
+C_x_q = alpha_q * Rphi_selected
+
+不同组 q、r 的交叉噪声为：
+
+R_group(q,r) * Rphi_selected
+
+必须新增：
+
+common/propagate_group_recovery_noise.m
+
+建议签名：
+
+function [noise_model,debug] = propagate_group_recovery_noise( ...
+    Ge_hat, Rphi_selected, opts)
+
+输出至少包含：
+
+R_group
+group_noise_scale
+cross_group_noise_correlation
+Rphi_selected
+rank_Ge
+phase_factor
+num_svd
+status
+
+要求：
+
+- 使用稳定 SVD；
+- 不直接求 Gram 逆；
+- 对 rank(Ge)<Q 返回显式失败；
+- 不把各组恢复噪声假设成相互独立；
+- 单独处理条件方位时可以使用 alpha_q，
+  但必须保存完整 R_group 作为诊断。
+
+============================================================
+六、固定条件方位波束域
+============================================================
+
+每个组 q 的物理环向数据：
+
+Xphi_q [Nphi,L]
+
+对应条件俯仰角：
+
+eta_condition_q
+
+条件方位流形必须使用：
+
+a_phi_m(phi | eta)
+=
+exp(j*k0*R*cos(eta)*cos(phi-psi_m))
+
+不能使用与俯仰无关的 a_phi(phi)。
+
+------------------------------------------------------------
+6.1 方位物理波束矩阵
+------------------------------------------------------------
+
+新增：
+
+common/build_fixed_conditional_azimuth_beam_bank.m
+
+建议签名：
+
+function [Uq,info] = build_fixed_conditional_azimuth_beam_bank( ...
+    az_beam_deg, eta_condition_deg, array_meta, opts)
+
+要求：
+
+- Uq [Nphi,Ba]；
+- eta_condition_deg 在一次条件方位搜索开始前固定；
+- az_beam_deg 为预注册物理波束中心；
+- 候选方位变化时不得重建 Uq；
+- 单位范数权；
+- 保存波束中心、条件俯仰、阵元顺序和 hash；
+- phase_factor=1。
+
+------------------------------------------------------------
+6.2 条件方位观测和白化
+------------------------------------------------------------
+
+新增：
+
+common/prepare_conditional_azimuth_data.m
+
+建议签名：
+
+function [data,model,debug] = prepare_conditional_azimuth_data( ...
+    Xphi_q, Uq, Rphi_selected, alpha_q, opts)
+
+计算：
+
+Zphi_raw = Uq^H * Xphi_q
+
+Cphi_beam_q =
+alpha_q * Uq^H * Rphi_selected * Uq
+
+Tphi_q Cphi_beam_q Tphi_q^H = I
+
+Zphi_white = Tphi_q * Zphi_raw
 
 输出：
-results/conditional_azimuth_trial.csv
-results/joint_refinement_history.csv
-results/method_budget_comparison.csv
-results/method_score_gap.csv
-results/wrong_local_peak_summary.csv
-results/grouped_conditional_dml_keypoints.csv
-results/grouped_conditional_dml_report.md
 
-验收：
+data.Zphi_white
+data.Zphi_raw
+data.temporal_snapshot_count
+data.eta_condition_deg
+data.condition_source
+data.upstream_group_support_status
+data.statistical_calibration_status
+
+model.Uq
+model.Tphi_q
+model.array_coordinates
+model.lambda
+model.eta_condition_deg
+model.phase_factor
+model.fixed_measurement_hash
+
+要求：
+
+- 使用 Step12.2 build_psd_whitener；
+- alpha_q 只影响噪声尺度，不改变物理流形；
+- Uq 和 Tphi_q 在候选搜索期间固定；
+- 不得从候选方位或真值重新生成观测；
+- 保存白化误差和有效秩。
+
+------------------------------------------------------------
+6.3 条件方位流形
+------------------------------------------------------------
+
+新增：
+
+common/build_conditional_azimuth_manifold.m
+
+建议签名：
+
+function [Gphi,dGphi,info] = build_conditional_azimuth_manifold( ...
+    az_candidate_deg, model, opts)
+
+定义：
+
+Aphi =
+[a_phi(phi_1|eta_condition), ..., a_phi(phi_Kq|eta_condition)]
+
+Gphi =
+Tphi_q * Uq^H * Aphi
+
+要求：
+
+- Kq=1 或 Kq=2；
+- 导数相对于 radian；
+- 候选期间 Uq、Tphi_q、eta_condition 固定；
+- 不接受 candidate-dependent whitener；
+- 不接受 PhaseFactor；
+- 输出 rank 和固定对象 hash。
+
+============================================================
+七、条件方位 DML
+============================================================
+
+新增：
+
+common/estimate_conditional_azimuth_dml.m
+
+建议签名：
+
+function [est,debug] = estimate_conditional_azimuth_dml( ...
+    data, target_count_Kq, search_domain, model, opts)
+
+当前 Kq 由 oracle 给定：
+
+Kq ∈ {1,2}
+
+不做模型阶数选择。
+
+Kq=1：
+
+- 注册局部一维方位搜索；
+- 使用 Step12.2 SVD-DML。
+
+Kq=2：
+
+- 在小型注册局部方位域内枚举全部无序角对；
+- 不使用固定 az-separation 列表；
+- 不使用 topK；
+- 不使用 score gap；
+- 不使用 C05；
+- 不使用场景特殊阈值。
+
+输出至少包括：
+
+az_hat_deg
+score
+rss
+rank_Gphi
+num_score_eval
+num_svd
+runtime
+conditional_estimate_status
+upstream_group_support_status
+eta_condition_deg
+condition_source
+statistical_calibration_status
+fixed_measurement_hash
+
+状态至少包括：
+
+CONDITIONAL_AZIMUTH_RETURNED
+UPSTREAM_GROUP_STAGE_UNCERTIFIED
+AZIMUTH_MANIFOLD_RANK_UNCERTIFIED
+NO_FULL_RANK_AZIMUTH_CANDIDATE
+CONDITIONAL_AZIMUTH_NUMERICAL_FAILURE
+
+不得输出统计 confidence。
+
+============================================================
+八、三条俯仰条件链
+============================================================
+
+每个核心场景必须分别运行三条链。
+
+1. ORACLE_ELEVATION
+
+eta_condition = eta_truth
+
+用途：
+
+- 隔离条件方位实现正确性；
+- 不作为最终工程性能。
+
+2. ESTIMATED_ELEVATION
+
+eta_condition = 阶段 4 eta_hat
+
+用途：
+
+- 主工程链；
+- 所有最终主结果必须以此链为主。
+
+3. PERTURBED_ELEVATION
+
+eta_condition =
+eta_truth + delta_eta
+
+至少测试：
+
+delta_eta =
+±0.1、±0.25、±0.5 个 factor=1 俯仰网格步长
+或等价预注册物理偏差。
+
+用途：
+
+- 分析俯仰误差向方位估计传播；
+- 不得按场景调节偏差列表。
+
+必须输出：
+
+oracle_to_estimated_degradation
+estimated_to_perturbed_degradation
+azimuth_bias_vs_elevation_error
+
+如果方法只在 ORACLE_ELEVATION 下有效，
+不得宣称完整分组条件链成立。
+
+============================================================
+九、完整固定顺序 DML 数据
+============================================================
+
+新增：
+
+common/prepare_full_sequential_dml_data.m
+
+建议签名：
+
+function [data,model,debug] = prepare_full_sequential_dml_data( ...
+    Yelem, Wseq, Rn_elem, opts)
+
+计算：
+
+Zseq = Wseq^H * Yelem
+
+Cseq = Wseq^H * Rn_elem * Wseq
+
+Tseq Cseq Tseq^H = I
+
+Zseq_white = Tseq * Zseq
+
+模型：
+
+Gseq(Theta) =
+Tseq * Wseq^H * A_receive(Theta)
+
+要求：
+
+- 使用 Step12.1 的真实 Wseq；
+- 使用正确的阵元 permutation；
+- Rn_elem 与 fixture 的 Rz/Rphi 模型一致；
+- 对 separable covariance，按实际 vectorization 构造；
+- Wseq、Cseq、Tseq 在整个联合搜索期间固定；
+- 保存 hash；
+- 候选变化不能重建 Wseq 或 whitener；
+- 不使用阶段 4 恢复数据作为完整似然观测。
+
+新增测试：
+
+- Zseq 与逐级 DBF 输出一致；
+- Cseq 与 Monte Carlo/显式公式一致；
+- 白化误差通过；
+- 固定 hash 在全部候选间不变。
+
+============================================================
+十、完整顺序局部流形
+============================================================
+
+新增：
+
+common/build_full_sequential_local_manifold.m
+
+建议签名：
+
+function [Gseq,dGseq,info] = build_full_sequential_local_manifold( ...
+    target_angles_deg, model, opts)
+
+直接调用 factor=1 完整圆柱阵流形：
+
+A_receive =
+[a(az_1,el_1), ..., a(az_K,el_K)]
+
+Gseq =
+Tseq * Wseq^H * A_receive
+
+不得使用：
+
+a_phi⊗a_el 的独立近似替代完整候选评分。
+
+可以用因子化形式做一致性测试，但最终评分必须由完整流形得到。
+
+============================================================
+十一、联合修正
+============================================================
+
+新增：
+
+common/refine_joint_sequential_dml.m
+
+建议签名：
+
+function [est,history,debug] = refine_joint_sequential_dml( ...
+    full_data, initial_angles_deg, local_domain, model, opts)
+
+该更新属于经典 block-coordinate ascent/AP，
+不得作为新优化器主张。
+
+要求：
+
+1. 目标 canonical order 固定：
+   - 组按 elevation 排序；
+   - 组内目标按 azimuth 排序；
+   - 每次更新后重新 canonicalize。
+
+2. 逐目标、逐维更新：
+   - az_1、el_1、az_2、el_2；
+   - 每个一维子问题使用固定注册候选轴；
+   - 不按场景扩窗；
+   - 不动态改变网格；
+   - 不使用真值。
+
+3. 每次候选评分使用同一个：
+   - Zseq_white；
+   - Wseq；
+   - Tseq；
+   - 物理角域。
+
+4. 单调性：
+   J_new >= J_old - tau_numeric
+
+   tau_numeric 必须由机器精度和 score scale 决定，
+   不能是场景经验常数。
+
+5. 停止条件：
+   - relative score change；
+   - maximum angle update；
+   - max_iter；
+   三者使用全局固定配置。
+
+6. 状态：
+   JOINT_REFINEMENT_CONVERGED
+   JOINT_REFINEMENT_MAX_ITER
+   JOINT_REFINEMENT_NOT_RUN_UPSTREAM_UNCERTIFIED
+   JOINT_REFINEMENT_NUMERICAL_FAILURE
+
+7. 必须分别记录：
+   - 函数值收敛；
+   - 角度更新收敛；
+   - 是否收敛到 local-full reference 对应解；
+   - 错误局部峰；
+   - 每次迭代 score/RSS；
+   - 每维候选数；
+   - SVD 次数；
+   - runtime。
+
+8. 多初值：
+   - 主方法默认使用分组条件初始化；
+   - 额外多初值只能作为预注册 diagnostic；
+   - 所有 R 次运行全部计入成本；
+   - 不允许看结果后增加 R。
+
+============================================================
+十二、初始化和 baseline
+============================================================
+
+必须实现或运行以下方法。
+
+A. MAIN_GROUPED_CONDITIONAL_JOINT
+
+阶段 4 分组
+→ 条件方位
+→ 完整顺序联合修正
+
+B. GROUPED_CONDITIONAL_ONLY
+
+阶段 4 分组
+→ 条件方位
+→ 不联合修正
+
+C. DIRECT_AP_CONVENTIONAL_INIT
+
+使用同一个联合修正器，
+但初始化来自常规 DBF/固定波束中心，
+不使用俯仰分组恢复。
+
+它与主方法的差异只能是初始化和数据组织，
+不能使用不同评分函数。
+
+D. DIRECT_COORDINATE_ASCENT_FIXED_CENTER
+
+使用固定常规中心作为初始化的直接二维坐标更新。
+若与 AP 完全等价，应合并名称，不重复包装两个方法。
+
+E. LOCAL_FULL_DML_REFERENCE
+
+仅在可承受的小型局部物理角域中运行：
+
+- 同一 Wseq；
+- 同一白化观测；
+- 同一 K；
+- 同一物理角域；
+- 全部候选；
+- 只称 local full-grid reference，不称全局最优。
+
+F. CONVENTIONAL_DBF
+
+常规波束峰值或现有常规测角。
+
+G. FACTOR1_COMMON_EL / FACTOR1_CONTROLLED_PAIR2D
+
+若使用，必须：
+
+- 在 factor=1 下重新实现或重跑；
+- 使用相同数据、Wseq、白化和角域；
+- 不得读取旧 Step11 factor=2 性能数字。
+
+H. PR-DML
+
+只有能够按已发表公式准确复现时才运行。
+否则在结果中记录：
+
+PR_DML_STATUS = EXACT_REPRODUCTION_UNAVAILABLE
+
+不得用自定义简化版冒充。
+
+I. Kim 2012
+
+同样只有准确复现时运行，否则记录明确缺口。
+
+============================================================
+十三、baseline 状态作用域
+============================================================
+
+所有方法表必须区分：
+
+upstream_group_support_status
+method_estimate_status
+method_status_scope
+statistical_calibration_status
+
+常规 DBF、beam peak 等 baseline：
+
+method_status_scope = METHOD_ONLY
+upstream_group_support_status 可单独保存
+registered_model_certified_flag 不得直接继承到 baseline 方法
+
+不得让 fixture 的结构认证看起来像 baseline 方法本身被认证。
+
+============================================================
+十四、搜索域与禁止真值泄漏
+============================================================
+
+必须新增统一角域构造接口：
+
+common/build_common_registered_local_domain.m
+
+局部物理角域只能来自：
+
+1. 常规 DBF 检测波束和相邻波束边界；
+2. 预注册的常规测角中心及固定偏差；
+3. 预先冻结的工程角分辨单元。
+
+不得来自：
+
+- 真值中心；
+- 为某个方法单独缩小的窗口；
+- 看到结果后扩大的窗口；
+- 包含真值保证的人工区间。
+
+所有方法必须使用同一个物理角域。
+
+每个结果行记录：
+
+domain_id
+domain_source
+domain_bounds
+domain_hash
+truth_in_domain_flag
+truth_on_search_grid_flag
+grid_step_az_deg
+grid_step_el_deg
+
+若真值出域：
+
+- 不允许扩窗；
+- 记录 OUT_OF_REGISTERED_DOMAIN；
+- 计入无条件失败率。
+
+============================================================
+十五、必须增加 off-grid 场景
+============================================================
+
+阶段 5 不得只使用 truth-on-grid 场景。
+
+至少加入：
+
+1. 方位真值位于网格半步；
+2. 俯仰真值位于网格半步；
+3. 方位和俯仰同时 off-grid；
+4. 常规中心存在固定偏差；
+5. 目标靠近角域边界；
+6. 真值部分出域；
+7. 极近俯仰场景加入白噪声；
+8. 两维同时极近；
+9. 同俯仰 K2；
+10. Q2/K1+K1；
+11. 弱次目标；
+12. 相干源；
+13. 相关 Rz/Rphi；
+14. 缩小环向孔径；
+15. L=1 和 L>1。
+
+不得把 off-grid 结果通过临时增加网格点修复。
+
+============================================================
+十六、相干和弱目标场景
+============================================================
+
+必须区分：
+
+1. 时间波形相干，但环向响应不同；
+2. 同俯仰组内两个相干方位目标；
+3. 组系数接近比例；
+4. 第二目标功率逐级降低；
+5. 相干 + 弱目标组合。
+
+必须报告：
+
+- 条件方位流形秩；
+- 恢复组数据串扰；
+- 错误局部峰率；
+- joint score gap；
+- 无条件错误；
+- 不得用 unresolved/uncertified 删除困难样本。
+
+本阶段 Q/Kq 为 oracle，
+但算法失败仍必须计入主性能。
+
+============================================================
+十七、公平预算
+============================================================
+
+主方法的端到端预算必须包括：
+
+C_total_main =
+C_stage4_group_search
++ C_group_recovery
++ C_noise_propagation
++ C_conditional_azimuth
++ C_joint_refinement
++ C_multi_start
+
+不得只报告阶段 5 新增部分。
+
+每个方法必须记录：
+
+- score calls；
+- SVD calls；
+- eig/whitener calls；
+- 候选流形构造次数；
+- 迭代次数；
+- multi-start 次数；
+- wall time；
+- 最大主要数组内存；
+- 预计算时间；
+- 在线时间。
+
+local full、AP、主方法使用：
+
+- 相同物理数据；
+- 相同 Wseq；
+- 相同 K/Q/Kq 先验；
+- 相同角域；
+- 相同最终 DML score；
+- 相同硬件/软件环境。
+
+不得只给主方法更窄的搜索域。
+
+============================================================
+十八、数据划分
+============================================================
+
+必须分为：
+
+1. DESIGN
+   - 只用于实现、单元测试和固定全局优化容差。
+
+2. VALIDATION
+   - 用于一次性确认预注册配置。
+
+3. NORMAL_HOLDOUT
+   - 不参与任何参数、网格、迭代或多初值选择。
+
+4. STRESS_HOLDOUT
+   - 极近、弱目标、相干、边界、相关噪声和模型失配。
+
+所有配置在进入 holdout 前锁定并保存 hash。
+
+holdout 失败后不得修改：
+
+- 搜索域；
+- 网格；
+- max_iter；
+- multi-start；
+- 停止条件；
+- 目标匹配规则。
+
+============================================================
+十九、统计报告
+============================================================
+
+本阶段不进行模型阶数 bootstrap，
+但对 Monte Carlo 性能必须报告统计区间。
+
+核心有噪声场景每方法建议至少：
+
+Nmc >= 200
+
+并使用相同随机噪声 realization 做配对比较。
+
+报告：
+
+- 联合成功率；
+- 方位 RMSE；
+- 俯仰 RMSE；
+- 二维配对 RMSE；
+- conditional RMSE；
+- 无条件惩罚误差；
+- wrong-local-peak rate；
+- convergence rate；
+- score gap；
+- runtime；
+- score calls。
+
+成功率使用 Wilson 区间；
+方法差异使用配对 bootstrap 或成对重采样区间。
+
+不得只报告成功样本上的 conditional RMSE。
+
+============================================================
+二十、目标配对
+============================================================
+
+新增：
+
+common/match_target_sets.m
+
+评价时使用 Hungarian 或最小总二维角度代价。
+
+要求：
+
+- 只用于评价；
+- 不参与搜索；
+- 不影响候选排序；
+- 不使用真值修正算法输出；
+- 保存 permutation 和总代价。
+
+============================================================
+二十一、测试
+============================================================
+
+至少新增：
+
+1. test_group_noise_propagation.m
+   - Monte Carlo 验证 R_group 和 alpha_q；
+   - 样本误差随样本数下降。
+
+2. test_conditional_azimuth_manifold.m
+   - 与完整环向几何公式一致；
+   - 明确 cos(eta)；
+   - 导数误差 <=1e-6。
+
+3. test_conditional_azimuth_fixed_measurement.m
+   - 候选变化时 Uq/Tphi/hash 不变。
+
+4. test_conditional_azimuth_noise_whitening.m
+   - 白化后协方差接近单位阵。
+
+5. test_conditional_azimuth_q1_k2.m
+   - 同俯仰双目标方位搜索。
+
+6. test_oracle_estimated_perturbed_elevation.m
+   - 三条条件链全部运行。
+
+7. test_full_sequential_data_equivalence.m
+   - 原始逐级 DBF 与 Wseq^H*Y 一致；
+   - Cseq 公式和白化通过。
+
+8. test_full_sequential_manifold.m
+   - 与 factor=1 完整流形一致。
+
+9. test_joint_refinement_monotonicity.m
+   - 单调性违规数为 0。
+
+10. test_joint_refinement_canonical_order.m
+    - 标签交换不改变最终集合。
+
+11. test_no_truth_dependent_domain.m
+    - active 搜索域构造器不接受 truth。
+
+12. test_upstream_group_gate.m
+    - 上游 uncertified 时阶段 5 不运行。
+
+13. test_baseline_status_scope.m
+    - baseline 不继承结构认证为方法认证。
+
+14. test_stage5_scope_rules.m
+    禁止：
+    - C05；
+    - topK；
+    - score-gap 分支；
+    - PhaseFactor=2；
+    - 固定 1e-10 ridge；
+    - high confidence；
+    - candidate-dependent W/whitener；
+    - truth-dependent domain。
+
+============================================================
+二十二、输出
+============================================================
+
+不要覆盖阶段 4 结果。
+
+建议新增：
+
+step_12_3_grouped_conditional_dml/results_stage5/
+
+输出至少包括：
+
+conditional_azimuth_trial.csv
+conditional_azimuth_elevation_error_propagation.csv
+group_noise_propagation.csv
+joint_refinement_history.csv
+joint_refinement_trial.csv
+method_budget_comparison.csv
+method_score_gap.csv
+wrong_local_peak_summary.csv
+offgrid_holdout.csv
+normal_holdout_summary.csv
+stress_holdout_summary.csv
+baseline_reproduction_status.csv
+stage5_keypoints.csv
+stage5_report.md
+
+每个方法结果行至少包含：
+
+scenario
+data_split
+method
+K
+oracle_Q
+oracle_Kq
+condition_source
+eta_condition_deg
+upstream_group_support_status
+conditional_estimate_status
+joint_refinement_status
+statistical_calibration_status
+domain_id
+domain_source
+domain_hash
+truth_in_domain_flag
+truth_on_search_grid_flag
+az_hat_deg
+el_hat_deg
+score
+rss
+normalized_score_gap_to_local_full
+az_rmse
+el_rmse
+pair_rmse
+success_flag
+wrong_local_peak_flag
+num_score_eval_stage4
+num_score_eval_conditional
+num_score_eval_joint
+num_score_eval_total
+num_svd_total
+num_eig_total
+num_multi_start
+runtime_total
+pass_flag
+phase_factor
+
+============================================================
+二十三、技术验收门
+============================================================
+
+全部满足才允许 PASS。
+
+A. 数学与接口正确性
+
+- 条件方位流形与完整环向公式一致；
+- cos(eta) 依赖得到验证；
+- 组恢复噪声传播通过；
+- 条件方位白化通过；
+- 完整顺序观测、协方差和流形通过；
+- 联合修正只使用原始完整顺序观测；
+- 候选期间 W/U/whitener/hash 固定；
+- phase_factor=1。
+
+B. 确定性正确性
+
+- grid-aligned、无噪声、模型匹配场景中：
+  主方法与 local full reference 的角度集合一致，
+  或误差不超过一个预注册最终网格步长；
+- normalized score gap <=1e-10；
 - 单调性违规为 0；
-- 函数值收敛、角度收敛、正确解收敛分别报告；
-- 同俯仰 K2 由条件方位处理；
-- 同预算下接近或优于 local full/AP/PR 的 Pareto 前沿；
-- 大量多初值导致成本不低于 full DML 时，降级为初始化方法；
-- 收益来自真值泄漏候选域时否决；
-- 完成后停止，不进入切向理论或 FIM。
+- 标签交换不改变最终目标集合；
+- Q1/K2 同俯仰场景由条件方位正确处理。
+
+C. 误差传播
+
+- ORACLE_ELEVATION、ESTIMATED_ELEVATION、
+  PERTURBED_ELEVATION 均有结果；
+- 不得只展示 oracle 链；
+- 若估计俯仰链明显失效，不能以 oracle 结果支持完整算法。
+
+D. 公平性
+
+- 所有方法使用同一物理角域；
+- 不存在真值中心窗口；
+- 主方法总成本包含阶段 4；
+- multi-start 全部计入；
+- old factor=2 结果未被使用；
+- local full 只称局部 reference。
+
+E. holdout/Pareto 门
+
+主方法必须在独立 holdout 上满足下列之一：
+
+方案 1：复杂度收益
+
+- 相对最强同预算 AP/直接坐标 baseline，
+  成功率差的 95% 下界 >= -0.02；
+- 平均端到端 score calls 至少降低 20%。
+
+或方案 2：性能收益
+
+- 在端到端 score calls 不高于 baseline 的条件下，
+  成功率差的 95% 下界 > 0，
+  或无条件惩罚误差显著下降。
+
+同时，相对 local full reference：
+
+- 不要求性能超过 local full；
+- 但应以明显更少的 score calls 接近其成功率和最终 score；
+- 若成本不低于 local full，且性能无改善，则失败。
+
+若两种方案均不满足：
+
+- 不得继续包装为核心算法创新；
+- 降级为工程初始化或失败路线。
+
+F. 证据边界
+
+- 不宣称自动 Q/K；
+- 不宣称统计 confidence；
+- 不宣称 PR/Kim 比较完成，除非准确复现；
+- 不进入阶段 6。
+
+============================================================
+二十四、停止和否决条件
+============================================================
+
+出现任一项必须 FAIL 或 PARTIAL：
+
+1. 条件方位必须使用真值俯仰才工作；
+2. 估计俯仰链相对直接 AP 无实际收益；
+3. 联合修正大量落入错误局部峰；
+4. 必须按场景扩窗或增加多初值；
+5. 主方法总成本不低于 local full；
+6. 收益来自更窄、含真值的候选域；
+7. 阶段 4 uncertified 样本仍被强制向下处理；
+8. 组恢复噪声被假设为独立但未验证；
+9. 候选期间重建 Wseq/Uq/whitener；
+10. baseline 状态继续混淆 fixture 支持和方法认证；
+11. off-grid 或边界失败后增加特殊规则；
+12. 使用旧 factor=2 结果；
+13. 为通过测试恢复 C05、topK、gap 或经验综合分数。
+
+无论 PASS、PARTIAL 或 FAIL，本轮结束后停止。
+
+============================================================
+二十五、最终 A–J 报告
+============================================================
+
+A. 阶段结论
+   - PASS / PARTIAL / FAIL
+   - 候选贡献是保留、降级还是否决
+   - 是否允许进入阶段 6
+
+B. 阅读和 prior-art 边界
+
+C. 文件清单
+   - public/private/test-only
+   - 新增与修改路径
+
+D. 公式到代码映射
+   - 组噪声传播
+   - 条件方位数据
+   - 完整顺序数据
+   - 联合修正
+
+E. 数据维度和固定对象
+   - Xphi
+   - Uq
+   - Zphi
+   - Tphi
+   - Wseq
+   - Zseq
+   - Tseq
+   - Gphi
+   - Gseq
+
+F. 测试和命令
+
+G. 关键结果及置信区间
+   - oracle/estimated/perturbed
+   - off-grid
+   - normal/stress holdout
+   - wrong peak
+   - score gap
+
+H. 完整复杂度
+   - 阶段 4 + 条件方位 + 联合修正
+   - score/SVD/eig/multi-start/runtime/memory
+
+I. 风险和未完成项
+   - oracle Q/Kq
+   - PR/Kim 缺口
+   - 未模型阶数校准
+   - 未 FIM/切向理论
+
+J. 下一阶段判定
+   - 只有全部技术和 Pareto 门通过，才可写：
+     “技术上允许后续单独授权进入阶段 6。”
+   - 本轮必须停止。
 ```
 
 # 阶段 6：核心创新点 2——固定白化顺序流形的近双目标渐近验证

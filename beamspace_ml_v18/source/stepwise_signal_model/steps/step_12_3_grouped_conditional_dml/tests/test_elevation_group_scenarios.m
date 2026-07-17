@@ -157,6 +157,15 @@ end
 trial_table = struct2table(vertcat(trial_rows{:}));
 identifiability_table = struct2table(vertcat(ident_rows{:}));
 recovery_table = struct2table(vertcat(recovery_rows{:}));
+peak_rows = trial_table.method == "elevation_beam_peak";
+baseline_scope_pass = all(trial_table.upstream_group_support_status(peak_rows) == ...
+    trial_table.expected_upstream_group_support_status(peak_rows)) && ...
+    all(trial_table.method_status_scope(peak_rows) == "UPSTREAM_FIXTURE_ONLY") && ...
+    all(trial_table.method_certification_status(peak_rows) == ...
+    "NOT_APPLICABLE_BASELINE") && ...
+    all(trial_table.support_status(peak_rows) == "NOT_APPLICABLE_BASELINE") && ...
+    all(~trial_table.registered_model_certified_flag(peak_rows)) && ...
+    all(~trial_table.structural_gate_pass_flag(peak_rows));
 if any(~trial_table.pass_flag)
     disp(trial_table(~trial_table.pass_flag, :));
 end
@@ -175,6 +184,9 @@ assert(all(identifiability_table.pass_flag), ...
 assert(all(recovery_table.pass_flag), ...
     'test_elevation_group_scenarios:RecoveryFailed', ...
     'An elevation-group recovery gate failed.');
+assert(baseline_scope_pass, ...
+    'test_elevation_group_scenarios:BaselineStatusScope', ...
+    'The elevation-beam baseline inherited registered-model certification.');
 assert(common_group_sum_relative_error < 5e-10, ...
     'test_elevation_group_scenarios:CommonGroupSum', ...
     'The common-elevation Q1 recovery did not equal the within-group sum.');
@@ -188,6 +200,7 @@ context.total_estimator_runtime_sec = total_runtime_sec;
 context.common_group_sum_relative_error = common_group_sum_relative_error;
 context.max_structurally_supported_truth_residual = ...
     max_structurally_supported_truth_residual;
+context.baseline_status_scope_pass = baseline_scope_pass;
 context.num_physical_scenarios = numel(specs);
 context.num_structural_counterexamples = 1;
 context.ap_pr_baseline_status = ...
@@ -304,6 +317,22 @@ row.num_multi_start = 0;
 row.runtime_sec = runtime_sec;
 row.estimate_status = string(est.estimate_status);
 row.support_status = string(est.support_status);
+row.upstream_group_support_status = string(fixture.expected_support_status);
+row.expected_upstream_group_support_status = ...
+    string(fixture.expected_support_status);
+if strcmp(method, 'elevation_beam_peak')
+    row.method_status_scope = "UPSTREAM_FIXTURE_ONLY";
+    row.method_certification_status = "NOT_APPLICABLE_BASELINE";
+    row.expected_support_status = "NOT_APPLICABLE_BASELINE";
+elseif strcmp(method, 'vertical_element_domain_dml')
+    row.method_status_scope = "METHOD_REGISTERED_REFERENCE";
+    row.method_certification_status = string(est.support_status);
+    row.expected_support_status = string(fixture.expected_support_status);
+else
+    row.method_status_scope = "METHOD_AND_UPSTREAM_REGISTERED_MODEL";
+    row.method_certification_status = string(est.support_status);
+    row.expected_support_status = string(fixture.expected_support_status);
+end
 row.statistical_calibration_status = ...
     string(est.statistical_calibration_status);
 row.registered_model_certified_flag = ...
@@ -311,7 +340,6 @@ row.registered_model_certified_flag = ...
 row.structural_gate_pass_flag = est.structural_gate_pass_flag;
 row.estimate_returned_flag = est.estimate_returned_flag;
 row.expected_estimate_status = string(fixture.expected_estimate_status);
-row.expected_support_status = string(fixture.expected_support_status);
 row.pass_flag = pass_flag;
 row.phase_factor = 1;
 end
@@ -460,11 +488,10 @@ est.rank_Z_recovery_diagnostic = NaN;
 est.num_score_eval = numel(fixture.el_beam_deg);
 est.num_svd = 0;
 est.estimate_status = 'ESTIMATE_RETURNED';
-est.support_status = fixture.expected_support_status;
+est.support_status = 'NOT_APPLICABLE_BASELINE';
 est.statistical_calibration_status = 'NOT_CALIBRATED_STAGE4';
-est.registered_model_certified_flag = strcmp( ...
-    fixture.expected_support_status, 'GROUP_REGISTERED_MODEL_CERTIFIED');
-est.structural_gate_pass_flag = true;
+est.registered_model_certified_flag = false;
+est.structural_gate_pass_flag = false;
 est.estimate_returned_flag = true;
 est.coefficient_rank_evidence_kind = ...
     fixture.coefficient_rank_evidence_kind;

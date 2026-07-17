@@ -1,0 +1,19 @@
+function digest = build_stage5_configuration_hash(config)
+%BUILD_STAGE5_CONFIGURATION_HASH Hash all pre-holdout stage-5 controls.
+
+required = {'conventional_center_deg','az_beam_deg','el_beam_deg', ...
+    'azimuth_offsets_deg','elevation_offsets_deg','max_iter', ...
+    'relative_score_tolerance','angle_tolerance_deg', ...
+    'main_num_multi_start','direct_num_multi_start', ...
+    'success_gate_az_deg','success_gate_el_deg', ...
+    'wrong_peak_gate_pair_deg','penalty_pair_error_deg'};
+if ~(isstruct(config) && isscalar(config) && all(isfield(config, required)))
+    error('build_stage5_configuration_hash:Config', ...
+        'config is missing a registered pre-holdout field.');
+end
+canonical = struct();
+for idx = 1:numel(required)
+    canonical.(required{idx}) = config.(required{idx});
+end
+digest = stable_object_hash(canonical);
+end

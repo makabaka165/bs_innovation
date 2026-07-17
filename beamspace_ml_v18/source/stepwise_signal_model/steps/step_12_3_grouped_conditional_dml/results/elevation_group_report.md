@@ -43,7 +43,7 @@ Public code builds fixed separable whiteners, prepares score and recovery coordi
 - Status semantics: 6/6.
 - Trial/diagnostic/recovery rows: 23/23, 10/10, 16/16.
 - Common scope rules: 12/12.
-- Code Analyzer: 23 files, 0 messages.
+- Code Analyzer: 62 files, 0 messages.
 
 ## G. Key numerical results
 
@@ -51,6 +51,7 @@ Public code builds fixed separable whiteners, prepares score and recovery coordi
 - Separable/Kronecker data, score, and RSS errors: `1.198900e-16`, `0.000000e+00`, `0.000000e+00`.
 - Structural counterexample: estimate `ESTIMATE_NOT_RUN_STRUCTURAL_RANK_FAILURE`, support `GROUP_MMV_RANK_UNCERTIFIED`, `rank(Ce)=1`; this rejects certification of the current registered Q-group MMV recovery chain only.
 - Correlated row/column case: column whitening applied `1`, angle error `0.000000e+00` deg.
+- Elevation-beam peak baseline scope: `UPSTREAM_FIXTURE_ONLY`; method certification: `NOT_APPLICABLE_BASELINE`; fixture support is retained only in `upstream_group_support_status`.
 - Common-elevation group-sum recovery error: `3.891164e-15`.
 - Maximum test-only recovery Frobenius/chordal errors: `1.041807e-03` / `1.037638e-03`.
 - No interval, posterior, or calibrated probability is reported; every active calibration state is `NOT_CALIBRATED_STAGE4`.
@@ -58,7 +59,7 @@ Public code builds fixed separable whiteners, prepares score and recovery coordi
 ## H. Complexity
 
 - Score calls: 1248; SVD calls: 3326; row/column eig calls: 47.
-- Multi-start runs: 0; validation runtime: 2.896261 s.
+- Multi-start runs: 0; validation runtime: 3.170970 s.
 - Maximum score-plus-recovery data storage: 74880 bytes.
 - Maximum candidate-manifold storage: 30240 bytes.
 - Maximum row-plus-column whitener storage: 68896 bytes.

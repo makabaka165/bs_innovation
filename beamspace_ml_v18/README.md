@@ -5,11 +5,14 @@
 ## 权威材料
 
 - `paper/full_manuscript_v0.18_引用文献支撑修订稿.md`：便于检索、批注和代码映射的正文源稿。
+- `paper/full_manuscript_v0.19_sequential_dbf_revision.md`：当前 factor=1、Step12.3 阶段 5 活跃修订源稿。
 - `paper/beamspace_ml_paper_v0.18_引用文献支撑修订稿.docx`：当前 v18 Word 稿。
 - `paper/beamspace_ml_paper_v0.18_引用文献支撑修订稿.pdf`：当前 v18 PDF 稿。
 - `paper/figures_v16_image2/`：正文 Markdown 当前引用的 17 张最终图片，并额外保留图 4-2 的矢量 PDF。目录名沿用正文中的现有相对路径，内容对应 v18。
 
 正文是论文主张的权威来源；`review/supporting_notes/` 中的材料用于辅助理解，其中部分文件形成时间早于 v18，不能覆盖正文。
+
+当前活跃数值证据来自 Step12，而不是下面保留审计的 Step11/v18 路线。Step11 圆柱阵结果由 `phase_factor=2` 产生，已冻结为 legacy；阶段 5 runner 再次复核了 351 个 Step11 结果文件、117,091,926 bytes，哈希不匹配为 0。
 
 ## 目录说明
 
@@ -37,6 +40,18 @@ v18 正文将贡献组织为一条主贡献和三个支撑机制：
 - `source/stepwise_signal_model/steps/step_11_5_likelihood_uncertainty_adaptive_beamspace_ml_search/`
 - `source/stepwise_signal_model/steps/step_11_6_shared_center_rotatable_beamspace_manifold_cache/`
 - `source/stepwise_signal_model/steps/step_11_7_final_cached_c05_beamspace_ml_route/`
+
+## Factor=1 活跃修订主线
+
+Step12 已完成接收单程流形、真实先俯仰后方位 DBF、稳定 SVD/QR-DML、
+oracle-Q 俯仰组恢复，以及阶段 5 的条件方位和固定完整顺序流形修正。入口为：
+
+- `source/stepwise_signal_model/steps/step_12_0_receive_model_correction/`
+- `source/stepwise_signal_model/steps/step_12_1_sequential_dbf_model/`
+- `source/stepwise_signal_model/steps/step_12_2_stable_dml_backend/`
+- `source/stepwise_signal_model/steps/step_12_3_grouped_conditional_dml/`
+
+阶段 5 在 oracle `Q/Kq`、统一注册局部角域和 `phase_factor=1` 下通过技术门与 Pareto 方案 1：455 个 holdout 配对中，主链与两初值直接 AP 的成功率相同，配对差异 95% 区间为 `[0,0]`；主链端到端 score calls 平均减少 `44.95%`，相对 local-full 减少 `74.95%`。该证据只支持一种工程初始化和数据组织收益，不把条件 DML、AP、坐标上升或 SVD 投影声明为新算法。所有有噪声输出均为 `NOT_CALIBRATED_STAGE5`；相干弱目标核心 stress 场景中三种 DML 路线均为 `0/200`，自动 Q/K、FIM、bootstrap、K=3、cache 和硬件映射尚未实现。
 
 ## 绘图代码
 

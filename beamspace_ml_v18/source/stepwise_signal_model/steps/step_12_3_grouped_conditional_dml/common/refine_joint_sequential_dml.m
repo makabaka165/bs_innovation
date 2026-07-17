@@ -1,0 +1,248 @@
+function [est, history, debug] = refine_joint_sequential_dml( ...
+    full_data, initial_angles_deg, local_domain, model, opts)
+%REFINE_JOINT_SEQUENTIAL_DML Classical fixed-grid coordinate ascent.
+
+if nargin < 5 || isempty(opts)
+    opts = struct();
+end
+opts = normalize_options_local(opts);
+validate_inputs_local(full_data, initial_angles_deg, local_domain, model);
+K = size(initial_angles_deg, 1);
+angles = canonicalize_local(initial_angles_deg);
+est = empty_estimate_local(K, model, opts);
+history_rows = cell(0, 1);
+debug = base_debug_local(local_domain, model, opts);
+
+if opts.require_upstream_group_gate && ...
+        ~(opts.upstream_estimate_returned_flag && ...
+        opts.upstream_structural_gate_pass_flag)
+    est.joint_refinement_status = ...
+        'JOINT_REFINEMENT_NOT_RUN_UPSTREAM_UNCERTIFIED';
+    history = empty_history_local();
+    return;
+end
+
+[current_score, current_rss, current_rank, counts] = ...
+    score_angles_local(full_data, angles, model, opts);
+debug.num_score_eval = counts.score;
+debug.num_svd = counts.svd;
+if ~isfinite(current_score) || current_rank < K
+    est.joint_refinement_status = 'JOINT_REFINEMENT_NUMERICAL_FAILURE';
+    history = empty_history_local();
+    return;
+end
+history_rows{end + 1, 1} = history_row_local( ...
+    0, current_score, current_rss, 0, Inf, false, false, false);
+
+start_tic = tic;
+converged = false;
+for iteration = 1:opts.max_iter
+    iteration_start_angles = angles;
+    iteration_start_score = current_score;
+    monotonic_violation = false;
+    for target_idx = 1:K
+        for dimension = 1:2
+            if dimension == 1
+                axis_values = local_domain.az_grid_deg;
+            else
+                axis_values = local_domain.el_grid_deg;
+            end
+            best_angles = angles;
+            best_score = current_score;
+            best_rss = current_rss;
+            for candidate_idx = 1:numel(axis_values)
+                candidate_angles = angles;
+                candidate_angles(target_idx, dimension) = ...
+                    axis_values(candidate_idx);
+                candidate_angles = canonicalize_local(candidate_angles);
+                [candidate_score, candidate_rss, candidate_rank, now] = ...
+                    score_angles_local(full_data, candidate_angles, model, opts);
+                debug.num_score_eval = debug.num_score_eval + now.score;
+                debug.num_svd = debug.num_svd + now.svd;
+                debug.num_candidate_manifold_build = ...
+                    debug.num_candidate_manifold_build + 1;
+                if candidate_rank == K && candidate_score > best_score
+                    best_score = candidate_score;
+                    best_rss = candidate_rss;
+                    best_angles = candidate_angles;
+                end
+            end
+            tau_numeric = numeric_tolerance_local(current_score, ...
+                numel(full_data.Zseq_white));
+            if best_score < current_score - tau_numeric
+                monotonic_violation = true;
+            else
+                angles = canonicalize_local(best_angles);
+                current_score = best_score;
+                current_rss = best_rss;
+            end
+        end
+    end
+    max_angle_update = max(abs(angles(:) - iteration_start_angles(:)));
+    relative_score_change = abs(current_score - iteration_start_score) / ...
+        max(abs(iteration_start_score), realmin(class(current_score)));
+    function_converged = relative_score_change <= ...
+        opts.relative_score_tolerance;
+    angle_converged = max_angle_update <= opts.angle_tolerance_deg;
+    debug.monotonicity_violation_count = ...
+        debug.monotonicity_violation_count + double(monotonic_violation);
+    history_rows{end + 1, 1} = history_row_local( ...
+        iteration, current_score, current_rss, max_angle_update, ...
+        relative_score_change, function_converged, angle_converged, ...
+        monotonic_violation); %#ok<AGROW>
+    if function_converged && angle_converged
+        converged = true;
+        break;
+    end
+end
+runtime_sec = toc(start_tic);
+history = struct2table(vertcat(history_rows{:}));
+
+est.angles_hat_deg = angles;
+est.az_hat_deg = angles(:, 1).';
+est.el_hat_deg = angles(:, 2).';
+est.score = current_score;
+est.rss = current_rss;
+est.rank_Gseq = K;
+est.iteration_count = height(history) - 1;
+est.num_score_eval = debug.num_score_eval;
+est.num_svd = debug.num_svd;
+est.runtime = runtime_sec;
+est.estimate_returned_flag = true;
+if converged
+    est.joint_refinement_status = 'JOINT_REFINEMENT_CONVERGED';
+else
+    est.joint_refinement_status = 'JOINT_REFINEMENT_MAX_ITER';
+end
+debug.function_converged_flag = history.function_converged(end);
+debug.angle_converged_flag = history.angle_converged(end);
+debug.final_fixed_measurement_hash = model.fixed_measurement_hash;
+end
+
+function [score, rss, rank_G, counts] = ...
+    score_angles_local(data, angles, model, opts)
+[G, ~, info] = build_full_sequential_local_manifold( ...
+    angles, model, struct('rank_multiplier', opts.rank_multiplier));
+rank_G = info.rank_Gseq;
+counts = struct('score', 0, 'svd', info.num_svd);
+if rank_G < size(angles, 1)
+    score = -Inf;
+    rss = Inf;
+    return;
+end
+[score, rss] = beamspace_dml_score_svd(data.Zseq_white, G, ...
+    struct('requested_rank', size(angles, 1), ...
+    'rank_multiplier', opts.rank_multiplier, ...
+    'compute_projector_checks', false));
+counts.score = 1;
+counts.svd = counts.svd + 1;
+end
+
+function opts = normalize_options_local(opts)
+if ~(isstruct(opts) && isscalar(opts))
+    error('refine_joint_sequential_dml:Options', ...
+        'opts must be a scalar struct.');
+end
+allowed = {'max_iter','relative_score_tolerance','angle_tolerance_deg', ...
+    'rank_multiplier','require_upstream_group_gate', ...
+    'upstream_estimate_returned_flag','upstream_structural_gate_pass_flag', ...
+    'upstream_group_support_status','method_status_scope','num_multi_start'};
+unknown = setdiff(fieldnames(opts), allowed);
+if ~isempty(unknown)
+    error('refine_joint_sequential_dml:UnknownOption', ...
+        'Unknown option: %s.', unknown{1});
+end
+defaults = struct('max_iter', 8, 'relative_score_tolerance', 1e-9, ...
+    'angle_tolerance_deg', 0, 'rank_multiplier', 1, ...
+    'require_upstream_group_gate', true, ...
+    'upstream_estimate_returned_flag', false, ...
+    'upstream_structural_gate_pass_flag', false, ...
+    'upstream_group_support_status', 'NOT_APPLICABLE', ...
+    'method_status_scope', 'METHOD_AND_UPSTREAM_REGISTERED_MODEL', ...
+    'num_multi_start', 1);
+names = fieldnames(defaults);
+for idx = 1:numel(names)
+    if ~isfield(opts, names{idx})
+        opts.(names{idx}) = defaults.(names{idx});
+    end
+end
+if ~(isscalar(opts.max_iter) && opts.max_iter >= 1 && ...
+        opts.max_iter == fix(opts.max_iter))
+    error('refine_joint_sequential_dml:MaxIter', ...
+        'max_iter must be a positive integer.');
+end
+end
+
+function validate_inputs_local(data, angles, domain, model)
+if ~(isstruct(data) && isscalar(data) && isfield(data, 'Zseq_white') && ...
+        ~isempty(data.Zseq_white) && all(isfinite(data.Zseq_white(:))))
+    error('refine_joint_sequential_dml:Data', ...
+        'full_data must contain finite non-empty Zseq_white.');
+end
+if ~(isnumeric(angles) && ismatrix(angles) && size(angles, 2) == 2 && ...
+        ~isempty(angles) && all(isfinite(angles(:))))
+    error('refine_joint_sequential_dml:InitialAngles', ...
+        'initial_angles_deg must be a finite K-by-2 matrix.');
+end
+if ~(isstruct(domain) && isscalar(domain) && ...
+        all(isfield(domain, {'az_grid_deg','el_grid_deg','domain_hash'})))
+    error('refine_joint_sequential_dml:Domain', ...
+        'local_domain must be a registered common domain.');
+end
+if ~strcmp(data.fixed_measurement_hash, model.fixed_measurement_hash)
+    error('refine_joint_sequential_dml:FixedMeasurementHash', ...
+        'The full data and model fixed-measurement hashes differ.');
+end
+end
+
+function angles = canonicalize_local(angles)
+[~, order] = sortrows([angles(:, 2), angles(:, 1)], [1, 2]);
+angles = angles(order, :);
+end
+
+function value = numeric_tolerance_local(score, count)
+value = 64 * max(count, 1) * eps(max(1, abs(score)));
+end
+
+function row = history_row_local(iteration, score, rss, update, change, ...
+    function_converged, angle_converged, violation)
+row = struct('iteration', iteration, 'score', score, 'rss', rss, ...
+    'max_angle_update_deg', update, 'relative_score_change', change, ...
+    'function_converged', function_converged, ...
+    'angle_converged', angle_converged, ...
+    'monotonicity_violation_flag', violation, ...
+    'statistical_calibration_status', "NOT_CALIBRATED_STAGE5", ...
+    'phase_factor', 1);
+end
+
+function history = empty_history_local()
+history = struct2table(repmat(history_row_local(0, NaN, NaN, NaN, NaN, ...
+    false, false, false), 0, 1));
+end
+
+function est = empty_estimate_local(K, model, opts)
+est = struct('angles_hat_deg', NaN(K, 2), 'az_hat_deg', NaN(1, K), ...
+    'el_hat_deg', NaN(1, K), 'score', NaN, 'rss', NaN, ...
+    'rank_Gseq', 0, 'iteration_count', 0, 'num_score_eval', 0, ...
+    'num_svd', 0, 'runtime', 0, ...
+    'joint_refinement_status', 'JOINT_REFINEMENT_NUMERICAL_FAILURE', ...
+    'upstream_group_support_status', opts.upstream_group_support_status, ...
+    'method_status_scope', opts.method_status_scope, ...
+    'statistical_calibration_status', 'NOT_CALIBRATED_STAGE5', ...
+    'fixed_measurement_hash', model.fixed_measurement_hash, ...
+    'num_multi_start', opts.num_multi_start, ...
+    'estimate_returned_flag', false, 'phase_factor', 1);
+end
+
+function debug = base_debug_local(domain, model, opts)
+debug = struct('num_score_eval', 0, 'num_svd', 0, ...
+    'num_candidate_manifold_build', 0, 'monotonicity_violation_count', 0, ...
+    'azimuth_candidate_count_per_dimension', numel(domain.az_grid_deg), ...
+    'elevation_candidate_count_per_dimension', numel(domain.el_grid_deg), ...
+    'fixed_measurement_hash', model.fixed_measurement_hash, ...
+    'domain_hash', domain.domain_hash, ...
+    'canonical_order', 'elevation_then_azimuth', ...
+    'update_order', 'target_then_azimuth_then_elevation', ...
+    'numeric_monotonic_tolerance_source', 'machine_epsilon_and_score_scale', ...
+    'max_iter', opts.max_iter, 'phase_factor', 1);
+end
