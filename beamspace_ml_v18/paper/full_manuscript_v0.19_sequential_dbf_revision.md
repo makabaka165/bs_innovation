@@ -1,9 +1,9 @@
 # 圆柱阵顺序数字波束形成后局部未分辨目标簇测角：接收单程模型修订稿
 
-> **版本：v0.19 Step12.2 stable-DML-backend revision，2026-07-17**
+> **版本：v0.19 Step12.3A-C elevation-group-DML revision，2026-07-17**
 > **活跃空间相位：`phase_factor=1`**  
 > **证据状态：v0.18/Step11 的圆柱阵数值结果由 `phase_factor=2` 产生，已失效并冻结为 legacy，不构成本稿结论。**  
-> **完成状态：本稿已完成接收模型、真实先俯仰后方位 DBF 和稳定白化/SVD-DML 数值后端的工程验证；俯仰分组、条件角度搜索、联合修正、FIM 波束设计、K1/K2 bootstrap 与新性能实验均未完成。**
+> **完成状态：本稿已完成接收模型、真实先俯仰后方位 DBF、稳定白化/SVD-DML 数值后端，以及已知 Q 条件下俯仰组 DML、可辨识性诊断和组数据恢复的工程验证；条件方位搜索、联合修正、FIM 波束设计、K1/K2 bootstrap 与端到端性能实验均未完成。**
 
 ## 版本说明与术语账本
 
@@ -25,7 +25,7 @@ v0.19 是从物理模型重新起步的修订源稿，不继承 v0.18 的波束�
 
 当前阶段实现了不接受相位因子参数的单程圆柱阵导向函数及其相对于弧度方位角、俯仰角的解析导数。基于 10 GHz、192×32 圆柱阵及 65×32 工作子阵的确定性验证表明，导向函数与逐元素公式的最大误差为 0；9 个方位/俯仰中心上的方位和俯仰导数最大相对误差分别为 $1.020\times10^{-9}$ 和 $1.476\times10^{-9}$。在均匀加权单目标切面中，factor=1 的方位和俯仰 3 dB 波束宽度分别为 $2.0275^\circ$ 和 $2.8378^\circ$，约为隔离 factor=2 历史对照的 2 倍。
 
-在此基础上，本稿建立了显式阵元 permutation、逐方位列俯仰 DBF、逐俯仰通道条件方位 DBF 及其等效 Kronecker 波束矩阵。随机复数据、factor=1 单目标和双目标快拍的逐级输出与等效矩阵输出相对误差均低于 $2\times10^{-15}$；20,000 个阵元白噪声样本的输出协方差相对 $W_{\rm seq}^{H}W_{\rm seq}$ 的误差为 0.02195。进一步建立的有效子空间白化器返回 $\operatorname{rank}(C)\times B$ 坐标；rank-deficient 协方差案例的白化误差为 $8.306\times10^{-16}$。良态 SVD-DML 与 `pinv` 参考的最大相对误差为 $1.681\times10^{-15}$，流形整体缩放 $10^{-8}/1/10^8$ 时评分相对展宽为 $5.937\times10^{-16}$。这些结果只验证顺序波束形成和数值评分后端，不验证局部目标簇角度搜索或超分辨性能。俯仰组可辨识性、条件方位 DML、完整流形联合修正、相关波束 exact-subset FIM 设计和 K1/K2 校准仍需后续独立阶段验证。
+在此基础上，本稿建立了显式阵元 permutation、逐方位列俯仰 DBF、逐俯仰通道条件方位 DBF 及其等效 Kronecker 波束矩阵。随机复数据、factor=1 单目标和双目标快拍的逐级输出与等效矩阵输出相对误差均低于 $2\times10^{-15}$；20,000 个阵元白噪声样本的输出协方差相对 $W_{\rm seq}^{H}W_{\rm seq}$ 的误差为 0.02195。进一步建立的有效子空间白化器返回 $\operatorname{rank}(C)\times B$ 坐标；rank-deficient 协方差案例的白化误差为 $8.306\times10^{-16}$。良态 SVD-DML 与 `pinv` 参考的最大相对误差为 $1.681\times10^{-15}$，流形整体缩放 $10^{-8}/1/10^8$ 时评分相对展宽为 $5.937\times10^{-16}$。在已知俯仰组数 $Q$ 的条件下，9 个 factor=1 物理场景通过了俯仰组 DML、$\operatorname{rank}(G_e)$/$\operatorname{rank}(C_e)$、有限局部子空间别名和组数据恢复门；可辨场景的无噪声真值残差最大为 $1.037\times10^{-14}$。一个满足 $N_\phi=8>Q=2$ 但 $\operatorname{rank}(C_e)=1$ 的显式 MMV 反例返回 `GROUP_UNIDENTIFIABLE`，未输出两个高置信组；同俯仰 Q1/K2 场景的组内叠加恢复相对误差为 $3.891\times10^{-15}$。这些确定性结果只支持 oracle-Q 俯仰阶段，不支持自动分组、条件方位估计或统计分辨能力。条件方位 DML、完整流形联合修正、相关波束 exact-subset FIM 设计和 K1/K2 校准仍需后续独立阶段验证。
 
 **关键词：** 圆柱阵；接收阵列；单程空间相位；顺序数字波束形成；局部未分辨目标；方向估计
 
@@ -35,7 +35,7 @@ Cylindrical arrays provide both circumferential and vertical apertures for three
 
 We implemented a six-input receive-only cylindrical steering function and analytic derivatives with respect to azimuth and elevation in radians. Deterministic validation for a 10 GHz, 192-by-32 cylindrical array with a 65-by-32 work subarray produced zero elementwise formula error. Across nine azimuth/elevation centers, the maximum relative derivative errors were $1.020\times10^{-9}$ for azimuth and $1.476\times10^{-9}$ for elevation. Under uniform weighting, the factor-1 azimuth and elevation 3 dB beamwidths were $2.0275^\circ$ and $2.8378^\circ$, approximately twice those of an isolated factor-2 legacy comparison.
 
-We further implemented the explicit element permutation, column-preserving elevation DBF, elevation-conditioned azimuth DBF, and the equivalent Kronecker beam matrix. For random complex data and factor-1 single- and two-target snapshots, staged and equivalent-matrix outputs agreed to relative errors below $2\times10^{-15}$. With 20,000 element-white-noise samples, the output covariance differed from $W_{\rm seq}^{H}W_{\rm seq}$ by 0.02195 in relative Frobenius norm. The stable backend uses rank-reducing PSD whitening and economy-SVD projection. A rank-deficient covariance produced a $4\times5$ whitener with a whitening error of $8.306\times10^{-16}$; the maximum well-conditioned SVD-versus-`pinv` score error was $1.681\times10^{-15}$, and scaling the manifold by $10^{-8}$, 1, and $10^8$ changed the score by only $5.937\times10^{-16}$ relatively. These results validate the sequential beamforming and numerical scoring backends only; they do not establish angle-search or multi-target resolution performance. Elevation-group identifiability, conditional-azimuth DML, full-manifold correction, exact-subset Fisher-information design, and K1/K2 calibration remain unimplemented.
+We further implemented the explicit element permutation, column-preserving elevation DBF, elevation-conditioned azimuth DBF, and the equivalent Kronecker beam matrix. For random complex data and factor-1 single- and two-target snapshots, staged and equivalent-matrix outputs agreed to relative errors below $2\times10^{-15}$. With 20,000 element-white-noise samples, the output covariance differed from $W_{\rm seq}^{H}W_{\rm seq}$ by 0.02195 in relative Frobenius norm. The stable backend uses rank-reducing PSD whitening and economy-SVD projection. A rank-deficient covariance produced a $4\times5$ whitener with a whitening error of $8.306\times10^{-16}$; the maximum well-conditioned SVD-versus-`pinv` score error was $1.681\times10^{-15}$, and scaling the manifold by $10^{-8}$, 1, and $10^8$ changed the score by only $5.937\times10^{-16}$ relatively. With an oracle-known elevation-group count $Q$, nine factor-1 physical scenarios passed the elevation-group DML, $\operatorname{rank}(G_e)$/$\operatorname{rank}(C_e)$, finite local subspace-alias, and group-recovery gates; the maximum noiseless truth residual among identifiable cases was $1.037\times10^{-14}$. An explicit MMV counterexample with $N_\phi=8>Q=2$ but $\operatorname{rank}(C_e)=1$ returned `GROUP_UNIDENTIFIABLE` without two high-confidence groups, whereas the common-elevation Q1/K2 case recovered the within-group sum with a relative error of $3.891\times10^{-15}$. These deterministic results support only the oracle-Q elevation stage; they do not establish automatic grouping, conditional-azimuth estimation, or statistical resolution. Conditional-azimuth DML, full-manifold correction, exact-subset Fisher-information design, and K1/K2 calibration remain unimplemented.
 
 **Keywords:** cylindrical array; receive manifold; one-way spatial phase; sequential digital beamforming; locally unresolved targets; direction finding
 
@@ -75,10 +75,8 @@ We further implemented the explicit element permutation, column-preserving eleva
 
 ## 1.4 当前完成状态
 
-当前只完成接收模型纠正和确定性数值验证。以下内容尚未形成可引用结果：
+当前已完成接收模型、严格顺序 DBF、稳定数值后端和 oracle-Q 俯仰组阶段的确定性工程验证。以下内容尚未形成可引用结果：
 
-- 真实先俯仰、后方位的级联数据流；
-- 俯仰组估计及 `rank(Ge)`/`rank(Ce)` 可辨识性；
 - 条件方位 DML、完整流形联合修正和等预算 baseline；
 - 固定白化流形的局部渐近式与零方向；
 - 相关顺序波束的 exact-subset FIM 选择；
@@ -289,15 +287,36 @@ RSS=\|Z_w\|_F^2-J.
 | 精确重复流形列 | 有效秩 1 | `RANK_DEFICIENT`，通过 |
 | $B<K$ | 有效秩 2、请求秩 3 | `RANK_DEFICIENT`，通过 |
 
-近秩亏、精确重复列和 $B<K$ 案例均未产生 NaN/Inf；RSS 没有出现明显负值。本阶段没有执行任何角度网格搜索、俯仰分组或模型阶数判定。SVD/QR 投影是经典数值实现，不作为独立创新主张。
+近秩亏、精确重复列和 $B<K$ 案例均未产生 NaN/Inf；RSS 没有出现明显负值。阶段 3 没有执行角度网格搜索、俯仰分组或模型阶数判定。SVD/QR 投影是经典数值实现，不作为独立创新主张。
 
-## 3.4 后续阶段的强制门
+## 3.4 已知 Q 的俯仰组 DML 与可辨识性
+
+阶段 4 将固定白化俯仰数据拼接为 $Z_e\in\mathbb C^{B_e\times N_\phi L}$，并在给定组数 $Q$ 时按
+
+\[
+Z_e=G_e(\boldsymbol\eta)C_e+N_e
+\]
+
+执行 SVD 集中 DML。Q1 使用一维注册网格，Q2 对小局部网格中的全部无序角对执行 full reference；搜索不使用俯仰间隔列表、候选截断、分数差或场景修复分支。候选期间俯仰波束、噪声协方差、白化器和有效坐标保持固定。每个场景同时检查 $\operatorname{rank}(G_e)$、$\operatorname{rank}(C_e)$ 或 $\operatorname{rank}(\widehat C_e)$、白化有效秩和有限注册候选集上的局部子空间别名。
+
+| 验证对象 | 结果 | 判定 |
+|---|---:|---:|
+| factor=1 物理场景 | 9/9 通过 | K1/Q1、K2/Q2、同俯仰 K2/Q1、极近、弱目标、相干、缩孔径和相关噪声均保留 |
+| 可辨场景无噪声真值残差最大值 | $1.037\times10^{-14}$ | 通过 |
+| $10.00^\circ/10.05^\circ$ 的 $\sigma_{\min}(G_e)/\sigma_{\max}(G_e)$ | $1.413\times10^{-2}$ | 相对秩为 2，角误差 $1.776\times10^{-15}$ 度 |
+| $N_\phi=8>Q=2,\operatorname{rank}(C_e)=1$ 结构反例 | `GROUP_UNIDENTIFIABLE` | 未输出两个高置信组 |
+| 同俯仰 Q1/K2 组内叠加恢复误差 | $3.891\times10^{-15}$ | 通过 |
+| 最大组恢复 Frobenius/chordal 误差 | $1.042\times10^{-3}$ / $1.038\times10^{-3}$ | 通过注册门 |
+
+$L=1$ 时的 $N_\phi$ 列在本文中只称为共享俯仰流形的 MMV 系数观测，不称为独立时间快拍。结构反例说明 $N_\phi>Q$ 本身不能替代 $\operatorname{rank}(C_e)=Q$。本阶段的局部别名检查是有限注册候选集检查，不是连续全局唯一性证明；Q 由 oracle 给定，不包含自动合并或统计模型阶数判定。
+
+## 3.5 后续阶段的强制门
 
 | 阶段 | 必须回答的问题 | 当前状态 |
 |---|---|---|
 | Step12.1 | 逐级输出是否与等效权严格一致，且保留正确噪声协方差 | 已通过 |
 | 稳定 DML | SVD/QR 投影是否与参考最小二乘一致，病态候选是否可诊断 | 已通过 |
-| 俯仰组 | `rank(Ge)`、`rank(Ce)` 和局部唯一性是否满足 | 未开始 |
+| 俯仰组 | `rank(Ge)`、`rank(Ce)` 和局部唯一性是否满足 | 已通过 oracle-Q 工程门 |
 | 条件方位与联合修正 | 是否优于等预算 baseline，坐标更新是否单调且收敛可控 | 未开始 |
 | 局部渐近理论 | 固定白化条件、常数和零方向是否由公式及数值验证共同支持 | 未开始 |
 | exact-subset FIM | 每个物理子集重构协方差后是否满足保真与 holdout 风险门 | 未开始 |
@@ -392,15 +411,15 @@ v0.18/Step11 的圆柱阵实验按 factor=2 生成。factor 从 2 改为 1 会�
 
 ## 7.1 当前结论
 
-当前已依次验证 factor=1 接收圆柱阵流形及弧度解析导数、真实先俯仰后方位 DBF 数据流，以及有效子空间白化和稳定 SVD-DML 数值评分。结论限于模型、线性数据流和数值后端正确性；旧 factor=2 数值仍不可迁移。
+当前已依次验证 factor=1 接收圆柱阵流形及弧度解析导数、真实先俯仰后方位 DBF 数据流、有效子空间白化和稳定 SVD-DML 数值评分，以及已知 Q 条件下的俯仰组 DML、双秩可辨识性诊断和组数据恢复。阶段 4 的 9 个物理场景通过，且 $\operatorname{rank}(C_e)<Q$ 结构反例被显式拒绝。结论仍限于 oracle-Q 俯仰阶段；旧 factor=2 数值不可迁移。
 
 ## 7.2 当前限制
 
-当前已有严格顺序 DBF 工程输出和稳定 DML 评分器，但尚无双目标角度搜索性能、俯仰组可辨识性、FIM 波束选择、模型阶数判定或 bootstrap 校准。PSD 测试只验证给定协方差的数值白化，不代表已解决协方差估计。模型仍未覆盖互耦、增益相位误差、失效通道、宽带或近场条件。任何超分辨、搜索复杂度或硬件收益表述都必须等待后续证据。
+当前已有严格顺序 DBF 工程输出、稳定 DML 评分器和 oracle-Q 俯仰组验证，但尚无条件方位双目标估计、完整顺序流形联合修正、等预算 AP/PR-DML 比较、FIM 波束选择、模型阶数判定或 bootstrap 校准。有限候选集别名检查不是连续全局唯一性证明；相关噪声场景是确定性验证，不构成一般有色噪声统计保证。PSD 测试只验证给定协方差的数值白化，不代表已解决协方差估计。模型仍未覆盖互耦、增益相位误差、失效通道、宽带或近场条件。
 
 ## 7.3 阶段门
 
-阶段 3 的稳定白化和 SVD/QR DML 数值门已通过。下一步只能在新的独立阶段验证俯仰组 DML 及 `rank(Ge)`、`rank(Ce)`、局部唯一性；本稿当前仍不得进入条件联合修正、FIM 或 K1/K2 实现。
+阶段 4 的 oracle-Q 俯仰组 DML、`rank(Ge)`/`rank(Ce)`、有限局部唯一性和组恢复工程门已通过。下一阶段只能在用户明确授权后验证条件方位 DML、完整顺序流形联合修正和等预算 baseline；本稿当前仍不得进入局部渐近理论、FIM 或 K1/K2 实现。
 
 # 参考文献
 

@@ -1,8 +1,8 @@
 # v0.19 顺序测角修订范围说明
 
-> 版本：Step12.2，2026-07-17
+> 版本：Step12.3A-C，2026-07-17
 > 活跃相位模型：`phase_factor=1`  
-> 当前结论：接收流形、真实先俯仰后方位 DBF 和稳定白化/SVD-DML 数值后端验证通过；角度搜索、分组、FIM 和 K1/K2 均未实现。
+> 当前结论：接收流形、真实先俯仰后方位 DBF、稳定白化/SVD-DML 数值后端，以及 oracle-Q 俯仰组 DML、可辨识性和组恢复验证通过；条件方位、联合修正、FIM 和 K1/K2 均未实现。
 
 ## 1. 系统层级
 
@@ -77,13 +77,16 @@ $K=3$ 不属于主范围，只能在全主链通过后进入可选阶段 10A；�
 | 流形整体尺度不改变投影评分 | `1e-8/1/1e8` 相对展宽 `5.937e-16` | supported |
 | 重复列及 `B<K` 返回秩亏状态 | 重复列秩 1；`B=2<K=3` 返回 `RANK_DEFICIENT` | supported |
 | 集中方差使用 ML 分母 `rC*L` | rank-deficient 白化坐标 `rC=3`，公式误差 0 | supported |
-| 分组/条件 DML 有效 | 无 | not supported |
+| oracle-Q 俯仰组 DML 与双秩可辨识性 | 9 个 factor=1 物理场景通过；无噪声真值残差最大 `1.037e-14` | supported for registered deterministic cases |
+| `rank(Ce)<Q` 结构反例被拒绝 | `Nphi=8>Q=2`、`rank(Ge)=2`、`rank(Ce)=1`，返回 `GROUP_UNIDENTIFIABLE` | supported |
+| 同俯仰 Q1/K2 组数据等于组内叠加 | 相对恢复误差 `3.891e-15` | supported |
+| 条件方位 DML 与完整流形联合修正有效 | 无 | not supported |
 | FIM 波束设计有效 | 无 | not supported |
 | K1/K2 bootstrap 已校准 | 无 | not supported |
 
 ## 6. 明确禁止的表述
 
-- 不得把接收 factor=1 验证写成顺序 DBF 或超分辨算法已经完成；
+- 不得把当前 oracle-Q 俯仰组验证写成完整二维超分辨或自动分组已经完成；
 - 不得引用 v0.18 factor=2 数值作为 v0.19 新结果；
 - 不得把 DML、SVD/QR、AP、投影 FIM、归一化 FIM、FIM 约束最少选择、bootstrap 或 unresolved 单独声明为创新；
 - 不得声称局部搜索域由硬件链路自动给出；
@@ -92,4 +95,4 @@ $K=3$ 不属于主范围，只能在全主链通过后进入可选阶段 10A；�
 
 ## 7. 后续阶段门
 
-阶段 3 的稳定白化和 DML 数值后端已经通过注册门。下一阶段只能验证俯仰组 DML 与 `rank(Ge)`、`rank(Ce)` 和局部唯一性，不得直接进入条件方位联合修正或 FIM。阶段 4、6、7、8 分别是可辨识性、局部理论、exact-subset FIM 和 K1/K2 校准的强制否决门，不能跳过。
+阶段 4 的 oracle-Q 俯仰组 DML、`rank(Ge)`/`rank(Ce)`、有限局部唯一性和组恢复工程门已经通过。下一阶段只能在用户明确授权后验证条件方位 DML、完整顺序流形联合修正和等预算 baseline，不得直接进入局部理论或 FIM。阶段 6、7、8 仍分别是局部理论、exact-subset FIM 和 K1/K2 校准的强制否决门，不能跳过。

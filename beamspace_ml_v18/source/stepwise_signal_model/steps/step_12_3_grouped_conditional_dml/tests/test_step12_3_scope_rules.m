@@ -1,0 +1,28 @@
+function result_table = test_step12_3_scope_rules(step_dir)
+%TEST_STEP12_3_SCOPE_RULES Scan the phase-4 common source boundary.
+
+files = dir(fullfile(step_dir, 'common', '**', '*.m'));
+combined = '';
+for idx = 1:numel(files)
+    combined = [combined, newline, ...
+        fileread(fullfile(files(idx).folder, files(idx).name))]; %#ok<AGROW>
+end
+
+rule = ["no_fixed_absolute_ridge"; "no_candidate_truncation_name"; ...
+    "no_legacy_policy_name"; "no_pseudoinverse_call"; ...
+    "no_normal_equation_projector"; "no_later_azimuth_estimator"; ...
+    "no_resampling_order_logic"; "no_information_design_logic"];
+patterns = {'1e-10', '(?i)topK', 'C05', ...
+    '(?<![A-Za-z0-9_])pinv\s*\(', 'G\s*''\s*\*\s*G', ...
+    'estimate_conditional_azimuth', '(?i)bootstrap', '(?i)fisher|(?i)\<fim\>'};
+hit_count = zeros(numel(rule), 1);
+pass_flag = false(numel(rule), 1);
+phase_factor = ones(numel(rule), 1);
+for idx = 1:numel(rule)
+    hit_count(idx) = numel(regexp(combined, patterns{idx}, 'match'));
+    pass_flag(idx) = hit_count(idx) == 0;
+end
+result_table = table(rule, hit_count, pass_flag, phase_factor);
+assert(all(pass_flag), 'test_step12_3_scope_rules:Failed', ...
+    'The phase-4 common path contains an out-of-scope or forbidden pattern.');
+end
