@@ -1,85 +1,73 @@
 ---
 phase_factor: 1
 validation_status: PASS
-scope: Step12.3_subphases_A_to_C_only
+scope: Step12.3_phase_4_revision_only
 ---
 
-# Step12.3A-C Elevation-Group DML Report
+# Step12.3 Elevation-Group DML Revision Report
 
 ## A. Phase conclusion
 
-**PASS.** Oracle-known Q=1/Q=2 elevation-group DML, structural identifiability diagnosis, and group-data recovery passed the registered phase-4 gates. This does not validate any later-stage estimator.
+**PASS.** The oracle-Q registered elevation-group chain now separates estimator execution, structural support, and statistical calibration. Phase 5 remains unimplemented in this run.
 
 ## B. Read basis and prior-art boundary
 
-Read the phase-4 prompt in document 13, Step12.3 in document 12, theory Sections 5.1-5.5 in document 11, formula prior-art F01/F02, algorithm prior-art A01/A02, and the Step12.1/12.2 README/results/source.
+The revision follows documents 06, 10, 11, 12, 13, and 14; the failed adaptive-W/B record; the code manifest; the v0.19 manuscript; the sequential scope note; and all Step12.2/12.3 source and results. Concentrated DML, SVD projection, whitening, and nuisance-coefficient elimination remain prior-art mechanisms. This revision claims interface and noise-model correctness, not an atomic algorithmic novelty.
 
-F01/F02 and A01/A02 classify the cylindrical receive manifold, concentrated DML, nuisance-coefficient absorption, and staged estimation as existing or similar mechanisms. The evidence here supports only their factor-1 sequential-DBF interface combination; no atomic novelty is claimed.
+## C. Public/private boundary
 
-## C. Files
-
-Added five public common modules, three private numerical helpers, three interface/scenario/scope tests plus private fixtures, this README and runner, and the five required result files. The v0.19 manuscript, revision-scope note, and active-route README were updated only with passed phase-4 facts. No frozen Step11 file or later Step12 directory was modified or created.
+Public code builds fixed separable whiteners, prepares score and recovery coordinates, evaluates registered candidates, diagnoses support, and recovers physical circumferential group data. Error and mixing metrics against reference coefficients are computed only by `tests/private/evaluate_group_recovery_against_truth.m`. Public boundary tests passed 6/6.
 
 ## D. Formula-to-code mapping
 
-| formula/contract | implementation | test evidence |
+| Contract | Implementation | Evidence |
 | --- | --- | --- |
-| `Zemmv=[Zel(:,:,1),...,Zel(:,:,L)]` | `stack_elevation_mmv_data` | mapping/order interface gates |
-| `Ge=T*V'*Az(eta)` and per-radian derivative | `build_elevation_group_manifold` | fixed projection and finite difference |
-| `rank(Ge)=rank(Ce)=Q` plus local uniqueness | `diagnose_elevation_group_identifiability` | 9 identifiable plus 1 structural counterexample |
-| `J=norm(Ur'*Z,'fro')^2`, `RSS=norm(Z)^2-J` | `estimate_elevation_groups_dml` using Step12.2 SVD score | Q1 1-D and Q2 local full reference |
-| `Ce_hat=Ge_hat^dagger*Z` through effective SVD | `recover_group_azimuth_data` | Frobenius, vector-subspace chordal, and mixing crosstalk |
+| `T_row*C_row*T_row'=I` and `T_col*C_col*T_col'=I` | `build_separable_mmv_whiteners` | 7 whitening cases |
+| `Z_score=T_row*Z*T_col'` | `prepare_elevation_group_mmv_data` | separable/Kronecker check |
+| `Z_recovery=T_row*Z` in physical columns | same bundle and `recover_group_azimuth_data` | test-only recovery errors |
+| execution/support/calibration split | estimator and diagnostic modules | 6 status cases |
 
 ## E. Data and convention ledger
 
-- Active spatial phase factor: `1` (receive-only).
-- Elevation beams: `4 6 8 10 12 14 16 18 20` deg; physical B=9.
-- `Zel`: `[B_e,Nphi,L]`; `Zemmv`: `[B_e,Nphi*L]`; `Ce`: `[Q,Nphi*L]`.
-- Stacked order is azimuth column fastest and time snapshot next. At L=1, circumferential columns are MMV coefficient observations, not independent temporal snapshots.
-- External angles are degrees; the manifold derivative is per radian. The beam matrix, covariance, whitener, and retained coordinates are fixed across every candidate.
-- Group-data chordal error compares the one-dimensional subspaces spanned by vectorized recovered and truth group matrices; it does not estimate a noisy signal-subspace order.
+- Active receive spatial phase factor: `1`.
+- Registered elevation beams: `4 6 8 10 12 14 16 18 20` deg.
+- `Zel_raw`: `[B_phys,Nphi,L]`; `T_row`: `[r_row,B_phys]`; `T_col`: `[r_col,Nphi]`.
+- `Z_score_mmv`: `[r_row,r_col*L]`; `Z_recovery_mmv`: `[r_row,Nphi*L]`; `Ge`: `[r_row,Q]`.
+- `Ce_score`: `[Q,r_col*L]`; `Ce_recovery`: `[Q,Nphi*L]`. Right whitening never enters `Ge`.
+- External angles use degrees; derivatives use radians; `phase_factor=1`. At `L=1`, circumferential columns are MMV coefficient observations rather than independent temporal snapshots.
 
-## F. Executed tests and commands
+## F. Executed tests
 
-Unified MATLAB command: `run('.../step_12_3_grouped_conditional_dml/run_step12_3_elevation_group_validation.m')`.
+- Public interface: 5/5.
+- Whitening/Kronecker: 7/7.
+- Status semantics: 6/6.
+- Trial/diagnostic/recovery rows: 23/23, 10/10, 16/16.
+- Common scope rules: 12/12.
+- Code Analyzer: 23 files, 0 messages.
 
-- Public-interface gates: 4/4.
-- Trial rows: 23/23 passed.
-- Identifiability rows: 10/10 passed.
-- Recovery rows: 16/16 passed.
-- Scope-source rules: 8/8 passed.
-- Code Analyzer: 15 files, 0 messages in 0 files.
+## G. Key numerical results
 
-## G. Results and key values
-
-- Maximum identifiable noiseless truth residual: `1.036750e-14`.
-- Structural counterexample: `Nphi=8>Q=2`, `rank(Ge)=2`, `rank(Ce)=1`, status `GROUP_UNIDENTIFIABLE`, high-confidence output 0.
-- Extremely close 10.00/10.05 deg case: sigma ratio Ge `1.412556e-02`, maximum angle error `1.776357e-15` deg.
-- Correlated-noise maximum angle error: `0.000000e+00` deg.
-- Vertical element-domain DML passed all 10 rows; maximum identifiable-case angle error was `1.776357e-15` deg.
-- The Q1 elevation-beam peak baseline passed all 3 execution rows; its maximum angle error was `3.000000e-01` deg.
-- The Q1/Q2 grouped SVD-DML search is the exhaustive registered local full elevation-DML reference; no duplicate reference call is reported.
-- Common-elevation Q1/K2 within-group sum error: `3.891164e-15`.
-- Maximum accepted recovery Frobenius/chordal errors: `1.041807e-03` / `1.037638e-03`.
-- These are deterministic registered validation cases. No Monte Carlo confidence interval is reported; later resampling/calibration is outside this phase.
+- Maximum row/column whitening errors: `1.058932e-15` / `1.136200e-15`.
+- Separable/Kronecker data, score, and RSS errors: `1.198900e-16`, `0.000000e+00`, `0.000000e+00`.
+- Structural counterexample: estimate `ESTIMATE_NOT_RUN_STRUCTURAL_RANK_FAILURE`, support `GROUP_MMV_RANK_UNCERTIFIED`, `rank(Ce)=1`; this rejects certification of the current registered Q-group MMV recovery chain only.
+- Correlated row/column case: column whitening applied `1`, angle error `0.000000e+00` deg.
+- Common-elevation group-sum recovery error: `3.891164e-15`.
+- Maximum test-only recovery Frobenius/chordal errors: `1.041807e-03` / `1.037638e-03`.
+- No interval, posterior, or calibrated probability is reported; every active calibration state is `NOT_CALIBRATED_STAGE4`.
 
 ## H. Complexity
 
-- Registered DML score calls: 1228; registered SVD calls: 3877.
-- Multi-start runs: 0. Validation runtime: 2.607618 s.
-- Q1 evaluates `Ne` candidates; Q2 evaluates `Ne*(Ne-1)/2` unordered candidates. Each score uses `O(B*Q^2+rank(Ge)*B*Nphi*L)`.
-- Maximum primary input storage: 37440 bytes (complex double).
-- Maximum stored candidate-manifold storage: 30240 bytes (complex double).
-- Peak MATLAB process memory was not profiled.
+- Score calls: 1248; SVD calls: 3326; row/column eig calls: 47.
+- Multi-start runs: 0; validation runtime: 2.896261 s.
+- Maximum score-plus-recovery data storage: 74880 bytes.
+- Maximum candidate-manifold storage: 30240 bytes.
+- Maximum row-plus-column whitener storage: 68896 bytes.
+- Peak MATLAB process memory was not measured.
 
-## I. Failures, risks, and stop conditions
+## I. Risks and unfinished work
 
-- AP-DML and PR-DML were not run because this repository contains no audited exact reproduction for the required model; no simplified substitute was invented.
-- The finite registered candidate-bank alias check is not a continuous global uniqueness proof. Q is oracle-known, so these results do not support automatic grouping or statistical confidence.
-- The structural coefficient counterexample is explicitly an MMV model counterexample, not presented as a complete physical target scene.
-- Extremely close, weak, coherent, reduced-aperture, and correlated-noise outcomes remain visible in the CSVs; no failure-repair rule was added.
-- This runner stops before every later subphase. No conditional circumferential estimator, joint correction, beam design, or automatic order selection exists here.
+Q remains oracle-known, the search is a registered local full reference, and current reference angles are primarily grid aligned. Off-grid super-resolution performance is unverified. Exact AP/PR-DML reproduction remains unavailable. No statistical calibration, automatic Q selection, conditional-azimuth DML, joint correction, information beam design, or K=3 path is implemented.
 
 ## J. Next-stage decision
 
-Phase 4 passes its registered engineering gate. Phase 5 may be started only after explicit user authorization; this run stops here.
+The phase-4 revision passes its technical gates. A later phase-5 run requires separate user authorization; this run stops here.

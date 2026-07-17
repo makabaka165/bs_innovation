@@ -1,9 +1,9 @@
 # 圆柱阵顺序数字波束形成后局部未分辨目标簇测角：接收单程模型修订稿
 
-> **版本：v0.19 Step12.3A-C elevation-group-DML revision，2026-07-17**
+> **版本：v0.19 Step12.3 阶段 4 修订，2026-07-17**
 > **活跃空间相位：`phase_factor=1`**  
 > **证据状态：v0.18/Step11 的圆柱阵数值结果由 `phase_factor=2` 产生，已失效并冻结为 legacy，不构成本稿结论。**  
-> **完成状态：本稿已完成接收模型、真实先俯仰后方位 DBF、稳定白化/SVD-DML 数值后端，以及已知 Q 条件下俯仰组 DML、可辨识性诊断和组数据恢复的工程验证；条件方位搜索、联合修正、FIM 波束设计、K1/K2 bootstrap 与端到端性能实验均未完成。**
+> **完成状态：本稿已完成接收模型、真实先俯仰后方位 DBF、稳定白化/SVD-DML 数值后端，以及 oracle-Q、注册局部网格下 matrix-normal 行/列白化、俯仰组 DML、注册模型结构支持诊断和物理环向组数据恢复的工程验证；有噪声结果均未统计校准。条件方位搜索、联合修正、FIM 波束设计、K1/K2 bootstrap 与端到端性能实验均未完成，阶段 5 尚未开始。**
 
 ## 版本说明与术语账本
 
@@ -18,6 +18,10 @@ v0.19 是从物理模型重新起步的修订源稿，不继承 v0.18 的波束�
 | 常规波束角分辨单元 | 由检测波束及相邻波束边界形成的局部角域 | 被误写成硬件直接输出的窗口 |
 | 接收阵列单程空间相位 | `phase_factor=1` 的接收流形 | 将目标距离双程公共相位再次乘入空间流形 |
 | legacy evidence | v0.18/Step11 的 factor=2 源码配置和结果 | 可直接迁移到 v0.19 的性能证据 |
+| 注册局部 full reference | 预先固定的局部角网格及其全部 Q1/Q2 候选 | 自动目标分组或连续域全局搜索 |
+| 注册模型确定性认证 | oracle-Q、无噪声/精确结构证据和有限注册候选库下的认证 | 统计置信、后验概率或连续域全局唯一性 |
+| 未校准结构支持 | 有噪声注册模型返回候选但未完成统计校准 | 已完成目标数或分辨概率校准 |
+| 评分/恢复双坐标 | 行列白化评分坐标与保留物理环向列的恢复坐标 | 将右白化列直接解释为物理方位列 |
 
 # 中文摘要
 
@@ -25,7 +29,7 @@ v0.19 是从物理模型重新起步的修订源稿，不继承 v0.18 的波束�
 
 当前阶段实现了不接受相位因子参数的单程圆柱阵导向函数及其相对于弧度方位角、俯仰角的解析导数。基于 10 GHz、192×32 圆柱阵及 65×32 工作子阵的确定性验证表明，导向函数与逐元素公式的最大误差为 0；9 个方位/俯仰中心上的方位和俯仰导数最大相对误差分别为 $1.020\times10^{-9}$ 和 $1.476\times10^{-9}$。在均匀加权单目标切面中，factor=1 的方位和俯仰 3 dB 波束宽度分别为 $2.0275^\circ$ 和 $2.8378^\circ$，约为隔离 factor=2 历史对照的 2 倍。
 
-在此基础上，本稿建立了显式阵元 permutation、逐方位列俯仰 DBF、逐俯仰通道条件方位 DBF 及其等效 Kronecker 波束矩阵。随机复数据、factor=1 单目标和双目标快拍的逐级输出与等效矩阵输出相对误差均低于 $2\times10^{-15}$；20,000 个阵元白噪声样本的输出协方差相对 $W_{\rm seq}^{H}W_{\rm seq}$ 的误差为 0.02195。进一步建立的有效子空间白化器返回 $\operatorname{rank}(C)\times B$ 坐标；rank-deficient 协方差案例的白化误差为 $8.306\times10^{-16}$。良态 SVD-DML 与 `pinv` 参考的最大相对误差为 $1.681\times10^{-15}$，流形整体缩放 $10^{-8}/1/10^8$ 时评分相对展宽为 $5.937\times10^{-16}$。在已知俯仰组数 $Q$ 的条件下，9 个 factor=1 物理场景通过了俯仰组 DML、$\operatorname{rank}(G_e)$/$\operatorname{rank}(C_e)$、有限局部子空间别名和组数据恢复门；可辨场景的无噪声真值残差最大为 $1.037\times10^{-14}$。一个满足 $N_\phi=8>Q=2$ 但 $\operatorname{rank}(C_e)=1$ 的显式 MMV 反例返回 `GROUP_UNIDENTIFIABLE`，未输出两个高置信组；同俯仰 Q1/K2 场景的组内叠加恢复相对误差为 $3.891\times10^{-15}$。这些确定性结果只支持 oracle-Q 俯仰阶段，不支持自动分组、条件方位估计或统计分辨能力。条件方位 DML、完整流形联合修正、相关波束 exact-subset FIM 设计和 K1/K2 校准仍需后续独立阶段验证。
+在此基础上，本稿建立了显式阵元 permutation、逐方位列俯仰 DBF、逐俯仰通道条件方位 DBF 及其等效 Kronecker 波束矩阵。随机复数据、factor=1 单目标和双目标快拍的逐级输出与等效矩阵输出相对误差均低于 $2\times10^{-15}$；20,000 个阵元白噪声样本的输出协方差相对 $W_{\rm seq}^{H}W_{\rm seq}$ 的误差为 0.02195。进一步建立的有效子空间白化器返回 $\operatorname{rank}(C)\times B$ 坐标；rank-deficient 协方差案例的白化误差为 $8.306\times10^{-16}$。良态 SVD-DML 与 `pinv` 参考的最大相对误差为 $1.681\times10^{-15}$，流形整体缩放 $10^{-8}/1/10^8$ 时评分相对展宽为 $5.937\times10^{-16}$。阶段 4 对指定的 matrix-normal 可分协方差分别构造波束行白化器和环向列白化器，并将 DML 评分坐标与物理恢复坐标分离；白化单元测试最大行/列误差为 $1.059\times10^{-15}$ 和 $1.136\times10^{-15}$，小型显式 Kronecker 对照的数据、评分和 RSS 相对误差分别为 $1.199\times10^{-16}$、0 和 0。在 oracle-Q、注册局部网格下，9 个 factor=1 物理场景和 1 个结构反例通过全部验收；7 个无噪声主场景获得注册模型确定性认证，2 个有噪声主场景只返回未校准结构支持。满足 $N_\phi=8>Q=2$ 但 $\operatorname{rank}(C_e)=1$ 的反例返回 `ESTIMATE_NOT_RUN_STRUCTURAL_RANK_FAILURE` 与 `GROUP_MMV_RANK_UNCERTIFIED`。该反例只否定当前注册 Q 组 MMV 分组/恢复链的结构认证，不构成一般物理不可辨识证明。同俯仰 Q1/K2 场景的组内叠加恢复相对误差为 $3.891\times10^{-15}$。这些结果不支持自动分组、off-grid 超分辨或统计分辨能力；条件方位 DML、完整流形联合修正、相关波束 exact-subset FIM 设计和 K1/K2 校准仍未实现。
 
 **关键词：** 圆柱阵；接收阵列；单程空间相位；顺序数字波束形成；局部未分辨目标；方向估计
 
@@ -35,7 +39,7 @@ Cylindrical arrays provide both circumferential and vertical apertures for three
 
 We implemented a six-input receive-only cylindrical steering function and analytic derivatives with respect to azimuth and elevation in radians. Deterministic validation for a 10 GHz, 192-by-32 cylindrical array with a 65-by-32 work subarray produced zero elementwise formula error. Across nine azimuth/elevation centers, the maximum relative derivative errors were $1.020\times10^{-9}$ for azimuth and $1.476\times10^{-9}$ for elevation. Under uniform weighting, the factor-1 azimuth and elevation 3 dB beamwidths were $2.0275^\circ$ and $2.8378^\circ$, approximately twice those of an isolated factor-2 legacy comparison.
 
-We further implemented the explicit element permutation, column-preserving elevation DBF, elevation-conditioned azimuth DBF, and the equivalent Kronecker beam matrix. For random complex data and factor-1 single- and two-target snapshots, staged and equivalent-matrix outputs agreed to relative errors below $2\times10^{-15}$. With 20,000 element-white-noise samples, the output covariance differed from $W_{\rm seq}^{H}W_{\rm seq}$ by 0.02195 in relative Frobenius norm. The stable backend uses rank-reducing PSD whitening and economy-SVD projection. A rank-deficient covariance produced a $4\times5$ whitener with a whitening error of $8.306\times10^{-16}$; the maximum well-conditioned SVD-versus-`pinv` score error was $1.681\times10^{-15}$, and scaling the manifold by $10^{-8}$, 1, and $10^8$ changed the score by only $5.937\times10^{-16}$ relatively. With an oracle-known elevation-group count $Q$, nine factor-1 physical scenarios passed the elevation-group DML, $\operatorname{rank}(G_e)$/$\operatorname{rank}(C_e)$, finite local subspace-alias, and group-recovery gates; the maximum noiseless truth residual among identifiable cases was $1.037\times10^{-14}$. An explicit MMV counterexample with $N_\phi=8>Q=2$ but $\operatorname{rank}(C_e)=1$ returned `GROUP_UNIDENTIFIABLE` without two high-confidence groups, whereas the common-elevation Q1/K2 case recovered the within-group sum with a relative error of $3.891\times10^{-15}$. These deterministic results support only the oracle-Q elevation stage; they do not establish automatic grouping, conditional-azimuth estimation, or statistical resolution. Conditional-azimuth DML, full-manifold correction, exact-subset Fisher-information design, and K1/K2 calibration remain unimplemented.
+We further implemented the explicit element permutation, column-preserving elevation DBF, elevation-conditioned azimuth DBF, and the equivalent Kronecker beam matrix. For random complex data and factor-1 single- and two-target snapshots, staged and equivalent-matrix outputs agreed to relative errors below $2\times10^{-15}$. With 20,000 element-white-noise samples, the output covariance differed from $W_{\rm seq}^{H}W_{\rm seq}$ by 0.02195 in relative Frobenius norm. The stable backend uses rank-reducing PSD whitening and economy-SVD projection. A rank-deficient covariance produced a $4\times5$ whitener with a whitening error of $8.306\times10^{-16}$; the maximum well-conditioned SVD-versus-`pinv` score error was $1.681\times10^{-15}$. Phase 4 now applies separate row and circumferential-column whiteners for the specified separable matrix-normal covariance and keeps DML-score coordinates distinct from physical recovery coordinates. The maximum row and column whitening errors in the component tests were $1.059\times10^{-15}$ and $1.136\times10^{-15}$; a small explicit Kronecker reference gave relative data, score, and RSS errors of $1.199\times10^{-16}$, 0, and 0. Under an oracle-known $Q$ and a registered local grid, all nine factor-1 physical cases and one structural counterexample passed. Seven noiseless main cases received deterministic registered-model certification, whereas both noisy main cases were reported only as supported and uncalibrated. The counterexample with $N_\phi=8>Q=2$ but $\operatorname{rank}(C_e)=1$ returned `ESTIMATE_NOT_RUN_STRUCTURAL_RANK_FAILURE` and `GROUP_MMV_RANK_UNCERTIFIED`; it invalidates certification of the current registered Q-group MMV grouping/recovery chain, not physical identifiability under every nonlinear parameterization. The common-elevation Q1/K2 case recovered the within-group sum with a relative error of $3.891\times10^{-15}$. These results do not establish automatic grouping, off-grid super-resolution, or statistical resolution. Conditional-azimuth DML, full-manifold correction, exact-subset Fisher-information design, and K1/K2 calibration remain unimplemented.
 
 **Keywords:** cylindrical array; receive manifold; one-way spatial phase; sequential digital beamforming; locally unresolved targets; direction finding
 
@@ -75,7 +79,7 @@ We further implemented the explicit element permutation, column-preserving eleva
 
 ## 1.4 当前完成状态
 
-当前已完成接收模型、严格顺序 DBF、稳定数值后端和 oracle-Q 俯仰组阶段的确定性工程验证。以下内容尚未形成可引用结果：
+当前已完成接收模型、严格顺序 DBF、稳定数值后端，以及 oracle-Q 注册局部网格下俯仰组阶段的确定性工程验证。阶段 4 同时完成了指定 matrix-normal 可分噪声的行/列白化、评分/恢复双坐标、三层状态语义和公共/测试真值边界修订；有噪声输出仍未统计校准。以下内容尚未形成可引用结果：
 
 - 条件方位 DML、完整流形联合修正和等预算 baseline；
 - 固定白化流形的局部渐近式与零方向；
@@ -289,26 +293,47 @@ RSS=\|Z_w\|_F^2-J.
 
 近秩亏、精确重复列和 $B<K$ 案例均未产生 NaN/Inf；RSS 没有出现明显负值。阶段 3 没有执行角度网格搜索、俯仰分组或模型阶数判定。SVD/QR 投影是经典数值实现，不作为独立创新主张。
 
-## 3.4 已知 Q 的俯仰组 DML 与可辨识性
+## 3.4 已知 Q 的俯仰组 DML、可分白化与注册模型支持
 
-阶段 4 将固定白化俯仰数据拼接为 $Z_e\in\mathbb C^{B_e\times N_\phi L}$，并在给定组数 $Q$ 时按
+阶段 4 使用 matrix-normal 可分噪声模型。令 $R_z$ 和 $R_\phi$ 分别为垂直行协方差与环向列协方差，固定俯仰 DBF 后构造
 
 \[
-Z_e=G_e(\boldsymbol\eta)C_e+N_e
+C_{\rm row}=V^H R_zV,\qquad
+R_{\phi,\rm sel}=R_\phi(\mathcal I_\phi,\mathcal I_\phi),
 \]
 
-执行 SVD 集中 DML。Q1 使用一维注册网格，Q2 对小局部网格中的全部无序角对执行 full reference；搜索不使用俯仰间隔列表、候选截断、分数差或场景修复分支。候选期间俯仰波束、噪声协方差、白化器和有效坐标保持固定。每个场景同时检查 $\operatorname{rank}(G_e)$、$\operatorname{rank}(C_e)$ 或 $\operatorname{rank}(\widehat C_e)$、白化有效秩和有限注册候选集上的局部子空间别名。
+并在各自有效子空间中满足
+
+\[
+T_{\rm row}C_{\rm row}T_{\rm row}^H=I_{r_{\rm row}},\qquad
+T_{\rm col}R_{\phi,\rm sel}T_{\rm col}^H=I_{r_{\rm col}}.
+\]
+
+对每个时间 snapshot，定义 $Z_{\rm left}=T_{\rm row}Z_{\rm raw}$ 和 $Z_{\rm score}=Z_{\rm left}T_{\rm col}^H$。因此评分与恢复使用不同但固定的坐标：
+
+\[
+Z_{\rm score}^{\rm MMV}=G_e C_e^{\rm score}+N_{\rm white},
+\qquad
+Z_{\rm recovery}^{\rm MMV}=G_e C_e^{\rm recovery}+N_{\rm left},
+\]
+
+其中 $Z_{\rm score}^{\rm MMV}\in\mathbb C^{r_{\rm row}\times r_{\rm col}L}$ 只用于 DML 评分，$Z_{\rm recovery}^{\rm MMV}\in\mathbb C^{r_{\rm row}\times N_\phi L}$ 保留物理环向列并只用于组恢复。$G_e=T_{\rm row}V^HA_z(\boldsymbol\eta)$ 不包含右白化器；右白化只改变 nuisance coefficient 的列坐标。
+
+Q1 使用一维注册网格，Q2 对小局部网格中的全部无序角对执行 full reference。搜索不使用俯仰间隔列表、候选截断、分数差或场景修复分支。候选期间俯仰波束、两侧协方差、两侧白化器和注册候选域保持固定。状态输出分为估计执行、注册模型结构支持和统计校准三层。`GROUP_REGISTERED_MODEL_CERTIFIED` 只用于无噪声或精确结构证据下的确定性认证；有噪声正常场景只能返回 `GROUP_REGISTERED_MODEL_SUPPORTED_UNCALIBRATED`，且统计校准状态固定为 `NOT_CALIBRATED_STAGE4`。有噪声数据的数值秩只作诊断，不参与确定性认证。
 
 | 验证对象 | 结果 | 判定 |
 |---|---:|---:|
-| factor=1 物理场景 | 9/9 通过 | K1/Q1、K2/Q2、同俯仰 K2/Q1、极近、弱目标、相干、缩孔径和相关噪声均保留 |
-| 可辨场景无噪声真值残差最大值 | $1.037\times10^{-14}$ | 通过 |
+| 行/列白化单元测试最大误差 | $1.059\times10^{-15}$ / $1.136\times10^{-15}$ | 通过 |
+| separable/Kronecker data、score、RSS 误差 | $1.199\times10^{-16}$ / 0 / 0 | 通过 |
+| factor=1 物理场景 | 9/9 通过 | 7 个无噪声 certified，2 个有噪声 supported uncalibrated |
+| 结构支持场景无噪声真值残差最大值 | $1.158\times10^{-14}$ | 通过 |
 | $10.00^\circ/10.05^\circ$ 的 $\sigma_{\min}(G_e)/\sigma_{\max}(G_e)$ | $1.413\times10^{-2}$ | 相对秩为 2，角误差 $1.776\times10^{-15}$ 度 |
-| $N_\phi=8>Q=2,\operatorname{rank}(C_e)=1$ 结构反例 | `GROUP_UNIDENTIFIABLE` | 未输出两个高置信组 |
+| $N_\phi=8>Q=2,\operatorname{rank}(C_e)=1$ 结构反例 | `GROUP_MMV_RANK_UNCERTIFIED` | 估计不返回，当前注册 MMV 链未认证 |
+| 相关行/列噪声 | 行/列误差 $7.941\times10^{-13}$ / $3.052\times10^{-15}$ | 使用 $T_{\rm row}$ 与 $T_{\rm col}$，角误差 0 |
 | 同俯仰 Q1/K2 组内叠加恢复误差 | $3.891\times10^{-15}$ | 通过 |
-| 最大组恢复 Frobenius/chordal 误差 | $1.042\times10^{-3}$ / $1.038\times10^{-3}$ | 通过注册门 |
+| 最大测试私有恢复 Frobenius/chordal 误差 | $1.042\times10^{-3}$ / $1.038\times10^{-3}$ | 通过注册门 |
 
-$L=1$ 时的 $N_\phi$ 列在本文中只称为共享俯仰流形的 MMV 系数观测，不称为独立时间快拍。结构反例说明 $N_\phi>Q$ 本身不能替代 $\operatorname{rank}(C_e)=Q$。本阶段的局部别名检查是有限注册候选集检查，不是连续全局唯一性证明；Q 由 oracle 给定，不包含自动合并或统计模型阶数判定。
+$L=1$ 时的 $N_\phi$ 列只称为共享俯仰流形的 MMV 系数观测，不称为独立时间快拍。结构反例说明 $N_\phi>Q$ 本身不能替代 $\operatorname{rank}(C_e)=Q$；它只否定当前注册 Q 组 MMV 分组/恢复链的结构认证，不证明所有非线性参数化方法下的物理目标均不可辨识。有限注册候选库的 exact subspace alias 检查也不是连续全局唯一性证明。Q 由 oracle 给定，真值角主要用于 grid-aligned 实现验证；本阶段不包含自动合并、统计模型阶数判定或 off-grid 超分辨结论。公共估计与恢复 API 不读取真值，Frobenius、子空间和 mixing 指标只在测试私有评价器中计算。
 
 ## 3.5 后续阶段的强制门
 
@@ -316,7 +341,7 @@ $L=1$ 时的 $N_\phi$ 列在本文中只称为共享俯仰流形的 MMV 系数�
 |---|---|---|
 | Step12.1 | 逐级输出是否与等效权严格一致，且保留正确噪声协方差 | 已通过 |
 | 稳定 DML | SVD/QR 投影是否与参考最小二乘一致，病态候选是否可诊断 | 已通过 |
-| 俯仰组 | `rank(Ge)`、`rank(Ce)` 和局部唯一性是否满足 | 已通过 oracle-Q 工程门 |
+| 俯仰组 | 固定行/列白化、注册流形秩、精确 MMV 秩证据和有限候选库 exact alias 是否满足 | 已通过 oracle-Q 阶段 4 修订门 |
 | 条件方位与联合修正 | 是否优于等预算 baseline，坐标更新是否单调且收敛可控 | 未开始 |
 | 局部渐近理论 | 固定白化条件、常数和零方向是否由公式及数值验证共同支持 | 未开始 |
 | exact-subset FIM | 每个物理子集重构协方差后是否满足保真与 holdout 风险门 | 未开始 |
@@ -401,7 +426,7 @@ v0.18/Step11 的圆柱阵实验按 factor=2 生成。factor 从 2 改为 1 会�
 |---|---|---|
 | 顺序数据流 | direct/sequential/equivalent 无噪声等价和噪声协方差验证 | 旧直接二维波束演示 |
 | 稳定评分 | SVD/QR、rank/status、病态和零矩阵测试 | 固定 `1e-10` 岭或 2×2 Gram 除法 |
-| 可辨识性 | `rank(Ge)`、`rank(Ce)`、局部唯一性和失败状态 | 把环向列当独立时间快拍 |
+| 注册模型支持 | 行/列白化、`rank(Ge)`、精确 MMV 秩证据、有限候选库 exact alias 和三层状态 | 把有噪声数值秩当作统计认证，或把环向列当独立时间快拍 |
 | 算法性能 | 同输入、同通道、同计算预算 baseline | 不等预算或使用真值的比较 |
 | 理论 | 固定白化解析式、有限差分和零方向验证 | 经验拟合常数 |
 | FIM 设计 | 每个子集重构协方差、白化器和 FIM | 假设逐束 FIM 可加 |
@@ -411,15 +436,15 @@ v0.18/Step11 的圆柱阵实验按 factor=2 生成。factor 从 2 改为 1 会�
 
 ## 7.1 当前结论
 
-当前已依次验证 factor=1 接收圆柱阵流形及弧度解析导数、真实先俯仰后方位 DBF 数据流、有效子空间白化和稳定 SVD-DML 数值评分，以及已知 Q 条件下的俯仰组 DML、双秩可辨识性诊断和组数据恢复。阶段 4 的 9 个物理场景通过，且 $\operatorname{rank}(C_e)<Q$ 结构反例被显式拒绝。结论仍限于 oracle-Q 俯仰阶段；旧 factor=2 数值不可迁移。
+当前已依次验证 factor=1 接收圆柱阵流形及弧度解析导数、真实先俯仰后方位 DBF 数据流、有效子空间白化和稳定 SVD-DML 数值评分。修订后的阶段 4 在 oracle-Q、注册局部网格下进一步验证了指定 matrix-normal 可分协方差的行/列白化、评分/恢复双坐标、俯仰组 DML、注册模型结构支持诊断和物理环向组数据恢复。9 个物理场景全部通过；7 个无噪声主场景获得确定性注册模型认证，2 个有噪声主场景仅返回未校准结构支持。$\operatorname{rank}(C_e)<Q$ 反例正确停止估计并返回 MMV-rank uncertified。结论仍限于 oracle-Q、主要 grid-aligned 的俯仰阶段；旧 factor=2 数值不可迁移。
 
 ## 7.2 当前限制
 
-当前已有严格顺序 DBF 工程输出、稳定 DML 评分器和 oracle-Q 俯仰组验证，但尚无条件方位双目标估计、完整顺序流形联合修正、等预算 AP/PR-DML 比较、FIM 波束选择、模型阶数判定或 bootstrap 校准。有限候选集别名检查不是连续全局唯一性证明；相关噪声场景是确定性验证，不构成一般有色噪声统计保证。PSD 测试只验证给定协方差的数值白化，不代表已解决协方差估计。模型仍未覆盖互耦、增益相位误差、失效通道、宽带或近场条件。
+当前已有严格顺序 DBF 工程输出、稳定 DML 评分器和 oracle-Q 俯仰组验证，但尚无条件方位双目标估计、完整顺序流形联合修正、等预算 AP/PR-DML 比较、FIM 波束选择、模型阶数判定或 bootstrap 校准。有限注册候选库的 exact alias 检查不是连续全局唯一性证明；精确 $\operatorname{rank}(C_e)<Q$ 只否定当前注册 MMV 分组/恢复链的结构认证。有噪声结果没有置信区间、错误概率或目标数校准。相关噪声证据只覆盖给定的 matrix-normal 可分行/列协方差，不支持任意有色噪声结论；给定协方差的数值白化也不代表已解决协方差估计。当前真值主要用于 grid-aligned 实现验证，不能支持 off-grid 超分辨结论。模型仍未覆盖互耦、增益相位误差、失效通道、宽带或近场条件。
 
 ## 7.3 阶段门
 
-阶段 4 的 oracle-Q 俯仰组 DML、`rank(Ge)`/`rank(Ce)`、有限局部唯一性和组恢复工程门已通过。下一阶段只能在用户明确授权后验证条件方位 DML、完整顺序流形联合修正和等预算 baseline；本稿当前仍不得进入局部渐近理论、FIM 或 K1/K2 实现。
+阶段 4 修订的 oracle-Q 俯仰组 DML、matrix-normal 行/列白化、注册模型结构支持诊断和物理环向组恢复工程门已通过。AP/PR-DML 的准确复现缺口继续保留。阶段 5 尚未开始；只有用户后续单独授权，才可验证条件方位 DML、完整顺序流形联合修正和等预算 baseline。本稿当前仍不得进入局部渐近理论、FIM、K1/K2、自动 Q 或 K=3 实现。
 
 # 参考文献
 

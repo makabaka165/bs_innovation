@@ -1,8 +1,10 @@
 # v0.19 顺序测角修订范围说明
 
-> 版本：Step12.3A-C，2026-07-17
-> 活跃相位模型：`phase_factor=1`  
-> 当前结论：接收流形、真实先俯仰后方位 DBF、稳定白化/SVD-DML 数值后端，以及 oracle-Q 俯仰组 DML、可辨识性和组恢复验证通过；条件方位、联合修正、FIM 和 K1/K2 均未实现。
+> 版本：Step12.3 阶段 4 修订，2026-07-17
+> 活跃相位模型：`phase_factor=1`
+> 当前结论：接收流形、真实先俯仰后方位 DBF、稳定 SVD-DML，以及
+> oracle-Q 注册局部网格下的俯仰组 DML、matrix-normal 行/列白化、
+> 三层状态语义和物理环向组数据恢复已通过确定性工程验证；阶段 5 尚未开始。
 
 ## 1. 系统层级
 
@@ -13,86 +15,116 @@
 | 3 | 局部未分辨目标簇超分辨测角 | 在局部角域内执行 K1/K2 判定和精细二维角估计 |
 | 4 | 航迹与资源管理 | 数据关联、跟踪、跨 CPI 处理和波束调度 |
 
-候选研究路线位于第 3 层。局部角域只能来自第 2 层的常规测角置信域或常规波束角分辨单元，不能继续描述为来源不明的人工固定窗口。第 1 层不负责产生局部双目标搜索域。
+候选研究路线位于第 3 层。局部角域只能来自第 2 层的常规测角置信域
+或常规波束角分辨单元，不能描述为来源不明的人工固定窗口。阶段 4
+使用预注册局部 full-reference 网格和 oracle Q 隔离验证估计器；这不是
+自动分组，也不是全空域盲搜。
 
-## 2. 接收相位模型
+## 2. 接收相位与旧结果边界
 
 接收阵列流形固定为
 
 \[
-\mathbf a(az,el)=\exp\left(j\frac{2\pi}{\lambda}\mathbf p^T\mathbf u(az,el)\right),
+\mathbf a(az,el)=\exp\left(j\frac{2\pi}{\lambda}
+\mathbf p^T\mathbf u(az,el)\right),
 \qquad \mathrm{phase\_factor}=1.
 \]
 
-目标距离对应的单站双程相位对远场窄带接收阵元近似为公共项，并吸收到目标复包络。新活跃函数 `build_receive_cyl_steering_vec` 不接受 `PhaseFactor` 参数，也没有 factor=2 分支。
+目标距离对应的单站双程公共相位吸收到目标复包络。新活跃接收函数
+没有相位因子分支。全部圆柱阵 Step11 数值结果仍冻结为 factor=2 legacy
+evidence，不得作为 v0.19 的成功率、RMSE、复杂度或运行时间证据，也不得
+用于选择 factor=1 的网格、阈值或波束数。
 
-factor=2 仅允许出现在：
+## 3. 阶段 4 数据合同
 
-1. 冻结的 v0.18/Step11 旧源码、metadata 和结果；
-2. Step12.0 波束宽度测试内部的隔离历史对照公式。
+对每个 snapshot，physical elevation-DBF 数据满足
 
-它不得进入新公共函数、活跃配置或新性能结论。
+\[
+Z_{\rm left}=T_{\rm row}Z_{\rm raw},\qquad
+Z_{\rm score}=Z_{\rm left}T_{\rm col}^{H}.
+\]
 
-## 3. 旧结果边界
+其中
 
-所有圆柱阵 Step11 数值结果均为 factor=2 legacy evidence，包括 W/B、topK3、C05、cache 和 Step11.7 集成结果。它们继续保留用于历史审计，但不得：
+\[
+T_{\rm row}(V^H R_zV)T_{\rm row}^H=I_{r_{\rm row}},
+\qquad
+T_{\rm col}R_{\phi,\rm sel}T_{\rm col}^H=I_{r_{\rm col}}.
+\]
 
-- 作为 v0.19 的 success、RMSE、复杂度或运行时间证据；
-- 用于选择 factor=1 的波束数、搜索步长或阈值；
-- 被 Step12 runner 覆盖；
-- 与 factor=1 新结果合并统计；
-- 通过只改 metadata 的方式恢复为有效证据。
+两侧白化器均复用 Step12.2 的有效子空间 PSD 白化规则。固定坐标为：
 
-Phase 0 冻结的 Step11 结果聚合 SHA-256 必须在每个后续阶段结束时复核。
+| 量 | 维度 | 用途 |
+|---|---:|---|
+| `Zel_raw` | `[B_phys,Nphi,L]` | 物理俯仰 DBF 输出 |
+| `T_row` | `[r_row,B_phys]` | 波束行协方差白化 |
+| `T_col` | `[r_col,Nphi]` | 选定环向列协方差白化 |
+| `Z_score_mmv` | `[r_row,r_col*L]` | 仅用于 DML 评分 |
+| `Z_recovery_mmv` | `[r_row,Nphi*L]` | 仅用于物理环向组恢复 |
+| `Ge` | `[r_row,Q]` | 只含固定俯仰波束和行白化 |
+| `Ce_score` | `[Q,r_col*L]` | 右白化评分系数 |
+| `Ce_recovery` | `[Q,Nphi*L]` | 物理环向恢复系数 |
 
-## 4. K1/K2 主范围
+右白化只作用在 nuisance coefficient 列，不进入 `Ge`。候选搜索期间物理
+波束、行列协方差、两个白化器和注册候选域均固定。外部角度使用 degree，
+解析导数使用 radian；`phase_factor=1`。`L=1` 时的环向列是 MMV 系数观测，
+不是独立时间快拍。
 
-主论文范围固定为 $K\in\{1,2\}$：
+## 4. 三层状态语义
 
-| 状态 | 含义 | 当前阶段状态 |
-|---|---|---|
-| `K1` | 局部单目标模型足以解释观测 | 尚未实现判定 |
-| `K2_RESOLVED` | 双目标模型通过校准且两个目标达到预注册分辨条件 | 尚未实现判定 |
-| `K2_UNRESOLVED` | 双目标证据存在，但角分离/信息条件不足以可靠给出两个独立角度 | 尚未实现判定 |
-| `INVALID/OUT_OF_SCOPE` | 输入、白化、秩、搜索域或模型假设不满足 | 尚未实现状态机 |
+阶段 4 将输出严格拆为：
 
-K1/K2 bootstrap 只允许在阶段 8 实现。它必须用独立 K1 holdout 校准 false resolved，并在独立 K2 集上分别报告 resolved、unresolved 和 false unresolved。bootstrap 和 unresolved 输出本身均不是独立创新。
+1. `estimate_status`：估计器是否返回注册候选；
+2. `support_status`：当前注册模型的结构证据；
+3. `statistical_calibration_status`：统一为 `NOT_CALIBRATED_STAGE4`。
 
-$K=3$ 不属于主范围，只能在全主链通过后进入可选阶段 10A；不得把有限 K3 探索写成支持任意多目标。
+`GROUP_REGISTERED_MODEL_CERTIFIED` 只用于 oracle-Q、注册候选库、无噪声或
+精确结构证据下的确定性认证，不表示统计置信。有噪声正常场景只能返回
+`GROUP_REGISTERED_MODEL_SUPPORTED_UNCALIBRATED`。有噪声数据中的
+`rank(Z_score_mmv)`、`rank(Z_recovery_mmv)` 和 `rank(Ce_hat)` 只作诊断，
+不得决定确定性认证。
 
-## 5. 当前证据
+精确 `rank(Ce)<Q` 反例返回：
+
+```text
+estimate_status = ESTIMATE_NOT_RUN_STRUCTURAL_RANK_FAILURE
+support_status  = GROUP_MMV_RANK_UNCERTIFIED
+```
+
+其含义仅为当前注册 Q 组 MMV 分组/恢复链未获得结构认证，不构成所有非线性
+参数化方法下的一般物理不可辨识证明。有限注册候选库的 exact alias 检查也
+不是连续参数域全局唯一性证明。
+
+## 5. 公共/测试边界
+
+公共估计器和恢复函数不读取测试真值。公共恢复函数只求解
+`Ce_hat_recovery`、恢复每组 `[Nphi,L]` 数据并报告数值秩/求解状态。相对
+Frobenius 误差、子空间弦距、串扰和 mixing 误差只由
+`tests/private/evaluate_group_recovery_against_truth.m` 计算，不进入候选评分、
+搜索域构造或停止条件。
+
+## 6. 当前证据
 
 | 主张 | 证据 | 状态 |
 |---|---|---|
-| 新流形逐元素等于 factor=1 解析公式 | 9 个角中心，最大绝对误差 0 | supported |
-| 解析导数相对于 radian 正确 | 9 中心有限差分，最大相对误差 az `1.020e-9`、el `1.476e-9` | supported |
-| factor=1 主瓣比 factor=2 历史对照更宽 | 方位宽度比 `2.000075`、俯仰宽度比 `2.000147` | supported for deterministic model check |
-| legacy/canonical 阵元映射严格可逆 | 随机复向量和多维张量 roundtrip/permutation/坐标误差均为 0 | supported |
-| 真实顺序 DBF 与等效 `Wseq^H` 一致 | 随机/单目标/双目标误差均 `<2e-15` | supported |
-| 条件因子化流形与完整 factor=1 流形一致 | 9 个角中心最大误差 `9.353e-15` | supported |
-| 方位权依赖俯仰条件 | 公式最大误差 `6.707e-15`，非零条件变化量 `>1.49` | supported |
-| 白噪声输出协方差趋近 `Wseq^H Wseq` | 20,000 样本相对误差 `0.02195` | supported for registered white-noise test |
-| PSD 白化使用有效子空间坐标 | rank-deficient `Cb` 返回 `4x5` whitener，误差 `8.306e-16` | supported |
-| 稳定 SVD 评分与良态参考一致 | 对 `pinv` 最大相对误差 `1.681e-15`，对 QR 为 `7.202e-16` | supported |
-| 流形整体尺度不改变投影评分 | `1e-8/1/1e8` 相对展宽 `5.937e-16` | supported |
-| 重复列及 `B<K` 返回秩亏状态 | 重复列秩 1；`B=2<K=3` 返回 `RANK_DEFICIENT` | supported |
-| 集中方差使用 ML 分母 `rC*L` | rank-deficient 白化坐标 `rC=3`，公式误差 0 | supported |
-| oracle-Q 俯仰组 DML 与双秩可辨识性 | 9 个 factor=1 物理场景通过；无噪声真值残差最大 `1.037e-14` | supported for registered deterministic cases |
-| `rank(Ce)<Q` 结构反例被拒绝 | `Nphi=8>Q=2`、`rank(Ge)=2`、`rank(Ce)=1`，返回 `GROUP_UNIDENTIFIABLE` | supported |
-| 同俯仰 Q1/K2 组数据等于组内叠加 | 相对恢复误差 `3.891e-15` | supported |
-| 条件方位 DML 与完整流形联合修正有效 | 无 | not supported |
-| FIM 波束设计有效 | 无 | not supported |
-| K1/K2 bootstrap 已校准 | 无 | not supported |
+| factor=1 接收流形及弧度导数正确 | 9 中心，最大导数误差 az `1.020e-9`、el `1.476e-9` | supported |
+| 真实顺序 DBF 与等效矩阵一致 | 随机/单目标/双目标误差均 `<2e-15` | supported |
+| Step12.2 有效子空间白化与 SVD-DML 稳定 | `pinv` 对照最大误差 `1.681e-15` | supported |
+| 阶段 4 行/列白化正确 | 单元测试最大误差 `1.059e-15 / 1.136e-15` | supported |
+| separable 与小型显式 Kronecker 一致 | data/score/RSS `1.199e-16 / 0 / 0` | supported |
+| oracle-Q 注册俯仰组 DML | 9 个物理场景和 1 个结构反例全部通过 | supported within registered scope |
+| 有噪声场景未被确定性认证 | 2/2 主场景均为 `SUPPORTED_UNCALIBRATED` | supported |
+| 精确系数秩反例语义正确 | `rank(Ge)=2`、`rank(Ce)=1`，返回 MMV-rank uncertified | supported |
+| 相关行/列噪声精确建模 | `T_col` 已应用，行/列误差 `7.941e-13 / 3.052e-15` | supported for specified separable covariance |
+| 同俯仰 Q1/K2 组内叠加恢复 | 相对误差 `3.891e-15` | supported |
+| 条件方位、联合修正和等预算 AP/PR 比较 | 无 | not started |
+| FIM、bootstrap、自动 Q、K=3 | 无 | not started |
 
-## 6. 明确禁止的表述
-
-- 不得把当前 oracle-Q 俯仰组验证写成完整二维超分辨或自动分组已经完成；
-- 不得引用 v0.18 factor=2 数值作为 v0.19 新结果；
-- 不得把 DML、SVD/QR、AP、投影 FIM、归一化 FIM、FIM 约束最少选择、bootstrap 或 unresolved 单独声明为创新；
-- 不得声称局部搜索域由硬件链路自动给出；
-- 不得声称支持任意多目标、一般有色噪声、完整实时闭环或 FPGA 部署；
-- 不得在 design/validation 后继续用 holdout 调参。
+上述真值角主要用于 grid-aligned 实现验证；当前不能据此声称 off-grid
+超分辨性能。AP/PR-DML 的准确复现缺口仍保留，没有用自定义简化版本替代。
 
 ## 7. 后续阶段门
 
-阶段 4 的 oracle-Q 俯仰组 DML、`rank(Ge)`/`rank(Ce)`、有限局部唯一性和组恢复工程门已经通过。下一阶段只能在用户明确授权后验证条件方位 DML、完整顺序流形联合修正和等预算 baseline，不得直接进入局部理论或 FIM。阶段 6、7、8 仍分别是局部理论、exact-subset FIM 和 K1/K2 校准的强制否决门，不能跳过。
+阶段 4 修订通过技术验收，但本轮必须停止。只有用户后续单独授权，才可进入
+阶段 5 验证条件方位 DML、完整顺序流形联合修正和等预算 baseline。局部
+渐近理论、exact-subset FIM、bootstrap、自动 Q 与 K=3 均不属于本轮。

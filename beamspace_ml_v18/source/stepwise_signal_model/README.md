@@ -1,6 +1,6 @@
 # 分步信号模型
 
-> **v0.19 active/legacy boundary (2026-07-17):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS；Step12.3A-C 已验证 oracle-Q 俯仰组 DML、`rank(Ge)`/`rank(Ce)` 可辨识性和组数据恢复。条件方位及后续算法尚未实现。
+> **v0.19 active/legacy boundary (2026-07-17):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS；修订后的 Step12.3A-C 在 oracle-Q、注册局部网格下验证了 matrix-normal 行/列白化、俯仰组 DML、三层状态语义和物理环向组数据恢复。有噪声结果仅为未校准结构支持；结构秩反例只否定当前注册 MMV 分组/恢复链的认证。条件方位、联合修正、FIM、bootstrap、自动 Q 和 K=3 均未实现，阶段 5 尚未开始。
 
 ## 1. 目的
 
