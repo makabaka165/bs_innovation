@@ -1,5 +1,7 @@
 # 分步信号模型
 
+> **v0.19 active/legacy boundary (2026-07-17):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 只验证接收流形、方向图、波束宽度和解析导数；真实顺序 DBF 尚未实现。
+
 ## 1. 目的
 
 `stepwise_signal_model` 将主雷达处理链拆成可以独立验证的多个步骤。当前重点是把下面这条链路做得清晰、可运行、可检查：

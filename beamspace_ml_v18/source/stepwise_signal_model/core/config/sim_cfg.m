@@ -45,8 +45,8 @@ cfg.beam.azTaylorSLL = -30;
 cfg.beam.elWinType = 'taylor';
 cfg.beam.elTaylorNbar = 4;
 cfg.beam.elTaylorSLL = -30;
-% phaseFactor = 2 表示导向相位按双程传播模型构造。
-cfg.beam.spatialPhaseFactor = 2;
+% 接收阵列单程空间相位；目标距离双程公共相位吸收到复包络中。
+cfg.beam.spatialPhaseFactor = 1;
 cfg.beam.nBeamPerDim = 3;
 cfg.beam.fineRatioLutPoints = 201;
 cfg.beam.fineRatioEps = 1e-12;

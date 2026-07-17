@@ -1,0 +1,5 @@
+phase_factor,role_column,comparison_model_phase_factor,cut_name,steer_az_column_deg,steer_el_column_deg,scan_step_column_deg,beamwidth_3db_deg,left_3db_deg,right_3db_deg,peak_angle_deg,peak_offset_deg,pass_flag
+1,active_receive,1,azimuth,8,10,0.002,2.02750334078263,6.98632261932049,9.01382596010312,8,0,1
+1,active_receive,1,elevation,8,10,0.002,2.83783852951301,8.58374803958434,11.4215865690973,10,0,1
+1,legacy_comparison,2,azimuth,8,10,0.002,1.01371372554593,7.49316170899962,8.50687543454555,8,0,1
+1,legacy_comparison,2,elevation,8,10,0.002,1.41881474336388,9.29125920322893,10.7100739465928,10,0,1

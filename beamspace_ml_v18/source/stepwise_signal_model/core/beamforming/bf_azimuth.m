@@ -35,7 +35,7 @@ nBeam = numel(azBeam);
 beamMat = complex(zeros(nBeam, nFast));
 
 for ibeam = 1:nBeam
-    % 当前回波模型按双程相位建模，因此构权导向矢量保持同样相位形式。
+    % 活跃接收模型使用单程空间相位，构权与接收导向保持一致。
     aRef = steer_vec_local(azBeam(ibeam), elSteer, xUse, yUse, zUse, arr.lambda, phaseFactor);
     wNow = ampVec .* aRef;
     wNow = wNow / norm(wNow);

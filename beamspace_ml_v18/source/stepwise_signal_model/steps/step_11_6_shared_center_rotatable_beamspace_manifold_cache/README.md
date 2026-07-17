@@ -1,5 +1,7 @@
 # Step11.6 Shared-Center Rotatable Beamspace Manifold Cache
 
+> **Legacy factor=2 evidence:** 本目录保存的 cache 与旧 W、阵元排列、exact grid 和 `spatialPhaseFactor=2` 绑定。它只用于历史复现与审计，不得被 Step12 复用，也不得在当前结果目录中直接重跑覆盖。
+
 中文创新点：基于 shared-center 圆柱阵旋转等价性的可复用波束域流形缓存方法。
 
 English name: Shared-Center Rotatable Beamspace Manifold Cache for Cylindrical-Array Beamspace ML.

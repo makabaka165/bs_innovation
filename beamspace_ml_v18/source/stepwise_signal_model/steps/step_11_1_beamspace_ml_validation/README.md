@@ -1,5 +1,7 @@
 # Step11.1 Beamspace ML Validation
 
+> **Legacy factor=2 evidence:** 本目录保存的圆柱阵结果由旧 `spatialPhaseFactor=2` 配置产生。它们只用于历史复现与审计，不得写入 factor=1 的 Step12/v0.19 新结论，也不得在当前结果目录中直接重跑覆盖。
+
 Step11.1 is a validation extension for the existing Step11 beamspace ML route. It does not replace or rewrite any original Step11 files. Stage1 only studies one-dimensional ULA beamspace ML prior ablation; later stages may migrate the validated idea to cylindrical-array beamspace ML.
 
 ## Scope

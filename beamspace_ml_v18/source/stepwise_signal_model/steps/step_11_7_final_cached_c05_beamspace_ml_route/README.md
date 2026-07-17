@@ -1,5 +1,7 @@
 # Step11.7 Final Cached C05 Beamspace ML Route
 
+> **Legacy factor=2 evidence:** 本目录保存的 B7+C05+cache 集成结果由旧 `spatialPhaseFactor=2` 配置产生，且不是真实顺序 DBF。它只用于历史复现与审计，不得写入 factor=1 的 Step12/v0.19 新结论，也不得在当前结果目录中直接重跑覆盖。
+
 Step11.7 is the final engineering entry point for the Step11 beamspace ML backend. It is not a new algorithmic innovation. It packages the already validated Step11 modules into one stable wrapper:
 
 1. Step11.1 controlled pair2d beamspace ML score.

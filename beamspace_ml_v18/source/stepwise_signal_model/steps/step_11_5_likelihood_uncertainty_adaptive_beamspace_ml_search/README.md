@@ -1,5 +1,7 @@
 # Step11.5 Likelihood-Uncertainty-Aware Adaptive TopK-Window Beamspace ML Search
 
+> **Legacy factor=2 evidence:** 本目录保存的 C05 结果继承旧 `spatialPhaseFactor=2` 配置。它们只用于历史复现与审计，不得写入 factor=1 的 Step12/v0.19 新结论，不得恢复调参，也不得在当前结果目录中直接重跑覆盖。
+
 ## 1. Step11.5 目标
 
 Step11.5 提出“基于似然地形不确定度的自适应 TopK-窗口波束级最大似然搜索方法”。它在固定 Step11.1 controlled pair2d beamspace ML 后端、固定 Step11.2 推荐 `W = greedy_combined_B7`、固定 Step11.3 degree-based coarse-to-fine 搜索框架的前提下，根据粗网格 top candidates 的 ML 分数地形自适应选择 fine refine 的 topK 数量与局部窗口尺度。

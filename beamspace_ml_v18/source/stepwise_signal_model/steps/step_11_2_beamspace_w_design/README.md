@@ -1,6 +1,8 @@
 Step11.2 beamspace W design
 ===========================
 
+> **Legacy factor=2 evidence:** 本目录保存的圆柱阵 W/B 结果由旧 `spatialPhaseFactor=2` 配置产生。它们只用于历史复现与审计，不得写入 factor=1 的 Step12/v0.19 新结论，也不得在当前结果目录中直接重跑覆盖。
+
 Step11.2 is a follow-up to Step11.1. It keeps the controlled pair2d
 beamspace ML backend fixed and studies how to choose the beamspace transform
 matrix W.
