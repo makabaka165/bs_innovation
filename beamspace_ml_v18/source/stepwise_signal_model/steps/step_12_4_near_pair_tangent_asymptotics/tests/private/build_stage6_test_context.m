@@ -1,0 +1,26 @@
+function context = build_stage6_test_context(cfg, plan, step_dir, package_dir)
+%BUILD_STAGE6_TEST_CONTEXT Build each registered measurement exactly once.
+
+model_options = struct( ...
+    'stage6_controls_hash', plan.stage6_controls_hash, ...
+    'stage6_measurement_plan_hash', plan.stage6_measurement_plan_hash, ...
+    'stage6_experiment_plan_hash', plan.stage6_experiment_plan_hash, ...
+    'rank_multiplier', plan.controls.rank_multiplier);
+models = cell(numel(plan.configs), 1);
+model_debug = cell(numel(plan.configs), 1);
+for index = 1:numel(plan.configs)
+    [models{index}, model_debug{index}] = ...
+        build_stage6_fixed_measurement_model( ...
+        plan.configs(index), cfg, model_options);
+end
+
+context = struct();
+context.cfg = cfg;
+context.plan = plan;
+context.models = models;
+context.model_debug = model_debug;
+context.step_dir = step_dir;
+context.package_dir = package_dir;
+context.theory_status = 'THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY';
+context.prior_art_status = 'SCENARIO_SPECIFIC_COROLLARY_PRIOR_ART_BOUNDED';
+end

@@ -1,0 +1,1 @@
+config_id,center_az_deg,center_el_deg,direction_id,lambda_min,lambda_max,lambda_min_to_max_ratio,null_status,fixed_measurement_hash,pass_flag,stage6_controls_hash,stage6_experiment_plan_hash,phase_factor,theory_status,prior_art_status

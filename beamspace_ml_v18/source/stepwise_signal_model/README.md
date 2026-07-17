@@ -1,6 +1,6 @@
 # 分步信号模型
 
-> **v0.19 active/legacy boundary (2026-07-17):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS；Step12.3A-C 已验证 oracle-Q 俯仰组恢复和 matrix-normal 行/列白化；Step12.3D-E 已在 oracle-Kq、统一注册角域下验证条件方位和固定完整顺序流形修正，并通过技术门与 Pareto 方案 1。主链相对两初值直接 AP 保持配对成功率且 score calls 减少 44.95%，但相干弱目标核心 stress 场景中主链、直接 AP 和 local full 均为 0/200。所有有噪声输出为 `NOT_CALIBRATED_STAGE5`；FIM、模型阶数 bootstrap、自动 Q/K、K=3、cache 和硬件映射均未实现。
+> **v0.19 active/legacy boundary (2026-07-17):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS；Step12.3A-C 已验证 oracle-Q 俯仰组恢复和 matrix-normal 行/列白化；Step12.3D-E 已在 oracle-Kq、统一注册角域下验证条件方位和固定完整顺序流形修正，并通过技术门与 Pareto 方案 1。主链相对两初值直接 AP 保持配对成功率且 score calls 减少 44.95%，但相干弱目标核心 stress 场景中主链、直接 AP 和 local full 均为 0/200。Step12.4 已在固定物理顺序测量与有效子空间白化下验证第二奇异值、归一化相关性和列归一化 Gram 条件数的统一局部渐近式，理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`；synthetic exact-null 六阶式通过，但四个主物理配置均无 exact tangent null。所有有噪声阶段 5 输出仍为 `NOT_CALIBRATED_STAGE5`；FIM 波束设计、模型阶数 bootstrap、自动 Q/K、K=3、cache 和硬件映射均未实现。
 
 ## 1. 目的
 
@@ -98,6 +98,14 @@ demo_joint_2d_mtd
 ```matlab
 run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_3_grouped_conditional_dml/run_step12_3_stage5_validation.m')
 ```
+
+当前 Step12.4 阶段 6 的独立验证入口为：
+
+```matlab
+run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/run_step12_4_tangent_asymptotics_validation.m')
+```
+
+阶段 6 使用 4 个主顺序测量配置、9 个中心、4 个固定弧度方向和 9 级分离尺度，共保留 1296 个 secant case。144 个注册尾区全部通过，三条 ratio 最大误差分别为 `4.0102e-6`、`1.0421e-5` 和 `6.1180e-6`。该证据只支持固定白化顺序流形的确定性场景化推论，不证明有限样本双目标可分辨，也未开始 FIM 波束选择。
 
 ## 4. 步骤概览
 

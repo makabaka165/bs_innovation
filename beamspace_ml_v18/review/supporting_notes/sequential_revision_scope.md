@@ -1,10 +1,10 @@
 # v0.19 顺序测角修订范围说明
 
-> 版本：Step12.3 阶段 5 修订，2026-07-17
+> 版本：Step12.4 阶段 6 修订，2026-07-17
 > 活跃相位模型：`phase_factor=1`
 > 当前结论：接收流形、真实先俯仰后方位 DBF、稳定 SVD-DML，以及
 > oracle-Q 注册局部网格下的俯仰组 DML、matrix-normal 行/列白化、
-> 三层状态语义、物理环向组恢复、条件方位 DML 和固定完整顺序流形修正已通过技术与 Pareto 工程门；所有有噪声结果仍未统计校准。
+> 三层状态语义、物理环向组恢复、条件方位 DML 和固定完整顺序流形修正已通过技术与 Pareto 工程门；固定白化顺序流形的近双目标非退化三式与 synthetic exact-null 六阶候选已通过确定性验证。所有有噪声结果仍未统计校准。
 
 ## 1. 系统层级
 
@@ -116,7 +116,34 @@ Frobenius 误差、子空间弦距、串扰和 mixing 误差只由
 `Tseq [9,9]`、`Gphi [3,Kq]` 和 `Gseq [9,K]`。所有固定对象和统一角域
 均保存 hash；有噪声输出统一为 `NOT_CALIBRATED_STAGE5`。
 
-## 6. 当前证据
+## 6. 阶段 6 固定白化流形合同
+
+阶段 6 的主理论对象固定为
+
+\[
+g(\phi,\theta)=T_{\rm seq}W_{\rm seq}^{H}a_{\rm receive}(\phi,\theta),
+\]
+
+其中 `Wseq`、`Cseq=Wseq'*Rn_elem*Wseq`、`Tseq` 和有效白化秩在一个测量
+配置内均固定，不随中心、方向或分离尺度改变。4 个主配置的顺序通道数为
+9、9、6 和 6；单通道配置只用于测量完全塌缩诊断。9 个中心、4 个固定
+per-radian 方向和 9 个分离尺度形成 1296 个主 secant case。
+
+对 $T=\operatorname{Re}\{J_g^H\Pi_g^\perp J_g\}$ 和
+$q_{\mathbf v}=\mathbf v^{T}T\mathbf v>0$，阶段 6 验证
+$\sigma_2^2\sim r^2q_{\mathbf v}/2$、
+$1-|\rho|^2\sim r^2q_{\mathbf v}/\|g\|^2$ 和
+$\kappa(\bar G^H\bar G)\sim4\|g\|^2/(r^2q_{\mathbf v})$。
+144 个预注册尾区全部通过，最大 ratio 误差分别为 `4.0102e-6`、
+`1.0421e-5` 和 `6.1180e-6`。三类不变性最大误差为 `9.4336e-13`。
+
+解析 fixture $g(x,y)=[1,x,y^3]^T$ 支持
+$\sigma_2^2\sim r^6\|v_{3,\rm eff}\|^2/2$，拟合阶数为 6；但 4 个主物理
+配置均无 exact tangent null，故六阶扩展没有物理实例证据。统计范围固定为
+`DETERMINISTIC_GEOMETRIC_VALIDATION`，不得写成有限样本可分辨、低 SNR
+threshold 已解决或强相干已解决。
+
+## 7. 当前证据
 
 | 主张 | 证据 | 状态 |
 |---|---|---|
@@ -140,10 +167,13 @@ Frobenius 误差、子空间弦距、串扰和 mixing 误差只由
 | 主链相对两初值直接 AP | 成功率差区间 `[0,0]`，score calls 减少 `44.95%` | Pareto scheme 1 passed |
 | 相干弱目标核心 stress | 主链/直接 AP/local-full 均 `0/200` | registered failure boundary |
 | PR-DML 与 Kim 2012 | `EXACT_REPRODUCTION_UNAVAILABLE` | open baseline gap |
+| 固定白化近双目标非退化三式 | 1296 case、144/144 注册尾区通过 | scenario-specific deterministic corollary |
+| synthetic exact-null 六阶候选 | 拟合阶数 6，ratio 误差 `2.220e-16` | supported on analytic fixture only |
+| 主物理 exact tangent null | 4 个主配置均未发现 | `NO_EXACT_PHYSICAL_TANGENT_NULL_FOUND` |
 | FIM、bootstrap、自动 Q、K=3 | 无 | not started |
 
 阶段 5 另含方位/俯仰半网格、同时 off-grid、边界、部分出域、极近、弱目标、相干、相关噪声、缩孔径和 `L=1/L>1` 场景。成功判定使用固定最终网格门；出域样本不扩窗并计入无条件失败。AP 属经典方法，PR-DML/Kim 的准确复现缺口仍保留，没有用自定义简化版本替代。
 
-## 7. 后续阶段门
+## 8. 后续阶段门
 
-阶段 5 已通过技术门和 Pareto 方案 1，但本轮必须停止。只有用户后续单独授权，才可进入阶段 6。局部渐近理论、exact-subset FIM、模型阶数 bootstrap、自动 Q、K=3、cache 与硬件映射均未实现。
+阶段 6 已通过固定测量、导数、投影几何、非退化三式、精确恒等式、几何不变性、synthetic null 和 prior-art 边界门，但本轮必须停止。只有用户后续单独授权，才可进入阶段 7。exact-subset FIM、模型阶数 bootstrap、自动 Q、K=3、cache 与硬件映射均未实现。

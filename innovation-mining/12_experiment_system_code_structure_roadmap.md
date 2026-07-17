@@ -753,19 +753,25 @@ results/grouped_conditional_dml_report.md
 
 # Step12.4：核心创新点 2——固定白化顺序流形的近双目标渐近式
 
+> **执行状态（2026-07-17）：已完成并通过。** 目录为
+> `steps/step_12_4_near_pair_tangent_asymptotics/`。理论状态为
+> `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`；4 个主物理配置无
+> exact tangent null，synthetic analytic fixture 支持六阶候选。本状态不授权
+> 或执行 Step12.5。
+
 ## 目标
 
 验证编号 11 中的显式局部推论，而不是重新证明经典 FIM。物理 Wseq、选择索引、噪声协方差和白化有效秩在每个验证配置中固定。
 
-## 建议函数
+## 已实现函数
 
 ```matlab
-function [a, daz_rad, del_rad, d2, meta] = ...
-    build_receive_cyl_manifold_derivatives(...)
-function [g, Jg, meta] = build_fixed_whitened_sequential_derivatives(...)
-function [T, debug] = compute_projected_jacobian_metric(g, Jg, opts)
-function row = evaluate_secant_tangent_case(c_deg, d_unit, r, model, opts)
-function out = analyze_tangent_null_directions(T, higher_derivatives, opts)
+function [model, debug] = build_stage6_fixed_measurement_model(config, cfg, opts)
+function [g, Jg, info] = build_fixed_whitened_sequential_derivatives(center_deg, model, opts)
+function out = build_fixed_whitened_directional_derivatives(center_deg, direction_unit_rad, model, opts)
+function [metric, debug] = compute_projected_jacobian_metric(g, Jg, opts)
+function row = evaluate_secant_tangent_case(center_deg, direction_unit_rad, separation_rad, model, opts)
+function out = compute_tangent_null_sixth_order(g0, g1, g2, g3, g_minus, g_plus, separation_rad)
 ```
 
 ## 固定条件
@@ -832,22 +838,45 @@ q
 - 两列 Gram 与 mutual coherence；
 - `06_formula_prior_art.md` 的 F05–F08。
 
-## 输出
+## 实际输出
 
 ```text
-results/derivative_validation.csv
+results/stage6_configuration_registry.csv
+results/measurement_hash_registry.csv
+results/first_derivative_validation.csv
+results/higher_directional_derivative_validation.csv
+results/projected_metric_properties.csv
 results/tangent_eigenvalues.csv
-results/secant_tangent_nonzero_direction.csv
-results/secant_tangent_null_direction.csv
+results/secant_tangent_nondegenerate.csv
+results/secant_tangent_tail_summary.csv
+results/secant_tangent_exact_null.csv
+results/secant_tangent_near_null.csv
+results/synthetic_null_validation.csv
+results/two_column_exact_identity.csv
+results/geometry_invariance_validation.csv
 results/column_norm_asymmetry.csv
-results/tangent_theory_keypoints.csv
-results/tangent_theory_prior_art_mapping.md
-results/tangent_theory_validation.md
+results/stage6_keypoints.csv
+results/stage6_prior_art_mapping.md
+results/stage6_theory_validation.md
 figures/sigma2_ratio_vs_separation.png
 figures/coherence_ratio_vs_separation.png
 figures/normalized_gram_ratio_vs_separation.png
+figures/taylor_residual_vs_separation.png
+figures/tangent_eigenvalue_map.png
 figures/null_direction_order_fit.png
+figures/column_norm_ratio_vs_separation.png
 ```
+
+## 已通过结果
+
+- 1296 个主 secant case，144/144 个注册尾区通过；
+- 一/二/三阶导数最大相对误差为 `5.8897e-9 / 3.2122e-5 / 6.5834e-4`；
+- 三条 ratio 最大尾区误差为 `4.0102e-6 / 1.0421e-5 / 6.1180e-6`；
+- 未饱和两列精确恒等式误差 `1.3977e-12`；
+- 三类几何不变性最大误差 `9.4336e-13`；
+- synthetic exact-null 拟合阶数 6，ratio 误差 `2.2204e-16`；
+- Code Analyzer / scope / schema / hash violation 均为 0；
+- 阶段 5 的 14 个结果文件和 Step11 的 351 个冻结文件哈希未改变。
 
 ## 否决条件
 

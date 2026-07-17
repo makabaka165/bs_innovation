@@ -1,0 +1,9 @@
+function table_out = test_synthetic_tangent_null(~, evidence)
+%TEST_SYNTHETIC_TANGENT_NULL Verify the analytic sixth-order null fixture.
+
+table_out = evidence.synthetic_table;
+assert(all(table_out.pass_flag) && ...
+    abs(table_out.fitted_order(1) - 6) <= 0.25, ...
+    'test_synthetic_tangent_null:Failed', ...
+    'The synthetic tangent-null sixth-order relation failed.');
+end

@@ -1,9 +1,9 @@
 # 圆柱阵顺序数字波束形成后局部未分辨目标簇测角：接收单程模型修订稿
 
-> **版本：v0.19 Step12.3 阶段 5 修订，2026-07-17**
+> **版本：v0.19 Step12.4 阶段 6 修订，2026-07-17**
 > **活跃空间相位：`phase_factor=1`**  
 > **证据状态：v0.18/Step11 的圆柱阵数值结果由 `phase_factor=2` 产生，已失效并冻结为 legacy，不构成本稿结论。**  
-> **完成状态：本稿已完成接收模型、真实先俯仰后方位 DBF、稳定白化/SVD-DML 数值后端，以及 oracle-Q/Kq、统一注册局部角域下的俯仰组恢复、条件方位 DML、原始完整顺序观测上的经典坐标联合修正和等域基线比较。阶段 5 通过技术门与 Pareto 方案 1；所有有噪声输出仍为 `NOT_CALIBRATED_STAGE5`。FIM 波束设计、近双目标切向理论、K1/K2 模型阶数 bootstrap、自动 Q/K、K=3、cache 与硬件映射均未完成。**
+> **完成状态：本稿已完成接收模型、真实先俯仰后方位 DBF、稳定白化/SVD-DML 数值后端，以及 oracle-Q/Kq、统一注册局部角域下的俯仰组恢复、条件方位 DML、原始完整顺序观测上的经典坐标联合修正和等域基线比较。阶段 5 通过技术门与 Pareto 方案 1；所有有噪声输出仍为 `NOT_CALIBRATED_STAGE5`。阶段 6 在固定物理顺序测量和有效子空间白化下完成近双目标第二奇异值、归一化相关性、列归一化 Gram 条件数与零方向边界的确定性验证，理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`。FIM 波束设计、K1/K2 模型阶数 bootstrap、自动 Q/K、K=3、cache 与硬件映射均未完成。**
 
 ## 版本说明与术语账本
 
@@ -33,6 +33,8 @@ v0.19 是从物理模型重新起步的修订源稿，不继承 v0.18 的波束�
 
 阶段 5 进一步以稳定 SVD 传播完整组恢复噪声 $R_{\rm group}=G_e^\dagger(G_e^\dagger)^H$，在固定俯仰条件下构造含 $\cos\eta$ 的环向流形，并回到原始阵元数据、真实 $W_{\rm seq}$ 和固定完整白化器执行经典坐标修正。条件流形公式、弧度导数和白化 Monte Carlo 误差分别为 $3.606\times10^{-15}$、$5.618\times10^{-10}$ 和 $4.862\times10^{-3}$；完整顺序流形误差为 0，确定性主链相对局部 full-grid reference 的归一化 score gap 为 $8.106\times10^{-16}$，单调违规为 0。两个核心有噪声场景对每种方法各使用 200 个配对 realization。正常 holdout 中主链成功率为 1.000（Wilson 95% 区间 $[0.9816,1]$），stress holdout 为 0.180（$[0.1373,0.2324]$）。在全部 455 个 holdout 配对中，主链与两初值直接 AP 的成功率差及 95% 配对重采样区间均为 0，而端到端 score calls 平均减少 44.95%；相对 local full reference 减少 74.95%。该结果支持一种工程初始化和数据组织收益，不构成条件 DML、AP、坐标上升或 SVD 投影的新颖性主张。相干且弱的核心 stress 场景中，主链、直接 AP 和 local full 均为 0/200，是保留的失败边界；PR-DML 与 Kim 2012 的精确复现仍不可用。Q/Kq 仍由 oracle 给定，所有噪声结果未完成模型阶数或置信校准。
 
+阶段 6 固定 $W_{\rm seq}$、$C_{\rm seq}=W_{\rm seq}^{H}R_nW_{\rm seq}$、有效子空间白化器 $T_{\rm seq}$ 和白化秩，只令候选角改变接收流形 $g(\phi,\theta)=T_{\rm seq}W_{\rm seq}^{H}a_{\rm receive}(\phi,\theta)$。在 4 个主测量配置、9 个中心、4 个固定弧度方向和 9 级分离尺度组成的 1296 个预注册 case 中，第二奇异值、归一化相关性和列归一化 Gram 条件数三条渐近式的注册尾区最大 ratio 误差分别为 $4.010\times10^{-6}$、$1.042\times10^{-5}$ 和 $6.118\times10^{-6}$。一、二、三阶导数最大相对误差分别为 $5.890\times10^{-9}$、$3.212\times10^{-5}$ 和 $6.583\times10^{-4}$；未饱和两列 Gram 精确恒等式和三类几何不变性的最大误差分别为 $1.398\times10^{-12}$ 和 $9.434\times10^{-13}$。解析 synthetic exact-null fixture 的拟合阶数为 6，六阶 ratio 最大误差为 $2.220\times10^{-16}$。四个主物理配置均未出现 exact tangent null；单通道配置只记为测量完全塌缩。该结果是确定性流形几何验证，不提供统计置信区间，也不证明低 SNR、强相干或有限快拍下的双目标可分辨性。
+
 **关键词：** 圆柱阵；接收阵列；单程空间相位；顺序数字波束形成；局部未分辨目标；方向估计
 
 # Abstract
@@ -44,6 +46,8 @@ We implemented a six-input receive-only cylindrical steering function and analyt
 We further implemented the explicit element permutation, column-preserving elevation DBF, elevation-conditioned azimuth DBF, and the equivalent Kronecker beam matrix. For random complex data and factor-1 single- and two-target snapshots, staged and equivalent-matrix outputs agreed to relative errors below $2\times10^{-15}$. The stable backend and phase-4 grouped model use effective-subspace whitening, economy-SVD projection, separate matrix-normal row/column whitening, and distinct score and physical-recovery coordinates. The maximum row and column whitening errors were $1.059\times10^{-15}$ and $1.136\times10^{-15}$, and all nine factor-1 physical cases plus one structural counterexample passed under oracle $Q$.
 
 Phase 5 propagated the full correlated recovery-noise matrix, formed an elevation-conditioned circumferential manifold containing the required $\cos\eta$ dependence, and returned to the original element snapshots, true $W_{\rm seq}$, and fixed full whitener for classical coordinate correction. Conditional-manifold formula, derivative, and Monte Carlo whitening errors were $3.606\times10^{-15}$, $5.618\times10^{-10}$, and $4.862\times10^{-3}$, respectively. The full sequential manifold error was zero; the deterministic grouped chain had a normalized score gap of $8.106\times10^{-16}$ to the local full-grid reference and no monotonicity violations. Each of two core noisy scenarios used 200 paired realizations per method. Main-chain success was 1.000 on the normal holdout (Wilson 95% interval $[0.9816,1]$) and 0.180 on the stress holdout ($[0.1373,0.2324]$). Across 455 holdout pairs, the main and two-start direct alternating-projection baseline had identical success, with a paired 95% difference interval of $[0,0]$, while the main chain used 44.95% fewer end-to-end score calls; it used 74.95% fewer calls than the local full-grid reference. This evidence supports an engineering initialization and data-organization benefit, not novelty of conditional DML, alternating projection, coordinate ascent, or SVD projection. The coherent weak-target core stress case failed for the main, direct, and local-full methods alike (0/200). Exact PR-DML and Kim-2012 reproductions remain unavailable, $Q/K_q$ are oracle inputs, and all noisy outputs remain uncalibrated for model order or confidence.
+
+Phase 6 fixed $W_{\rm seq}$, $C_{\rm seq}$, the effective-subspace whitener $T_{\rm seq}$ and whitening rank while varying only the receive-manifold angle. Across 1,296 preregistered cases formed by four primary measurement configurations, nine centers, four fixed directions in radian coordinates and nine separation scales, the maximum registered-tail ratio errors for the second singular value, normalized-coherence deficit and normalized-Gram condition were $4.010\times10^{-6}$, $1.042\times10^{-5}$ and $6.118\times10^{-6}$, respectively. The maximum first-, second- and third-derivative relative errors were $5.890\times10^{-9}$, $3.212\times10^{-5}$ and $6.583\times10^{-4}$. An analytic exact-null fixture yielded a fitted order of six and a maximum sixth-order ratio error of $2.220\times10^{-16}$. No exact tangent null occurred in the four primary physical configurations; the single-channel case was retained only as an exact measurement collapse. These deterministic results support a scenario-specific corollary of classical projected-FIM/manifold geometry, not finite-sample resolution or a new Fisher-information theory.
 
 **Keywords:** cylindrical array; receive manifold; one-way spatial phase; sequential digital beamforming; locally unresolved targets; direction finding
 
@@ -83,9 +87,8 @@ Phase 5 propagated the full correlated recovery-noise matrix, formed an elevatio
 
 ## 1.4 当前完成状态
 
-当前已完成接收模型、严格顺序 DBF、稳定数值后端、oracle-Q 俯仰组恢复，以及 oracle-Kq 条件方位和固定完整顺序流形联合修正。阶段 5 使用互斥 DESIGN、VALIDATION、NORMAL_HOLDOUT 和 STRESS_HOLDOUT，固定角域、网格、迭代与匹配规则后运行 455 个 holdout 配对，并通过技术门与 Pareto 方案 1。该证据支持的是实际顺序 DBF 接口上的工程初始化和数据组织收益；有噪声输出仍未完成模型阶数或置信校准。以下内容尚未形成可引用结果：
+当前已完成接收模型、严格顺序 DBF、稳定数值后端、oracle-Q 俯仰组恢复、oracle-Kq 条件方位和固定完整顺序流形联合修正，以及固定白化顺序流形的近双目标确定性渐近验证。阶段 5 使用互斥 DESIGN、VALIDATION、NORMAL_HOLDOUT 和 STRESS_HOLDOUT，固定角域、网格、迭代与匹配规则后运行 455 个 holdout 配对，并通过技术门与 Pareto 方案 1。阶段 6 的 1296 个预注册 secant case 和 144 个注册尾区全部保留并通过；该证据只支持实际顺序 DBF 接口上的工程组织收益和经典投影 FIM/流形几何的场景化显式推论。有噪声输出仍未完成模型阶数或置信校准。以下内容尚未形成可引用结果：
 
-- 固定白化流形的局部渐近式与零方向；
 - 相关顺序波束的 exact-subset FIM 选择；
 - K1/K2 bootstrap、false resolved 和 unresolved 校准；
 - 自动 Q/K、K=3、持久 cache 与硬件映射。
@@ -396,7 +399,56 @@ G_{\rm seq}(\Theta)=T_{\rm seq}W_{\rm seq}^HA_{\rm receive}(\Theta).
 
 两个核心有噪声场景对每种方法各使用 200 个相同噪声 realization。端到端主链成本包含阶段 4 搜索、组恢复、噪声传播、条件搜索和联合修正；直接 AP 的两个预注册初值全部计费。由此满足 Pareto 方案 1：成功率差区间下界不低于 $-0.02$，score calls 降幅超过 20%。但是，相干且弱的核心 stress 场景中，主链、直接 AP 和 local full 均为 0/200；该结果是方法边界，不得用 oracle 链或删除困难样本掩盖。PR-DML 与 Kim 2012 因缺少已审计的精确复现而记为 `EXACT_REPRODUCTION_UNAVAILABLE`，没有用自定义简化版本替代。
 
-## 3.6 后续阶段的强制门
+## 3.6 固定白化顺序流形的近双目标局部渐近验证
+
+对每个注册测量配置，固定物理顺序波束、元素噪声协方差、有效白化坐标和白化秩：
+
+\[
+g(\boldsymbol\xi)=T_{\rm seq}W_{\rm seq}^{H}a_{\rm receive}(\boldsymbol\xi),
+\qquad
+T(\mathbf c)=\operatorname{Re}\{J_g^H\Pi_g^\perp J_g\}.
+\]
+
+令 $\boldsymbol\xi_\pm=\mathbf c\pm r\mathbf v/2$，其中 $\|\mathbf v\|_2=1$ 且 $r$ 使用 radian。对 $q_{\mathbf v}=\mathbf v^{T}T(\mathbf c)\mathbf v>0$ 的非退化方向，验证对象为
+
+\[
+\sigma_2^2([g_-,g_+])\sim\frac12r^2q_{\mathbf v},
+\]
+
+\[
+1-|\rho|^2\sim\frac{r^2q_{\mathbf v}}{\|g(\mathbf c)\|_2^2},
+\qquad
+\kappa(\bar G_2^H\bar G_2)\sim
+\frac{4\|g(\mathbf c)\|_2^2}{r^2q_{\mathbf v}}.
+\]
+
+两列归一化 Gram 还精确满足 $\kappa=(1+|\rho|)/(1-|\rho|)$；未归一化 Gram 的条件数另受列范数不对称影响，因此没有套用等范数公式。注册 numeric floor 只用于分类是否进入 ratio 验收尾区，不作为分母修复。每个配置、中心和固定方向按最小的 3 个有效分离尺度形成注册尾区，不根据结果更换尺度或重新拟合 $1/2$、1 和 4 三个常数。
+
+| 阶段 6 确定性证据 | 结果 | 门限 |
+|---|---:|---:|
+| 主物理 secant case | 1296 | 全部保留 |
+| 注册尾区 | 144/144 通过 | 每组至少 3 点 |
+| $\sigma_2^2$ ratio 最大误差 | $4.010\times10^{-6}$ | $\le 0.02$ |
+| coherence ratio 最大误差 | $1.042\times10^{-5}$ | $\le 0.02$ |
+| normalized-Gram ratio 最大误差 | $6.118\times10^{-6}$ | $\le 0.05$ |
+| 未饱和精确恒等式最大误差 | $1.398\times10^{-12}$ | $\le10^{-10}$ |
+| 三类不变性最大误差 | $9.434\times10^{-13}$ | $\le10^{-10}$ |
+| synthetic exact-null 阶数 / ratio 误差 | 6 / $2.220\times10^{-16}$ | $|p-6|\le0.25$ / $\le0.02$ |
+
+若 $\Pi_g^\perp g_1=0$，注册的高阶候选为
+
+\[
+\alpha=\frac{g_0^Hg_1}{g_0^Hg_0},\qquad
+v_{3,\rm eff}=\Pi_g^\perp\left(\frac{g_3}{24}-\frac{\alpha g_2}{8}\right),
+\]
+
+\[
+\sigma_2^2\sim\frac12r^6\|v_{3,\rm eff}\|_2^2.
+\]
+
+该六阶式在 $g(x,y)=[1,x,y^3]^T$ 的解析 fixture 上通过。四个主物理配置的 $T$ 均非退化，没有发现 exact tangent null；因此六阶式尚未获得物理流形实例验证。单通道配置只报告 `EXACT_MEASUREMENT_COLLAPSE`，不包装为高阶物理分辨结论。本节状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`，统计范围为 `DETERMINISTIC_GEOMETRIC_VALIDATION`。
+
+## 3.7 后续阶段的强制门
 
 | 阶段 | 必须回答的问题 | 当前状态 |
 |---|---|---|
@@ -404,7 +456,7 @@ G_{\rm seq}(\Theta)=T_{\rm seq}W_{\rm seq}^HA_{\rm receive}(\Theta).
 | 稳定 DML | SVD/QR 投影是否与参考最小二乘一致，病态候选是否可诊断 | 已通过 |
 | 俯仰组 | 固定行/列白化、注册流形秩、精确 MMV 秩证据和有限候选库 exact alias 是否满足 | 已通过 oracle-Q 阶段 4 修订门 |
 | 条件方位与联合修正 | 是否相对直接 AP/local full 满足性能-复杂度 Pareto 门，且坐标更新单调 | 已通过阶段 5 技术门与 Pareto 方案 1 |
-| 局部渐近理论 | 固定白化条件、常数和零方向是否由公式及数值验证共同支持 | 未开始 |
+| 局部渐近理论 | 固定白化条件、常数和零方向是否由公式及数值验证共同支持 | 已通过，场景化显式推论；主物理配置无 exact null |
 | exact-subset FIM | 每个物理子集重构协方差后是否满足保真与 holdout 风险门 | 未开始 |
 | K1/K2 | 独立 K1 holdout 是否控制 false resolved，K2 是否区分 resolved/unresolved | 未开始 |
 
@@ -420,13 +472,13 @@ Kim 等研究了三维 beamspace 中的双目标低角跟踪[5]；Pakrooh 等研
 
 ## 4.2 保留的工程贡献与理论候选
 
-阶段 5 后，第一项获得了受限工程证据；其余两项仍是尚未验证的理论/设计候选：
+阶段 6 后，第一项获得了受限工程证据，第二项获得了确定性场景化理论证据，第三项仍是尚未验证的设计候选：
 
 1. 在实际 factor=1 顺序 DBF 接口上，将可辨识俯仰组、组内多方位条件估计和固定完整流形修正组织为一条工程链；其证据是相对两初值直接 AP 保持配对成功率并减少 44.95% score calls，而不是声称条件 DML 或 AP 本身新颖；
-2. 固定白化顺序二维流形上的显式近双目标局部渐近特化，包括零方向边界；
+2. 固定白化顺序二维流形上的显式近双目标局部渐近特化；非退化三式和 synthetic 六阶 exact-null 候选已通过，四个主物理配置未出现 exact null；
 3. 相关物理顺序波束、exact-subset 重白化和乘积通道成本下的 FIM 最少选择特化。
 
-“尚未发现完全相同工作”不构成新颖性证明。第一项仍需在阶段 9 与最近工作及失败边界共同重写；第二、三项只有通过后续独立阶段才可能形成论文贡献表述。
+“尚未发现完全相同工作”不构成新颖性证明。第一、二项仍需在阶段 9 与最近工作及失败边界共同重写；第三项只有通过后续独立阶段才可能形成论文贡献表述。
 
 # 第5章 Step12.0 接收模型验证
 
@@ -497,15 +549,15 @@ v0.18/Step11 的圆柱阵实验按 factor=2 生成。factor 从 2 改为 1 会�
 
 ## 7.1 当前结论
 
-当前已依次验证 factor=1 接收圆柱阵流形及弧度解析导数、真实先俯仰后方位 DBF 数据流、有效子空间白化和稳定 SVD-DML 数值评分。阶段 4 在 oracle-Q 注册局部网格下验证了 matrix-normal 行/列白化、评分/恢复双坐标、俯仰组 DML、注册模型支持诊断和物理环向组恢复；$\operatorname{rank}(C_e)<Q$ 反例正确停止当前注册 MMV 链。阶段 5 在 oracle-Kq 和统一注册物理域内验证了完整组噪声传播、含 $\cos\eta$ 的条件方位流形、固定完整顺序观测上的经典联合修正，以及主链、两初值直接 AP、局部 full-grid reference 和常规 DBF 的同数据比较。技术测试、351 个 Step11 冻结结果哈希和 Pareto 方案 1 均通过。正常 holdout 主链成功率为 1.000，stress holdout 为 0.180；全 holdout 相对直接 AP 的成功率差区间为 $[0,0]$，score calls 减少 44.95%。旧 factor=2 数值未迁移。
+当前已依次验证 factor=1 接收圆柱阵流形及弧度解析导数、真实先俯仰后方位 DBF 数据流、有效子空间白化和稳定 SVD-DML 数值评分。阶段 4 在 oracle-Q 注册局部网格下验证了 matrix-normal 行/列白化、评分/恢复双坐标、俯仰组 DML、注册模型支持诊断和物理环向组恢复；$\operatorname{rank}(C_e)<Q$ 反例正确停止当前注册 MMV 链。阶段 5 在 oracle-Kq 和统一注册物理域内验证了完整组噪声传播、含 $\cos\eta$ 的条件方位流形、固定完整顺序观测上的经典联合修正，以及主链、两初值直接 AP、局部 full-grid reference 和常规 DBF 的同数据比较。技术测试、351 个 Step11 冻结结果哈希和 Pareto 方案 1 均通过。正常 holdout 主链成功率为 1.000，stress holdout 为 0.180；全 holdout 相对直接 AP 的成功率差区间为 $[0,0]$，score calls 减少 44.95%。阶段 6 的固定测量合同、导数、投影几何、精确恒等式、144 个非退化尾区和 synthetic exact-null 六阶式全部通过；理论状态为场景化显式推论。旧 factor=2 数值未迁移。
 
 ## 7.2 当前限制
 
-Q 和 Kq 仍由 oracle 给定；阶段 5 的 Wilson 区间和配对性能重采样只描述固定方法的有限样本性能，不是目标数、置信或 posterior 校准。有限注册候选库的 exact alias 检查不是连续全局唯一性证明；精确 $\operatorname{rank}(C_e)<Q$ 只否定当前注册 MMV 分组/恢复链。相关噪声证据只覆盖指定的 matrix-normal 可分行/列协方差，给定协方差的数值白化也不代表已解决协方差估计。相干弱目标核心 stress 场景中所有 DML 路线均为 0/200；同时 off-grid 的一个 validation 场景也未通过固定成功门，且没有为其扩窗或增加规则。PR-DML 与 Kim 2012 的精确复现尚缺。模型仍未覆盖互耦、增益相位误差、失效通道、宽带或近场条件，也未实现 FIM、近双目标切向理论、模型阶数 bootstrap、自动 Q/K、K=3、持久 cache 或硬件映射。
+Q 和 Kq 仍由 oracle 给定；阶段 5 的 Wilson 区间和配对性能重采样只描述固定方法的有限样本性能，不是目标数、置信或 posterior 校准。有限注册候选库的 exact alias 检查不是连续全局唯一性证明；精确 $\operatorname{rank}(C_e)<Q$ 只否定当前注册 MMV 分组/恢复链。相关噪声证据只覆盖指定的 matrix-normal 可分行/列协方差，给定协方差的数值白化也不代表已解决协方差估计。相干弱目标核心 stress 场景中所有 DML 路线均为 0/200；同时 off-grid 的一个 validation 场景也未通过固定成功门，且没有为其扩窗或增加规则。阶段 6 是无随机噪声性能含义的确定性流形验证；主物理配置没有 exact tangent null，六阶式仅由解析 fixture 支持。PR-DML 与 Kim 2012 的精确复现尚缺。模型仍未覆盖互耦、增益相位误差、失效通道、宽带或近场条件，也未实现 FIM 波束设计、模型阶数 bootstrap、自动 Q/K、K=3、持久 cache 或硬件映射。
 
 ## 7.3 阶段门
 
-阶段 5 的技术门和 Pareto 方案 1 已通过，第一项贡献可保留为“俯仰组初始化、同组条件方位处理与固定完整顺序流形修正的工程组织和效果”，不能改名为新 DML 或新 AP。技术上允许用户后续单独授权进入阶段 6；本轮未进入局部渐近理论，也未实现 FIM、K1/K2 模型阶数校准、自动 Q、K=3、cache 或硬件映射。
+阶段 5 的技术门和 Pareto 方案 1 已通过，第一项贡献可保留为“俯仰组初始化、同组条件方位处理与固定完整顺序流形修正的工程组织和效果”，不能改名为新 DML 或新 AP。阶段 6 的固定测量合同、非退化三式、prior-art 边界和 null 分类均通过，第二项只能保留为经典投影 FIM/流形几何在当前固定顺序 DBF 场景中的显式推论。技术上允许用户后续单独授权进入阶段 7；本轮未实现 FIM 波束设计、K1/K2 模型阶数校准、自动 Q、K=3、cache 或硬件映射。
 
 # 参考文献
 

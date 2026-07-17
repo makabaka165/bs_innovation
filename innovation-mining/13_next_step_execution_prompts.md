@@ -1856,72 +1856,1687 @@ J. 下一阶段判定
 
 验证显式近双目标推论、正式假设和零方向边界；不选择波束，不把经典投影 FIM 改名为新理论。
 
+> **执行状态（2026-07-17）：阶段 6 已完成并停止。** 固定测量合同、导数、投影几何、精确恒等式、144 个非退化注册尾区、三类不变性和 synthetic exact-null 六阶候选全部通过；理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`。1296 个主 secant case 全部保留，三条 ratio 最大尾区误差为 `4.0102e-6 / 1.0421e-5 / 6.1180e-6`。四个主物理配置均无 exact tangent null，单通道仅为 `EXACT_MEASUREMENT_COLLAPSE`。本状态记录不授权或执行阶段 7。
+
 ## 可直接复制的提示词
 
 ```text
-[附上“所有阶段共同使用的总约束”]
+默认 GitHub 仓库为：
 
-执行 Step12.4：解析导数、投影 Jacobian 几何量和近双目标 sigma2/coherence/normalized-Gram 统一渐近式验证。
+makabaka165/bs_innovation
 
-必读：
-- 11 文档第 7 节
-- 12 文档 Step12.4
-- 06_formula_prior_art.md 的 F04–F08 和第 4 节
-- array-manifold differential geometry、near-source CRB、statistical resolution limit 的已定位文献
+本轮只执行阶段 6 / Step12.4：
 
-固定条件：
-- 每个配置固定 Wseq、beam indices、noise covariance、whitener 和 whitening rank；
-- 候选角变化不能重建观测或白化器；
-- 保存这些对象的 hash。
+固定白化完整顺序接收流形下，近双目标第二奇异值、
+归一化相关性和列归一化 Gram 条件数的统一局部渐近关系验证，
+并分析 exact tangent null、near-null 和高阶退化边界。
 
-实现：
-1. build_receive_cyl_manifold_derivatives.m
-2. build_fixed_whitened_sequential_derivatives.m
-3. compute_projected_jacobian_metric.m
-4. evaluate_secant_tangent_case.m
-5. analyze_tangent_null_directions.m
+本轮不执行：
 
-非退化方向 q=d'*T*d>0 计算：
-- sigma2_ratio；
-- coherence_ratio；
-- normalized_gram_ratio；
-- raw Gram condition；
-- column norm ratio；
-- Taylor residual。
+- Fisher 信息波束选择；
+- 自动 Q/K/Kq 选择；
+- bootstrap；
+- K1/K2 模型阶数；
+- K=3；
+- cache；
+- 硬件映射；
+- 新的角度搜索算法；
+- C05、topK、score-gap 或自适应搜索预算；
+- 阶段 5 性能优化或重新调参。
 
-零方向专项：
-- 扫描 T 最小特征向量；
-- q 近零时禁止使用二次 ratio；
-- log-log 拟合 sigma2^2 高阶斜率；
-- 检查二阶/三阶导数；
-- 不删除零方向样本；
-- 不使用 denominator floor 或经验常数修复。
+当前阶段完成后必须停止，输出 A–J 报告，不得自动进入阶段 7。
 
-场景：
-至少 9 个中心；纯方位、纯俯仰、正/负斜方向；多个规则波束集；分离尺度逐次减半；factor=1；避开浮点噪声区。
+未经用户在当前会话明确授权：
 
-必须区分：
-- G2 的几何定理；
-- 含 S、功率比、相干性和有限 L 的有效 FIM/估计性能。
+- 不提交；
+- 不推送；
+- 不创建 PR；
+- 不新建或切换分支；
+- 不修改其他仓库；
+- 不覆盖 Step11、阶段 4 或阶段 5 的冻结结果。
+
+============================================================
+一、基准提交与阶段边界
+============================================================
+
+以以下提交为阶段 6 基准：
+
+0430f25272690a3ddf378dcf0bab465ca93edb68
+
+提交信息：
+
+feat: complete stage 5 grouped conditional DML
+
+开始工作前记录：
+
+- git HEAD；
+- 当前分支；
+- 工作树状态；
+- MATLAB 版本；
+- 操作系统；
+- 浮点精度；
+- 当前 active phase factor。
+
+阶段 6 的物理主流形必须为：
+
+g(phi,theta)
+=
+Tseq * Wseq' * a_receive(phi,theta)
+
+其中：
+
+- a_receive 使用 factor=1；
+- Wseq 是固定物理顺序波束矩阵；
+- Cseq = Wseq' * Rn_elem * Wseq；
+- Tseq 是 Cseq 的固定有效子空间白化器；
+- Wseq、Cseq、Tseq、有效白化秩在一个测量配置内均不得随候选角变化。
+
+阶段 6 的主理论对象不是：
+
+- 阶段 4 的 Ge；
+- 恢复组数据 Xphi；
+- 条件方位 Gphi；
+- 某个随候选角重新形成的波束矩阵；
+- 未白化阵元流形。
+
+Ge 和 Gphi 最多只能作为补充诊断，不能作为主理论结论的流形。
+
+============================================================
+二、必须阅读
+============================================================
+
+完整阅读并遵守：
+
+1. innovation-mining/06_formula_prior_art.md
+2. innovation-mining/06_algorithm_prior_art.md
+3. innovation-mining/06_closest_work_matrix.md
+4. innovation-mining/10_current_paper_innovation_audit.md
+5. innovation-mining/11_sequential_beamspace_ml_innovations_theory.md
+   重点：第 7 节、第 8 节和 prior-art 边界
+6. innovation-mining/12_experiment_system_code_structure_roadmap.md
+   重点：Step12.4
+7. innovation-mining/13_next_step_execution_prompts.md
+8. innovation-mining/14_step12_preimplementation_inventory.md
+9. innovation-mining/FAILED_likelihood_discriminative_adaptive_wb.md
+10. beamspace_ml_v18/paper/full_manuscript_v0.19_sequential_dbf_revision.md
+11. beamspace_ml_v18/review/supporting_notes/sequential_revision_scope.md
+12. Step12.0：
+    - build_receive_cyl_steering_vec.m
+    - build_receive_cyl_steering_with_derivatives.m
+13. Step12.1：
+    - build_sequential_beam_matrix.m
+    - form_elevation_dbf_cube.m
+    - form_azimuth_dbf_cube.m
+    - 阵元 permutation 函数
+14. Step12.2：
+    - stable_numeric_rank.m
+    - build_psd_whitener.m
+    - beamspace_dml_score_svd.m
+15. Step12.3 阶段 5：
+    - prepare_full_sequential_dml_data.m
+    - build_full_sequential_local_manifold.m
+    - build_common_registered_local_domain.m
+    - build_stage5_locked_config.m
+    - stage5_keypoints.csv
+    - stage5_report.md
+16. 06_formula_prior_art 中 F04–F08：
+    - 中心–差分参数化；
+    - 投影 Jacobian；
+    - 第二奇异值；
+    - 归一化相关性；
+    - Gram 条件数。
+17. 已定位的最近工作：
+    - deterministic CRB / projected Jacobian；
+    - array-manifold differential geometry；
+    - near-source CRB；
+    - statistical angular resolution limit；
+    - approximate ML for two closely spaced sources；
+    - 两列 Gram 和 mutual coherence。
+
+若可使用 paper-lookup skill 或联网检索，只执行针对公式的定向补检：
+
+- second singular value of two steering vectors Taylor expansion；
+- projected Jacobian close sources singular value；
+- normalized coherence local Fisher metric；
+- Gram condition number closely spaced array manifold；
+- tangent-null higher-order array manifold separation。
+
+不得把宽泛领域搜索结果数量当作新颖性证明。
+
+============================================================
+三、prior-art 与创新性永久边界
+============================================================
+
+以下均不得单独声明为新方法或新理论：
+
+- 中心–差分参数化；
+- 对称 Taylor 展开；
+- 和差 Hadamard/酉变换；
+- 投影 Jacobian；
+- 单目标有效 Fisher 信息；
+- 阵列流形微分几何；
+- 两列 Gram 特征值；
+- mutual coherence；
+- SVD；
+- 精确白化；
+- 可逆/酉换基不变性。
+
+本阶段允许保留的候选理论贡献只能表述为：
+
+“针对固定、精确白化的实际圆柱阵顺序接收波束二维流形，
+显式统一给出近双目标第二奇异值、归一化相关性和列归一化
+Gram 条件数关于同一个二维分离方向二次型的局部渐近关系，
+并明确其 exact-null、near-null、列范数不对称和数值适用边界。”
+
+即使所有公式通过，也应定位为：
+
+经典投影 FIM / 流形几何在当前固定顺序 DBF 场景中的显式推论。
+
+不得写：
+
+- 首次提出投影 Jacobian；
+- 首次发现 Fisher 信息和相关性的联系；
+- 首次发现近目标 Gram 病态；
+- 首次提出白化 beamspace 几何；
+- 首次提出中心–差分坐标。
+
+============================================================
+四、新代码目录
+============================================================
+
+新建：
+
+beamspace_ml_v18/source/stepwise_signal_model/steps/
+step_12_4_near_pair_tangent_asymptotics/
+
+目录结构：
+
+step_12_4_near_pair_tangent_asymptotics/
+  README.md
+  common/
+  common/private/
+  tests/
+  tests/private/
+  results/
+  figures/
+  run_step12_4_tangent_asymptotics_validation.m
+
+不得把新代码混入阶段 5 的 common/ 或 results_stage5/。
+
+允许调用阶段 1–5 已通过的公共函数，但不得复制另一套：
+
+- factor=1 导向矢量；
+- PSD 白化器；
+- 数值秩规则；
+- 阵元 permutation；
+- Wseq 构造。
+
+============================================================
+五、正式参数化与单位
+============================================================
+
+所有理论推导内部使用弧度。
+
+定义：
+
+xi =
+[phi;
+ theta]
+
+中心：
+
+c_rad =
+[phi_c;
+ theta_c]
+
+单位方向：
+
+v_rad in R^2
+
+要求：
+
+norm(v_rad,2) = 1
+
+分离范数：
+
+r_rad > 0
+
+实际二维分离向量：
+
+d_rad = r_rad * v_rad
+
+两个目标：
+
+xi_minus = c_rad - d_rad/2
+xi_plus  = c_rad + d_rad/2
+
+外部配置和 CSV 可同时保存 degree，但所有：
+
+- Jacobian；
+- T；
+- q；
+- 导数；
+- Taylor 展开；
+- 渐近式；
+
+必须使用 radian。
+
+不得在公式中把 degree 数值直接代入 per-radian 导数。
+
+每条结果必须同时保存：
+
+center_az_deg
+center_el_deg
+direction_az_component
+direction_el_component
+separation_norm_rad
+separation_norm_deg
+endpoint_minus_az_deg
+endpoint_minus_el_deg
+endpoint_plus_az_deg
+endpoint_plus_el_deg
+
+============================================================
+六、锁定的阶段 6 配置
+============================================================
+
+新增：
+
+tests/private/build_stage6_locked_plan.m
+
+该函数必须在运行任何结果前返回完整注册计划，并计算：
+
+stage6_controls_hash
+stage6_measurement_plan_hash
+stage6_experiment_plan_hash
+
+hash 必须覆盖：
+
+- beam centers；
+- beam subset indices；
+- noise covariance type；
+- covariance parameters；
+- centers；
+- direction bank；
+- separation ladder；
+- derivative finite-difference steps；
+- numeric-floor multiplier；
+- rank multiplier；
+- ratio acceptance thresholds；
+- exact-null threshold rule；
+- MATLAB precision；
+- phase factor；
+- current git commit；
+- method/version IDs。
+
+不得只 hash 波束中心而遗漏场景计划。
+
+------------------------------------------------------------
+6.1 注册测量配置
+------------------------------------------------------------
+
+至少预注册以下固定配置，不得看完结果后替换：
+
+A. SEQ_3X3_WHITE
+
+az beams:
+[7.4, 8.0, 8.6] deg
+
+el beams:
+[9.6, 10.0, 10.4] deg
+
+element covariance:
+identity
+
+B. SEQ_3X3_CORRELATED
+
+使用与阶段 5 correlated fixture 相同的：
+
+Rz = toeplitz(0.45.^(0:Nel-1))
+Rphi = toeplitz(0.70.^(0:Nphi-1))
+
+Rn_elem = kron(Rphi,Rz)
+
+C. SEQ_2X3_WHITE
+
+az beams:
+[7.4, 8.6] deg
+
+el beams:
+[9.6, 10.0, 10.4] deg
+
+D. SEQ_3X2_WHITE
+
+az beams:
+[7.4, 8.0, 8.6] deg
+
+el beams:
+[9.6, 10.4] deg
+
+E. SINGLE_CHANNEL_DIAGNOSTIC
+
+只用于检查完全退化的状态处理。
+不得将该配置作为实际设计推荐或理论正面证据。
+
+对于每个配置：
+
+1. 使用 Step12.1 的真实顺序 DBF 函数构造 Wseq；
+2. 计算 Cseq = Wseq' * Rn_elem * Wseq；
+3. 使用 Step12.2 build_psd_whitener 构造 Tseq；
+4. 保存 whitening rank；
+5. 保存 beam indices；
+6. 保存：
+   - Wseq_hash
+   - Cseq_hash
+   - Tseq_hash
+   - array_geometry_hash
+   - fixed_measurement_hash
+7. 一个配置内所有中心、方向和分离尺度必须复用同一固定对象。
+
+不得在候选角变化时重新计算：
+
+- Wseq；
+- Cseq；
+- Tseq；
+- whitening rank。
+
+------------------------------------------------------------
+6.2 注册中心
+------------------------------------------------------------
+
+至少使用以下 9 个中心：
+
+az center:
+[7.6, 8.0, 8.4] deg
+
+el center:
+[9.8, 10.0, 10.2] deg
+
+形成 3×3 笛卡尔积。
+
+如果某中心的：
+
+norm(g(c)) == 0
+或
+接近机器零，
+
+必须返回：
+
+CENTER_MANIFOLD_NUMERICALLY_ZERO
+
+不得临时更换中心。
+
+------------------------------------------------------------
+6.3 注册固定方向
+------------------------------------------------------------
+
+固定方向至少包括：
+
+V_AZ =
+[1;0]
+
+V_EL =
+[0;1]
+
+V_DIAG_POS =
+[1;1]/sqrt(2)
+
+V_DIAG_NEG =
+[1;-1]/sqrt(2)
+
+这些方向在 radian 坐标中归一化。
+
+另允许根据每个 T 的特征向量生成：
+
+V_T_MAX
+V_T_MIN
+
+它们只能用于诊断最强/最弱切向方向，
+不得替换四个固定方向的主验收结果。
+
+------------------------------------------------------------
+6.4 注册分离尺度
+------------------------------------------------------------
+
+固定：
+
+r_deg =
+0.4 * 2.^(-(0:8))
+
+即：
+
+0.4
+0.2
+0.1
+0.05
+0.025
+0.0125
+0.00625
+0.003125
+0.0015625 degree
+
+内部使用：
+
+r_rad = deg2rad(r_deg)
+
+不得根据 ratio 结果增加或删除中间尺度。
+
+若最小尺度进入数值底噪，只能按预注册 numeric-floor 规则分类，
+不能通过手工选择“最好看的三个点”验收。
+
+============================================================
+七、固定测量模型构造
+============================================================
+
+新增：
+
+common/build_stage6_fixed_measurement_model.m
+
+建议签名：
+
+function [model,debug] = build_stage6_fixed_measurement_model( ...
+    config, cfg, opts)
+
+输出 model 至少包含：
+
+model.config_id
+model.Wseq
+model.Cseq
+model.Tseq
+model.whitening_rank
+model.array_meta
+model.lambda
+model.phase_factor
+model.az_beam_deg
+model.el_beam_deg
+model.beam_indices
+model.noise_covariance_id
+model.Rn_elem
+model.Wseq_hash
+model.Cseq_hash
+model.Tseq_hash
+model.fixed_measurement_hash
+model.stage6_controls_hash
+
+要求：
+
+- phase_factor=1；
+- 使用 canonical element order；
+- Tseq 采用有效子空间降维形式；
+- Tseq*Cseq*Tseq' ≈ I_rank；
+- 不接受候选角作为输入；
+- 不接受 candidate-dependent beam/whitener options。
+
+============================================================
+八、一阶解析导数
+============================================================
+
+新增：
+
+common/build_fixed_whitened_sequential_derivatives.m
+
+建议签名：
+
+function [g,Jg,info] = build_fixed_whitened_sequential_derivatives( ...
+    center_deg, model, opts)
+
+要求：
+
+1. 必须调用阶段 1 权威函数：
+
+build_receive_cyl_steering_with_derivatives
+
+不得复制第三套一阶导数公式。
+
+2. 将 legacy 阵元顺序显式转换到 canonical 顺序。
+
+3. 计算：
+
+g =
+Tseq * Wseq' * a
+
+Jg =
+[
+ Tseq * Wseq' * da_daz_rad,
+ Tseq * Wseq' * da_del_rad
+]
+
+4. 输出：
+
+derivative_unit = per_radian
+fixed_measurement_hash
+phase_factor
+g_norm
+Jg_norm
+whitening_rank
+
+5. 与阶段 5：
+
+build_full_sequential_local_manifold
+
+返回的单目标 g/J 进行一致性检查。
+
+============================================================
+九、二阶和三阶方向导数
+============================================================
+
+新增：
+
+common/build_fixed_whitened_directional_derivatives.m
+
+建议签名：
+
+function out = build_fixed_whitened_directional_derivatives( ...
+    center_deg, direction_unit_rad, model, opts)
+
+至少返回：
+
+out.g0
+out.g1
+out.g2
+out.g3
+out.direction_unit_rad
+out.fixed_measurement_hash
+
+定义：
+
+g1 = D_v g
+g2 = D_v^2 g
+g3 = D_v^3 g
+
+必须基于 factor=1 接收流形解析构造或由经过验证的解析几何函数构造。
+
+对方向单位向量：
+
+v =
+[v_phi;
+ v_theta]
+
+定义方向单位矢量的导数：
+
+u1 =
+v_phi*u_phi + v_theta*u_theta
+
+u2 =
+v_phi^2*u_phiphi
++ 2*v_phi*v_theta*u_phitheta
++ v_theta^2*u_thetatheta
+
+u3 =
+v_phi^3*u_phiphiphi
++ 3*v_phi^2*v_theta*u_phiphitheta
++ 3*v_phi*v_theta^2*u_phithetatheta
++ v_theta^3*u_thetathetatheta
+
+对第 m 个阵元：
+
+f1_m = k0*r_m^T*u1
+f2_m = k0*r_m^T*u2
+f3_m = k0*r_m^T*u3
+
+若：
+
+a = exp(j*f)
+
+则：
+
+a1 =
+j*f1 .* a
+
+a2 =
+(j*f2 - f1.^2) .* a
+
+a3 =
+(j*f3 - 3*f1.*f2 - j*f1.^3) .* a
+
+然后投影：
+
+gk =
+Tseq * Wseq' * ak
+
+k=1,2,3。
+
+必须用独立中心差分或高阶差分验证，不能以同一解析表达式自证。
+
+预注册差分步长：
+
+first derivative:
+h1 = 1e-6 rad
+
+second derivative:
+h2 = 2e-4 rad
+
+third derivative:
+h3 = 5e-4 rad
+
+同时报告一个固定步长敏感性梯度，但不得看结果后更换主验收步长。
+
+验收建议：
+
+first derivative relative error <= 1e-6
+second derivative relative error <= 1e-4
+third derivative relative error <= 1e-3
+
+若三阶导数无法稳定验证，exact-null 六阶扩展必须判为 PARTIAL，
+但非退化二次渐近式仍可单独验收。
+
+============================================================
+十、投影 Jacobian 几何量
+============================================================
+
+新增：
+
+common/compute_projected_jacobian_metric.m
+
+建议签名：
+
+function [metric,debug] = compute_projected_jacobian_metric( ...
+    g, Jg, opts)
+
+定义：
+
+Pg_perp =
+I - g*g'/(g'*g)
+
+T =
+real(Jg' * Pg_perp * Jg)
+
+数值实现：
+
+T =
+0.5*(T+T.')
 
 输出：
-results/derivative_validation.csv
-results/tangent_eigenvalues.csv
-results/secant_tangent_nonzero_direction.csv
-results/secant_tangent_null_direction.csv
-results/column_norm_asymmetry.csv
-results/tangent_theory_keypoints.csv
-results/tangent_theory_prior_art_mapping.md
-results/tangent_theory_validation.md
-figures/*.png
 
-验收：
-- 导数相对误差 <=1e-6；
-- T 负特征值仅机器精度；
-- 非退化方向三个 ratio 在明确小量区趋于 1；
-- 零方向边界和高阶行为被报告；
-- 若常数只能经验拟合或固定白化条件不成立，停止并否决当前定理形式；
-- 完成后停止。
+metric.Pg_perp
+metric.T
+metric.eigenvalues
+metric.eigenvectors
+metric.rank_T
+metric.condition_T
+metric.trace_T
+metric.min_eigenvalue
+metric.max_eigenvalue
+metric.negative_eigenvalue_tolerance
+metric.phase_factor
+
+检查：
+
+- Pg_perp Hermitian；
+- Pg_perp idempotent；
+- Pg_perp*g ≈ 0；
+- T 为实对称；
+- 负特征值只允许机器精度量级。
+
+负特征值容差必须由：
+
+eps
+matrix dimension
+norm(T,2)
+
+决定。
+
+不得通过固定绝对 floor 把真实负值裁为零。
+
+============================================================
+十一、非退化方向正式量
+============================================================
+
+对单位方向 v 定义：
+
+q_dir =
+v' * T * v
+
+对 separation r：
+
+q_r =
+r^2 * q_dir
+
+其中 r 使用 radian。
+
+两列流形：
+
+g_minus =
+g(c-r*v/2)
+
+g_plus =
+g(c+r*v/2)
+
+G2 =
+[g_minus,g_plus]
+
+------------------------------------------------------------
+11.1 第二奇异值
+------------------------------------------------------------
+
+使用直接 SVD：
+
+sigma =
+svd(G2,'econ')
+
+sigma2_sq =
+sigma(2)^2
+
+不得通过 det(G2'*G2) 或 2×2 行列式间接计算。
+
+理论预测：
+
+sigma2_pred =
+0.5 * q_r
+
+ratio：
+
+sigma2_ratio =
+sigma2_sq / sigma2_pred
+
+------------------------------------------------------------
+11.2 归一化相关性
+------------------------------------------------------------
+
+rho =
+(g_minus' * g_plus) /
+(norm(g_minus)*norm(g_plus))
+
+若 abs(rho)>1：
+
+- 只有超出 1 的量处于机器精度尺度时才允许裁到 1；
+- 必须记录 coherence_roundoff_clipped_flag；
+- 明显大于 1 时直接 FAIL。
+
+理论预测：
+
+coherence_deficit_pred =
+q_r / norm(g_center)^2
+
+实际：
+
+coherence_deficit =
+1 - abs(rho)^2
+
+ratio：
+
+coherence_ratio =
+coherence_deficit / coherence_deficit_pred
+
+------------------------------------------------------------
+11.3 列归一化 Gram
+------------------------------------------------------------
+
+gbar_minus =
+g_minus/norm(g_minus)
+
+gbar_plus =
+g_plus/norm(g_plus)
+
+Gbar =
+[gbar_minus,gbar_plus]
+
+使用 SVD 或 Hermitian eig 计算：
+
+cond_normalized_gram
+
+同时验证精确恒等式：
+
+cond_exact_rho =
+(1+abs(rho))/(1-abs(rho))
+
+只在分母可表示且未进入机器饱和时比较。
+
+理论渐近预测：
+
+cond_asymptotic =
+4*norm(g_center)^2/q_r
+
+ratio：
+
+normalized_gram_ratio =
+cond_normalized_gram/cond_asymptotic
+
+------------------------------------------------------------
+11.4 原始 Gram
+------------------------------------------------------------
+
+另报告：
+
+raw_gram_condition
+column_norm_minus
+column_norm_plus
+column_norm_ratio
+column_norm_log_ratio
+
+不得对未归一化 Gram 直接使用等范数公式。
+
+============================================================
+十二、统一 case 评价接口
+============================================================
+
+新增：
+
+common/evaluate_secant_tangent_case.m
+
+建议签名：
+
+function row = evaluate_secant_tangent_case( ...
+    center_deg, direction_unit_rad, separation_rad, model, opts)
+
+每行至少包含：
+
+config_id
+center_az_deg
+center_el_deg
+direction_id
+direction_az_component
+direction_el_component
+separation_norm_rad
+separation_norm_deg
+q_direction
+q_at_separation
+sigma1_sq
+sigma2_sq
+sigma2_prediction
+sigma2_ratio
+abs_rho
+coherence_deficit
+coherence_prediction
+coherence_ratio
+normalized_gram_condition
+normalized_gram_exact_from_rho
+normalized_gram_asymptotic
+normalized_gram_ratio
+raw_gram_condition
+column_norm_minus
+column_norm_plus
+column_norm_ratio
+taylor_sum_residual
+taylor_difference_residual
+numeric_floor
+numeric_floor_reached_flag
+coherence_roundoff_clipped_flag
+Wseq_hash
+Cseq_hash
+Tseq_hash
+fixed_measurement_hash
+stage6_experiment_plan_hash
+phase_factor
+case_status
+
+============================================================
+十三、客观数值底噪和渐近尾区
+============================================================
+
+不得人工挑选 ratio 最接近 1 的点。
+
+定义：
+
+numeric_floor =
+4096 * eps(class(g)) * norm(g_center)^2
+
+一个 separation 点只有在：
+
+sigma2_prediction > numeric_floor
+
+且：
+
+sigma2_sq > numeric_floor/4
+
+时才作为 ratio 验收点。
+
+其余点标记：
+
+NUMERIC_FLOOR_REACHED
+
+仍保存在 CSV 中，不得删除。
+
+对每个：
+
+config × center × fixed direction
+
+按 separation 从小到大选择最小的 3 个有效点，
+作为 registered asymptotic tail。
+
+若不足 3 个有效点：
+
+INSUFFICIENT_ASYMPTOTIC_TAIL
+
+该 case 不得被算作通过。
+
+主验收门：
+
+max(abs(sigma2_ratio-1)) <= 0.02
+max(abs(coherence_ratio-1)) <= 0.02
+max(abs(normalized_gram_ratio-1)) <= 0.05
+
+以上门只用于预注册 tail。
+
+同时报告：
+
+- ratio error 对 r 的 log-log slope；
+- Taylor residual slope；
+- 最小有效 r；
+- 数值底噪开始位置。
+
+不得通过经验重新拟合：
+
+0.5
+1
+4
+
+三个理论常数。
+
+============================================================
+十四、Taylor 和差残差
+============================================================
+
+定义方向导数：
+
+g0,g1,g2,g3
+
+对称和差列：
+
+h1 =
+(g_minus+g_plus)/sqrt(2)
+
+h2 =
+(g_plus-g_minus)/sqrt(2)
+
+二阶/三阶预测：
+
+h1_pred =
+sqrt(2)*(g0 + r^2*g2/8)
+
+h2_pred =
+(r/sqrt(2))*(g1 + r^2*g3/24)
+
+报告：
+
+taylor_sum_residual =
+norm(h1-h1_pred)/max(norm(h1),realmin)
+
+taylor_difference_residual =
+norm(h2-h2_pred)/max(norm(h2),realmin)
+
+不得只验证最终 ratio 而不检查 Taylor 中间关系。
+
+============================================================
+十五、exact null、near-null 与非退化分类
+============================================================
+
+对 T 的特征值：
+
+lambda_max
+lambda_min
+
+定义机器尺度 exact-null 阈值：
+
+null_tol =
+256 * max(size(T)) * eps(class(T)) * max(lambda_max,realmin)
+
+分类：
+
+A. EXACT_TANGENT_NULL
+
+lambda_min <= null_tol
+
+B. NEAR_TANGENT_NULL
+
+lambda_min > null_tol
+且
+lambda_min/lambda_max < 1e-6
+
+C. NONDEGENERATE_TANGENT
+
+其余情况。
+
+重要：
+
+- near-null 仍然属于 q>0；
+- near-null 在足够小 r 下仍应满足二次渐近式；
+- 不得因为 q 较小便套用 exact-null 高阶公式；
+- 不得通过人为阈值把 near-null 改成 exact null。
+
+若所有实际完整顺序配置均无 exact null：
+
+输出：
+
+NO_EXACT_PHYSICAL_TANGENT_NULL_FOUND
+
+这不是失败。
+
+不得为了得到 null 结果而在看完结果后重新选择波束。
+
+============================================================
+十六、exact-null 的三阶有效项
+============================================================
+
+这一部分是待验证扩展，不得在验证前写成已成立结论。
+
+若：
+
+q_dir = 0
+
+则：
+
+P_g_perp * g1 = 0
+
+定义：
+
+alpha =
+(g0' * g1)/(g0' * g0)
+
+定义候选三阶有效向量：
+
+v3_eff =
+P_g_perp * (g3/24 - alpha*g2/8)
+
+在 v3_eff 非零时，待验证预测为：
+
+sigma2_sq
+~
+0.5 * r^6 * norm(v3_eff)^2
+
+定义：
+
+null_sigma2_prediction =
+0.5*r^6*norm(v3_eff)^2
+
+null_sigma2_ratio =
+sigma2_sq/null_sigma2_prediction
+
+这一公式必须先在 synthetic analytic fixture 中验证，
+再决定是否用于物理流形。
+
+------------------------------------------------------------
+16.1 必须新增 synthetic null 单元测试
+------------------------------------------------------------
+
+使用解析测试流形：
+
+g(x,y) =
+[1;
+ x;
+ y^3]
+
+中心：
+
+(0,0)
+
+沿 y 方向：
+
+v=[0;1]
+
+此时：
+
+T = diag(1,0)
+
+并且精确有：
+
+sigma2_sq = r^6/32
+
+要求验证：
+
+- exact tangent null 被正确识别；
+- v3_eff 系数正确；
+- null_sigma2_ratio 在有效尾区趋于 1；
+- log(sigma2_sq) 对 log(r) 斜率在有效区间接近 6。
+
+建议门：
+
+abs(fitted_slope-6) <= 0.25
+max(abs(null_sigma2_ratio-1)) <= 0.02
+
+------------------------------------------------------------
+16.2 物理 exact-null
+------------------------------------------------------------
+
+若某个预注册物理配置存在 exact null：
+
+- 沿其最小特征向量执行同样分析；
+- 计算 g1、g2、g3、alpha、v3_eff；
+- 若 v3_eff 非零，验证六阶候选公式；
+- 若 v3_eff 也为机器零，输出：
+  HIGHER_THAN_SIXTH_ORDER_OR_EXACT_COLLAPSE
+- 不得拟合任意经验常数。
+
+若 only SINGLE_CHANNEL_DIAGNOSTIC 出现完全零流形维度：
+
+- 只记录 EXACT_MEASUREMENT_COLLAPSE；
+- 不把它包装成物理高阶分辨理论。
+
+============================================================
+十七、精确恒等式和不变性测试
+============================================================
+
+必须新增以下测试。
+
+------------------------------------------------------------
+17.1 两列 normalized-Gram 精确恒等式
+------------------------------------------------------------
+
+验证：
+
+cond(Gbar'*Gbar)
+=
+(1+abs(rho))/(1-abs(rho))
+
+在未数值饱和的场景中相对误差：
+
+<=1e-10
+
+这是精确恒等式，不是渐近验收。
+
+------------------------------------------------------------
+17.2 固定左酉换基不变性
+------------------------------------------------------------
+
+对固定随机酉矩阵 Q：
+
+g_tilde = Q*g
+J_tilde = Q*J
+
+验证：
+
+- T 不变；
+- sigma2 不变；
+- abs(rho) 不变；
+- normalized Gram condition 不变。
+
+相对误差：
+
+<=1e-10
+
+------------------------------------------------------------
+17.3 固定复尺度不变性
+------------------------------------------------------------
+
+对非零复常数 beta：
+
+g_tilde = beta*g
+
+验证：
+
+- sigma2_sq 与 q 同比例乘 abs(beta)^2；
+- sigma2_ratio 不变；
+- coherence ratio 不变；
+- normalized Gram ratio 不变。
+
+------------------------------------------------------------
+17.4 angle-dependent phase gauge
+------------------------------------------------------------
+
+选择预注册线性 phase：
+
+psi(phi,theta)
+=
+0.3*phi - 0.2*theta
+
+其中 phi/theta 为 radian。
+
+定义：
+
+g_tilde =
+exp(j*psi)*g
+
+J_tilde =
+exp(j*psi)*(J + j*g*grad(psi)')
+
+验证：
+
+- T 不变；
+- 两端流形列只发生独立单位相位变化；
+- sigma2 不变；
+- abs(rho) 不变；
+- normalized Gram condition 不变。
+
+不得省略该测试，因为它能验证投影 Jacobian 确实去除了纯列相位方向。
+
+============================================================
+十八、场景与输出
+============================================================
+
+主正面证据只使用：
+
+- whitening_rank >= 2；
+- g(center) 非零；
+- 固定完整顺序接收流形；
+- 非退化固定方向；
+- 预注册 measurement configs。
+
+必须输出：
+
+results/stage6_configuration_registry.csv
+results/measurement_hash_registry.csv
+results/first_derivative_validation.csv
+results/higher_directional_derivative_validation.csv
+results/projected_metric_properties.csv
+results/tangent_eigenvalues.csv
+results/secant_tangent_nondegenerate.csv
+results/secant_tangent_tail_summary.csv
+results/secant_tangent_exact_null.csv
+results/secant_tangent_near_null.csv
+results/synthetic_null_validation.csv
+results/two_column_exact_identity.csv
+results/geometry_invariance_validation.csv
+results/column_norm_asymmetry.csv
+results/stage6_keypoints.csv
+results/stage6_prior_art_mapping.md
+results/stage6_theory_validation.md
+
+图片：
+
+figures/sigma2_ratio_vs_separation.png
+figures/coherence_ratio_vs_separation.png
+figures/normalized_gram_ratio_vs_separation.png
+figures/taylor_residual_vs_separation.png
+figures/tangent_eigenvalue_map.png
+figures/null_direction_order_fit.png
+figures/column_norm_ratio_vs_separation.png
+
+所有 CSV 至少包含：
+
+phase_factor
+fixed_measurement_hash
+stage6_controls_hash
+stage6_experiment_plan_hash
+theory_status
+prior_art_status
+pass_flag
+
+============================================================
+十九、prior-art 增量报告
+============================================================
+
+新增：
+
+results/stage6_prior_art_mapping.md
+
+对每一项分别标记：
+
+- 已有完全相同方法；
+- 数学形式相似；
+- 算法/证明机制相似；
+- 只有问题场景不同；
+- 暂未发现直接同式工作。
+
+至少映射：
+
+1. 中心–差分参数化；
+2. 和差酉变换；
+3. projected Jacobian metric；
+4. sigma2 二次渐近式；
+5. coherence deficit 二次渐近式；
+6. normalized Gram condition 渐近式；
+7. exact-null 三阶有效向量和六阶候选式；
+8. 三式在固定白化顺序圆柱阵流形上的统一使用。
+
+若检索到完全相同的三式和当前场景：
+
+- 不删除数值工作；
+- 但将理论贡献降级为复现/场景验证；
+- 不得继续声称独立理论创新。
+
+============================================================
+二十、结果状态
+============================================================
+
+阶段 6 的总理论状态只允许：
+
+THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY
+THEORY_PARTIALLY_SUPPORTED
+THEORY_REJECTED
+NUMERICAL_VALIDATION_INCOMPLETE
+
+子状态至少包括：
+
+NONDEGENERATE_ASYMPTOTIC_SUPPORTED
+NONDEGENERATE_ASYMPTOTIC_FAILED
+INSUFFICIENT_ASYMPTOTIC_TAIL
+NUMERIC_FLOOR_REACHED
+EXACT_TANGENT_NULL
+NEAR_TANGENT_NULL
+NO_EXACT_PHYSICAL_TANGENT_NULL_FOUND
+SYNTHETIC_NULL_SIXTH_ORDER_SUPPORTED
+PHYSICAL_NULL_SIXTH_ORDER_SUPPORTED
+HIGHER_THAN_SIXTH_ORDER_OR_EXACT_COLLAPSE
+CENTER_MANIFOLD_NUMERICALLY_ZERO
+MEASUREMENT_WHITENING_FAILED
+
+本阶段是确定性理论/数值验证，不使用：
+
+confidence
+posterior
+probability
+statistical calibration
+
+统一写：
+
+statistical_scope =
+DETERMINISTIC_GEOMETRIC_VALIDATION
+
+============================================================
+二十一、测试文件
+============================================================
+
+至少新增：
+
+tests/test_stage6_fixed_measurement_registry.m
+tests/test_stage6_measurement_hash_freeze.m
+tests/test_stage6_first_derivatives.m
+tests/test_stage6_higher_directional_derivatives.m
+tests/test_projected_metric_properties.m
+tests/test_two_column_exact_identity.m
+tests/test_secant_tangent_nondegenerate.m
+tests/test_synthetic_tangent_null.m
+tests/test_physical_tangent_null.m
+tests/test_geometry_invariances.m
+tests/test_column_norm_asymmetry.m
+tests/test_stage6_scope_rules.m
+tests/verify_stage5_frozen_results.m
+tests/verify_step11_frozen_results.m
+
+scope test 必须禁止：
+
+- PhaseFactor=2；
+- fixed 1e-10 ridge；
+- 2×2 Gram determinant score；
+- denominator floor；
+- 删除 null 样本；
+- candidate-dependent Wseq；
+- candidate-dependent whitener；
+- 用阶段 4 Xphi 作为主理论流形；
+- 用条件 Gphi 代替完整 Gseq；
+- C05；
+- topK；
+- score-gap；
+- 经验拟合 0.5、1、4 三个理论常数；
+- 看到结果后改变 separation ladder；
+- 只保存通过样本。
+
+============================================================
+二十二、阶段 5 非阻塞问题的处理边界
+============================================================
+
+本轮不重新运行或修改阶段 5 算法。
+
+可以在文档中保留以下已知边界：
+
+- 44.95% 是相对注册的两初值直接 AP；
+- 当前主要复杂度证据是 score calls，不是完整 wall-clock；
+- 相干弱目标仍为 0/200 失败边界；
+- Q/Kq 为 oracle。
+
+这些内容与阶段 6 几何定理无关。
+
+不得因为阶段 5 stress 失败而修改阶段 6 流形、波束或方向计划。
+
+============================================================
+二十三、技术验收门
+============================================================
+
+全部满足才可 PASS。
+
+A. 固定测量合同
+
+- 所有 active 配置 phase_factor=1；
+- Wseq/Cseq/Tseq 在每个配置内固定；
+- 候选角变化期间 hash 不变；
+- Tseq*Cseq*Tseq' 白化误差通过；
+- 阵元 permutation 与阶段 5 一致；
+- 阶段 5 和 Step11 冻结结果未改变。
+
+B. 导数
+
+- 一阶导数最大相对误差 <=1e-6；
+- 一阶流形/J 与阶段 5完整流形函数一致；
+- 二阶方向导数 <=1e-4；
+- 三阶方向导数 <=1e-3，或将 null 高阶部分判为 PARTIAL；
+- 导数单位全部为 per-radian。
+
+C. 投影几何
+
+- P Hermitian/idempotent；
+- P*g 接近 0；
+- T 对称；
+- T 的负特征值仅机器精度量级；
+- q_direction 与 norm(P*J*v)^2 一致。
+
+D. 精确恒等式
+
+- normalized Gram 与 rho 精确恒等式相对误差 <=1e-10；
+- 左酉换基、固定复尺度和 angle-dependent phase gauge 测试通过。
+
+E. 非退化渐近式
+
+对所有预注册 primary nondegenerate cases：
+
+- 至少存在 3 个有效 asymptotic-tail 点；
+- sigma2 ratio tail 误差 <=2%；
+- coherence ratio tail 误差 <=2%；
+- normalized Gram ratio tail 误差 <=5%；
+- Taylor 中间残差随 r 减小；
+- 不使用经验常数修正；
+- 不删除未通过 case。
+
+F. null 边界
+
+- synthetic null 的 slope 接近 6；
+- synthetic null 六阶 ratio 通过；
+- 物理配置没有 exact null 时明确报告，而不是制造 null；
+- near-null 不被误写成 exact null；
+- 不使用 denominator floor。
+
+G. prior-art 和论文边界
+
+- 理论主张定位为场景化显式推论；
+- 几何公式和有限样本性能明确分开；
+- 不用相干弱目标失败验证/否定纯几何公式；
+- prior-art 增量报告完成。
+
+============================================================
+二十四、否决或降级条件
+============================================================
+
+出现以下任一项必须 FAIL、PARTIAL 或降级：
+
+1. 一阶解析导数不通过；
+2. 固定 measurement hash 随候选角变化；
+3. 非退化 ratio 只有通过重新拟合常数才接近 1；
+4. 只有删除部分中心/方向后结果才成立；
+5. 只有手工选择 separation 点后结果才成立；
+6. normalized Gram 使用未归一化列却套用等范数公式；
+7. coherence 明显超过 1 后被静默裁剪；
+8. exact null 和 near-null 被混淆；
+9. null 样本被删除；
+10. 三阶导数未验证却声称六阶定理成立；
+11. 使用条件方位 Gphi 替代最终完整 Gseq；
+12. 随候选角重建波束或白化器；
+13. prior-art 找到完全同式工作后仍声称首次提出；
+14. Step11、阶段 4 或阶段 5 结果被覆盖；
+15. 为通过测试重新引入 ridge、floor、topK、gap 或场景规则。
+
+若：
+
+- 非退化三式通过；
+- exact-null 高阶部分未通过或物理流形无 exact null；
+
+可以判：
+
+THEORY_PARTIALLY_SUPPORTED
+
+并保留非退化主定理，不得强行把 null 扩展包装成已完成贡献。
+
+============================================================
+二十五、论文与文档修改
+============================================================
+
+只有阶段 6 验收通过后，才更新：
+
+1. beamspace_ml_v18/paper/full_manuscript_v0.19_sequential_dbf_revision.md
+2. beamspace_ml_v18/review/supporting_notes/sequential_revision_scope.md
+3. beamspace_ml_v18/source/stepwise_signal_model/README.md
+4. innovation-mining/11_sequential_beamspace_ml_innovations_theory.md
+5. innovation-mining/12_experiment_system_code_structure_roadmap.md
+6. innovation-mining/13_next_step_execution_prompts.md
+
+另新增：
+
+innovation-mining/15_stage6_tangent_theory_validation_audit.md
+
+该审计文档必须包含：
+
+- 最终通过的公式；
+- 未通过或降级的公式；
+- 正式假设；
+- 单位；
+- 固定 measurement contract；
+- prior-art 标签；
+- exact-null 是否存在；
+- 六阶扩展是否通过；
+- 不适用范围；
+- 全部结果文件路径和 hash。
+
+若常数或公式被验证为错误：
+
+- 必须修正编号 11；
+- 保留原式和修正原因的审计记录；
+- 不允许只改代码、不改理论文档。
+
+论文中不得写：
+
+- 已证明有限样本可分辨；
+- 已解决低 SNR threshold；
+- 已解决强相干；
+- 已完成 K1/K2 判定；
+- 已证明所有方向可辨；
+- 首次提出经典投影 FIM。
+
+============================================================
+二十六、运行与复现
+============================================================
+
+统一入口：
+
+run_step12_4_tangent_asymptotics_validation.m
+
+建议 MATLAB 命令：
+
+matlab -batch "cd('E:/bs_innovation'); run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/run_step12_4_tangent_asymptotics_validation.m');"
+
+必须运行：
+
+- 统一 runner；
+- MATLAB Code Analyzer；
+- stage6 scope scan；
+- CSV schema scan；
+- measurement hash consistency scan；
+- stage5 result hash/关键数值复核；
+- Step11 冻结 SHA-256 复核；
+- git diff --check。
+
+不得仅运行单个正面 case 便宣布通过。
+
+============================================================
+二十七、最终 A–J 报告
+============================================================
+
+最终回答必须包含：
+
+A. 阶段结论
+
+- PASS / PARTIAL / FAIL
+- theory status
+- 非退化三式是否通过
+- exact-null 六阶扩展是否通过
+- 是否允许进入阶段 7
+
+B. 阅读范围和 prior-art 边界
+
+- 检查过的文献/公式
+- 每项 prior-art 标签
+- 是否发现直接同式工作
+
+C. 文件清单
+
+- public
+- private
+- test-only
+- results
+- figures
+- 文档修改
+
+D. 公式到代码映射
+
+- g/J
+- T
+- sigma2
+- coherence
+- normalized Gram
+- exact-null v3_eff
+- fixed measurement hash
+
+E. 维度、单位和固定对象
+
+- Wseq
+- Cseq
+- Tseq
+- g
+- Jg
+- G2
+- T
+- radian/degree
+- measurement configs
+
+F. 测试和命令
+
+- MATLAB 命令
+- Code Analyzer
+- hash 检查
+- scope 检查
+- frozen evidence 检查
+
+G. 关键结果
+
+- derivative errors
+- T eigenvalues
+- primary ratios
+- asymptotic-tail point counts
+- exact identity errors
+- invariance errors
+- synthetic null slope
+- physical null status
+- 不提供不存在的统计置信区间
+
+H. 复杂度
+
+- 流形评价次数
+- SVD 次数
+- eig 次数
+- derivative evaluations
+- runtime
+- memory
+- figure/data volume
+
+I. 风险和未完成项
+
+- exact null 是否存在
+- near-null 数值范围
+- 有限样本性能不在本阶段
+- prior-art 检索边界
+- FIM 波束选择未开始
+
+J. 下一阶段判定
+
+只有满足：
+
+- 固定 measurement contract；
+- 非退化三式通过；
+- prior-art 边界正确；
+- null 边界未被掩盖；
+
+才能写：
+
+“技术上允许后续单独授权进入阶段 7。”
+
+无论 PASS、PARTIAL 还是 FAIL，本轮必须停止。
 ```
 
 # 阶段 7：系统特化设计——相关顺序波束 exact-subset FIM 与最小局部波束集
