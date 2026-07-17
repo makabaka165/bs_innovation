@@ -1,6 +1,6 @@
 # 分步信号模型
 
-> **v0.19 active/legacy boundary (2026-07-17):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 只验证接收流形、方向图、波束宽度和解析导数；真实顺序 DBF 尚未实现。
+> **v0.19 active/legacy boundary (2026-07-17):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS。俯仰分组及后续算法尚未实现。
 
 ## 1. 目的
 

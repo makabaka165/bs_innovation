@@ -1,9 +1,9 @@
 # 圆柱阵顺序数字波束形成后局部未分辨目标簇测角：接收单程模型修订稿
 
-> **版本：v0.19 Step12.0 scope revision，2026-07-17**  
+> **版本：v0.19 Step12.2 stable-DML-backend revision，2026-07-17**
 > **活跃空间相位：`phase_factor=1`**  
 > **证据状态：v0.18/Step11 的圆柱阵数值结果由 `phase_factor=2` 产生，已失效并冻结为 legacy，不构成本稿结论。**  
-> **完成状态：本稿仅完成接收模型、解析导数、方向图和波束宽度验证；真实顺序 DBF、分组/条件 DML、联合修正、FIM 波束设计、K1/K2 bootstrap 与新性能实验均未完成。**
+> **完成状态：本稿已完成接收模型、真实先俯仰后方位 DBF 和稳定白化/SVD-DML 数值后端的工程验证；俯仰分组、条件角度搜索、联合修正、FIM 波束设计、K1/K2 bootstrap 与新性能实验均未完成。**
 
 ## 版本说明与术语账本
 
@@ -25,7 +25,7 @@ v0.19 是从物理模型重新起步的修订源稿，不继承 v0.18 的波束�
 
 当前阶段实现了不接受相位因子参数的单程圆柱阵导向函数及其相对于弧度方位角、俯仰角的解析导数。基于 10 GHz、192×32 圆柱阵及 65×32 工作子阵的确定性验证表明，导向函数与逐元素公式的最大误差为 0；9 个方位/俯仰中心上的方位和俯仰导数最大相对误差分别为 $1.020\times10^{-9}$ 和 $1.476\times10^{-9}$。在均匀加权单目标切面中，factor=1 的方位和俯仰 3 dB 波束宽度分别为 $2.0275^\circ$ 和 $2.8378^\circ$，约为隔离 factor=2 历史对照的 2 倍。
 
-这些结果只验证接收模型实现和相位缩放关系，不验证局部目标簇超分辨性能。v0.18/Step11 的圆柱阵数值结果均按 factor=2 生成，不能用于本稿的新结论。真实先俯仰后方位数据流、俯仰组可辨识性、条件方位 DML、完整流形联合修正、相关波束 exact-subset FIM 设计和 K1/K2 校准仍需在后续独立阶段实现和否决式验证。
+在此基础上，本稿建立了显式阵元 permutation、逐方位列俯仰 DBF、逐俯仰通道条件方位 DBF 及其等效 Kronecker 波束矩阵。随机复数据、factor=1 单目标和双目标快拍的逐级输出与等效矩阵输出相对误差均低于 $2\times10^{-15}$；20,000 个阵元白噪声样本的输出协方差相对 $W_{\rm seq}^{H}W_{\rm seq}$ 的误差为 0.02195。进一步建立的有效子空间白化器返回 $\operatorname{rank}(C)\times B$ 坐标；rank-deficient 协方差案例的白化误差为 $8.306\times10^{-16}$。良态 SVD-DML 与 `pinv` 参考的最大相对误差为 $1.681\times10^{-15}$，流形整体缩放 $10^{-8}/1/10^8$ 时评分相对展宽为 $5.937\times10^{-16}$。这些结果只验证顺序波束形成和数值评分后端，不验证局部目标簇角度搜索或超分辨性能。俯仰组可辨识性、条件方位 DML、完整流形联合修正、相关波束 exact-subset FIM 设计和 K1/K2 校准仍需后续独立阶段验证。
 
 **关键词：** 圆柱阵；接收阵列；单程空间相位；顺序数字波束形成；局部未分辨目标；方向估计
 
@@ -35,7 +35,7 @@ Cylindrical arrays provide both circumferential and vertical apertures for three
 
 We implemented a six-input receive-only cylindrical steering function and analytic derivatives with respect to azimuth and elevation in radians. Deterministic validation for a 10 GHz, 192-by-32 cylindrical array with a 65-by-32 work subarray produced zero elementwise formula error. Across nine azimuth/elevation centers, the maximum relative derivative errors were $1.020\times10^{-9}$ for azimuth and $1.476\times10^{-9}$ for elevation. Under uniform weighting, the factor-1 azimuth and elevation 3 dB beamwidths were $2.0275^\circ$ and $2.8378^\circ$, approximately twice those of an isolated factor-2 legacy comparison.
 
-These results validate only the receive model and its phase scaling. They do not establish local multi-target resolution performance. All cylindrical-array numerical evidence in v0.18/Step11 was generated with factor 2 and is excluded from the conclusions of this revision. The sequential data path, elevation-group identifiability, conditional-azimuth DML, full-manifold correction, exact-subset Fisher-information design under correlated beam noise, and K1/K2 calibration remain to be implemented and tested.
+We further implemented the explicit element permutation, column-preserving elevation DBF, elevation-conditioned azimuth DBF, and the equivalent Kronecker beam matrix. For random complex data and factor-1 single- and two-target snapshots, staged and equivalent-matrix outputs agreed to relative errors below $2\times10^{-15}$. With 20,000 element-white-noise samples, the output covariance differed from $W_{\rm seq}^{H}W_{\rm seq}$ by 0.02195 in relative Frobenius norm. The stable backend uses rank-reducing PSD whitening and economy-SVD projection. A rank-deficient covariance produced a $4\times5$ whitener with a whitening error of $8.306\times10^{-16}$; the maximum well-conditioned SVD-versus-`pinv` score error was $1.681\times10^{-15}$, and scaling the manifold by $10^{-8}$, 1, and $10^8$ changed the score by only $5.937\times10^{-16}$ relatively. These results validate the sequential beamforming and numerical scoring backends only; they do not establish angle-search or multi-target resolution performance. Elevation-group identifiability, conditional-azimuth DML, full-manifold correction, exact-subset Fisher-information design, and K1/K2 calibration remain unimplemented.
 
 **Keywords:** cylindrical array; receive manifold; one-way spatial phase; sequential digital beamforming; locally unresolved targets; direction finding
 
@@ -189,20 +189,114 @@ Y=A(\Theta)S+N.
 =R\cos\theta\cos(\phi-\psi_m)+z_n\sin\theta.
 \]
 
-因此接收导向项可写成环向因子与垂直因子的乘积，但环向因子仍依赖俯仰角。该结构只说明后续条件处理的物理依据，不证明顺序 DBF 已实现，也不证明分组 DML 可辨识。
+因此接收导向项可写成环向因子与垂直因子的乘积，但环向因子仍依赖俯仰角。阶段 2 已验证该条件分解在统一阵元顺序下与完整 factor=1 几何流形等价；这不等于方位/俯仰完全解耦，也不证明分组 DML 可辨识。
 
-# 第3章 候选顺序测角路线与阶段边界
+## 2.6 阵元张量与显式排列
 
-## 3.1 候选数据流
+`arr_cyl` 的工作子阵坐标矩阵形状为 $[N_{az},N_{el}]$，旧向量由 `XAct(:)` 形成，因而方位索引变化最快。顺序 DBF 的 canonical 张量固定为
 
-计划中的数据流为：阵元张量形成、俯仰 DBF、按俯仰组执行条件方位 DBF、局部 K1/K2 判定、完整接收流形联合修正。每个模块都必须有独立输入输出合同和否决门。当前仓库中的旧 `bf_elevation`、`bf_azimuth` 与直接二维波束函数没有形成上述级联，因此不能作为该路线已经实现的证据。
+\[
+Y_{\rm elem}\in\mathbb C^{N_{el}\times N_{az}\times N_r\times L},
+\]
 
-## 3.2 后续阶段的强制门
+其向量化顺序为俯仰索引最快、方位索引次之。实现从 `array_meta.XAct` 推导 permutation，并提供严格逆映射；随机复向量和多维复张量的 roundtrip、permutation 及坐标映射误差均为 0。
+
+## 2.7 真实先俯仰后方位 DBF 模型
+
+令俯仰波束矩阵 $V=[v_1,\ldots,v_{B_e}]\in\mathbb C^{N_{el}\times B_e}$。第一级只沿俯仰维计算
+
+\[
+Z_{el}=V^H Y_{\rm elem},
+\qquad
+Z_{el}\in\mathbb C^{B_e\times N_{az}\times N_r\times L},
+\]
+
+并完整保留 $N_{az}$ 个方位列。对第 $b$ 个俯仰通道，方位权 $u_{c|b}$ 使用对应条件俯仰角 $\theta_b$，其相位包含 $\cos\theta_b$。第二级为
+
+\[
+z_{b,c}=u_{c|b}^{H}[Z_{el}]_{b,:}^{T},
+\qquad
+Z_{seq}\in\mathbb C^{B_e\times B_a\times N_r\times L}.
+\]
+
+canonical 阵元向量上的等效权为
+
+\[
+w_{b,c}=u_{c|b}\otimes v_b.
+\]
+
+`Wseq` 的列顺序固定为 $b$ 最快、$c$ 次之，与单个观测单元的 `Zseq(:)` 完全一致。阵元白噪声下，顺序输出理论协方差为
+
+\[
+C_{seq}=W_{seq}^{H}W_{seq}.
+\]
+
+该关系只描述顺序波束形成与噪声传播；本阶段没有执行白化或 DML。
+
+# 第3章 严格顺序 DBF 证据与后续阶段边界
+
+## 3.1 已验证的数据流
+
+阶段 2 的活跃数据流为：receive-only factor=1 快拍生成、显式排列、逐方位列俯仰 DBF、逐俯仰通道条件方位 DBF，以及完整流形经 `Wseq^H` 的投影。旧 `bf_elevation`、`bf_azimuth` 与直接二维波束函数仍属于 legacy 路径；新实现不调用这些函数，也不调用逐阵元双程回波生成器。
+
+## 3.2 等价性与噪声证据
+
+| 验证对象 | 结果 | 阈值/判定 |
+|---|---:|---:|
+| 随机复阵元张量：逐级/`Wseq^H` | $1.705\times10^{-15}$ | $<10^{-12}$，通过 |
+| factor=1 单目标：逐级/`Wseq^H` | $1.840\times10^{-15}$ | $<10^{-12}$，通过 |
+| factor=1 双目标：逐级/`Wseq^H` | $1.609\times10^{-15}$ | $<10^{-12}$，通过 |
+| 完整/条件因子化流形最大误差 | $9.353\times10^{-15}$ | $<10^{-12}$，通过 |
+| 方位条件公式最大误差 | $6.707\times10^{-15}$ | $<10^{-12}$，通过 |
+| 20,000 样本噪声协方差误差 | 0.02195 | $<0.04$，通过 |
+
+白噪声协方差误差由 1,000 样本时的 0.08570 降至 5,000 样本时的 0.03868，再降至 20,000 样本时的 0.02195，符合向理论协方差收敛的预注册门。该 Monte Carlo 工程验证没有置信区间，不外推到一般有色噪声。
+
+## 3.3 稳定白化与 DML 数值后端
+
+对半正定波束域协方差采用有效子空间分解
+
+\[
+C=U_r\Lambda_rU_r^H,
+\qquad
+T=\Lambda_r^{-1/2}U_r^H,
+\]
+
+因此 $T\in\mathbb C^{r_C\times B}$ 且 $TCT^H\approx I_{r_C}$。实现不返回奇异的 $B\times B$ 坐标并把投影协方差误报为单位阵。对白化后的候选流形 $G_w=U\Sigma V^H$，评分与残差为
+
+\[
+J=\|U_r^HZ_w\|_F^2,
+\qquad
+RSS=\|Z_w\|_F^2-J.
+\]
+
+数值秩阈值使用 $\max(m,n)\epsilon_{\rm mach}\sigma_1$。当 $\operatorname{rank}(G_w)<K$ 时仍返回列空间评分，但状态为 `RANK_DEFICIENT`。集中复高斯方差采用最大似然分母
+
+\[
+\widehat\sigma^2=RSS/(r_CL),
+\]
+
+不进行无偏自由度修正。
+
+| 验证对象 | 结果 | 阈值/判定 |
+|---|---:|---:|
+| 良态 SVD/`pinv` 最大相对误差 | $1.681\times10^{-15}$ | $<10^{-10}$，通过 |
+| 良态 SVD/QR 最大相对误差 | $7.202\times10^{-16}$ | $<10^{-10}$，通过 |
+| $G$ 缩放 $10^{-8}/1/10^8$ 的评分展宽 | $5.937\times10^{-16}$ | $<10^{-12}$，通过 |
+| rank-deficient $C_b$ 的白化器 | $4\times5$ | 有效行数等于秩，通过 |
+| rank-deficient $C_b$ 白化误差 | $8.306\times10^{-16}$ | $<10^{-12}$，通过 |
+| 一般 PSD 噪声白化误差 | $2.198\times10^{-14}$ | $<10^{-12}$，通过 |
+| 精确重复流形列 | 有效秩 1 | `RANK_DEFICIENT`，通过 |
+| $B<K$ | 有效秩 2、请求秩 3 | `RANK_DEFICIENT`，通过 |
+
+近秩亏、精确重复列和 $B<K$ 案例均未产生 NaN/Inf；RSS 没有出现明显负值。本阶段没有执行任何角度网格搜索、俯仰分组或模型阶数判定。SVD/QR 投影是经典数值实现，不作为独立创新主张。
+
+## 3.4 后续阶段的强制门
 
 | 阶段 | 必须回答的问题 | 当前状态 |
 |---|---|---|
-| Step12.1 | 逐级输出是否与等效权严格一致，且保留正确噪声协方差 | 未开始 |
-| 稳定 DML | SVD/QR 投影是否与参考最小二乘一致，病态候选是否可诊断 | 未开始 |
+| Step12.1 | 逐级输出是否与等效权严格一致，且保留正确噪声协方差 | 已通过 |
+| 稳定 DML | SVD/QR 投影是否与参考最小二乘一致，病态候选是否可诊断 | 已通过 |
 | 俯仰组 | `rank(Ge)`、`rank(Ce)` 和局部唯一性是否满足 | 未开始 |
 | 条件方位与联合修正 | 是否优于等预算 baseline，坐标更新是否单调且收敛可控 | 未开始 |
 | 局部渐近理论 | 固定白化条件、常数和零方向是否由公式及数值验证共同支持 | 未开始 |
@@ -298,15 +392,15 @@ v0.18/Step11 的圆柱阵实验按 factor=2 生成。factor 从 2 改为 1 会�
 
 ## 7.1 当前结论
 
-本阶段建立并验证了 factor=1 的接收圆柱阵空间流形及其弧度解析导数。逐元素公式、9 中心有限差分、单目标峰值和 3 dB 波束宽度对比均通过预设门限。由此只能得出“接收模型实现正确且旧 factor=2 数值不可迁移”这一结论。
+当前已依次验证 factor=1 接收圆柱阵流形及弧度解析导数、真实先俯仰后方位 DBF 数据流，以及有效子空间白化和稳定 SVD-DML 数值评分。结论限于模型、线性数据流和数值后端正确性；旧 factor=2 数值仍不可迁移。
 
 ## 7.2 当前限制
 
-当前没有真实顺序 DBF 输出，没有双目标 DML 性能，没有 FIM 波束选择，没有模型阶数判定，也没有 bootstrap 校准。方向图采用理想几何和均匀幅度权，没有覆盖互耦、增益相位误差、失效通道、一般有色噪声、宽带或近场条件。任何超分辨、复杂度或硬件收益表述都必须等待后续证据。
+当前已有严格顺序 DBF 工程输出和稳定 DML 评分器，但尚无双目标角度搜索性能、俯仰组可辨识性、FIM 波束选择、模型阶数判定或 bootstrap 校准。PSD 测试只验证给定协方差的数值白化，不代表已解决协方差估计。模型仍未覆盖互耦、增益相位误差、失效通道、宽带或近场条件。任何超分辨、搜索复杂度或硬件收益表述都必须等待后续证据。
 
 ## 7.3 阶段门
 
-下一步只能进入真实顺序 DBF 数据流验证。若逐级输出、等效矩阵或噪声协方差不能满足阶段 2 的严格等价门，则停止算法创新路线；不得提前进入分组 DML、FIM 或 K1/K2 实现。
+阶段 3 的稳定白化和 SVD/QR DML 数值门已通过。下一步只能在新的独立阶段验证俯仰组 DML 及 `rank(Ge)`、`rank(Ce)`、局部唯一性；本稿当前仍不得进入条件联合修正、FIM 或 K1/K2 实现。
 
 # 参考文献
 

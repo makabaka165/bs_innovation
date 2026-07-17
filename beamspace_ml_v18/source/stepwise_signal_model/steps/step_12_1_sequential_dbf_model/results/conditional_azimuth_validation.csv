@@ -1,0 +1,4 @@
+az_beam_column_deg,el_condition_deg,formula_relative_error,change_from_el0,elevation_independent_model_error,pass_flag,phase_factor
+8,0,0,0,0,1,1
+8,30,6.7066731638288e-15,1.49855227015603,1.49855227015603,1,1
+8,60,0,1.55037492620911,1.55037492620911,1,1

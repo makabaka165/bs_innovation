@@ -1,0 +1,10 @@
+case_name,object_type,matrix_rows,matrix_cols,expected_rank,effective_rank,requested_rank,threshold,output_rows,whitening_error,min_eigenvalue,status,finite_flag,pass_flag,phase_factor
+stable_rank_scale_1e-08,numeric_rank,7,3,2,2,3,1.55431223447522e-23,2,NaN,NaN,RANK_DEFICIENT,1,1,1
+stable_rank_scale_1,numeric_rank,7,3,2,2,3,1.55431223447522e-15,2,NaN,NaN,RANK_DEFICIENT,1,1,1
+stable_rank_scale_100000000,numeric_rank,7,3,2,2,3,1.55431223447522e-07,2,NaN,NaN,RANK_DEFICIENT,1,1,1
+nonorthogonal_W_covariance,psd_whitener,5,5,5,5,5,3.60686502524261e-14,5,1.34784401722873e-14,0.198535117135681,OK,1,1,1
+rank_deficient_Cb,psd_whitener,5,5,4,4,5,3.41426889717815e-14,4,8.30585541168641e-16,-1.83263067912036e-15,RANK_DEFICIENT,1,1,1
+general_psd_noise,psd_whitener,5,5,5,5,5,4.10414844169052e-14,5,2.19841301351956e-14,0.144733559017415,OK,1,1,1
+zero_psd_covariance,psd_whitener,5,5,0,0,5,0,0,0,0,ZERO_RANK,1,1,1
+dml_exact_duplicate,dml_manifold,6,2,1,1,2,1.88411095042053e-15,1,NaN,NaN,RANK_DEFICIENT,1,1,1
+dml_B_less_K,dml_manifold,2,3,2,2,3,1.35597142064868e-15,2,NaN,NaN,RANK_DEFICIENT,1,1,1

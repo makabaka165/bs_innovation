@@ -348,6 +348,46 @@ results/sequential_model_report.md
 
 验收：
 所有等价性测试通过后才允许进入稳定 DML。完成后停止。
+
+
+
+同时还有要补充的内容：
+新增输入模型约束：
+
+现有 core/echo/echo_elem.m 使用 tau=2*Rm/c 和
+exp(-j*4*pi*Rm/lambda)，其逐阵元空间相位实质为 factor=2。
+该函数及 echo_elem_cube.m 属于 legacy 双程回波生成路径，
+不得直接作为 Step12.1 的 active 输入。
+
+在 step_12_1_sequential_dbf_model/common/ 新建
+generate_receive_only_element_snapshots.m。
+
+首版采用窄带接收模型：
+
+    Yelem = A_receive(Theta) * S + N
+
+A_receive 的每一列必须直接调用
+build_receive_cyl_steering_vec，禁止复制另一套公式。
+
+新增测试：
+
+1. test_receive_snapshot_matches_factor1_manifold.m
+   - 无噪声单目标快拍投影到 factor=1 流形正交补后的
+     相对残差 < 1e-12；
+   - factor=2 流形不能得到同样的零残差。
+
+2. test_step12_has_no_legacy_echo_dependency.m
+   - Step12.1 active path 不得调用 echo_elem、echo_elem_cube；
+   - 不得出现 4*pi/lambda 或 PhaseFactor=2。
+
+阶段 2 的顺序等价测试必须至少覆盖：
+- 随机复阵元数据；
+- factor=1 单目标物理快拍；
+- factor=1 双目标物理快拍；
+- 阵元白噪声。
+
+只有物理快拍、逐级 DBF 和 Wseq' * y 三者同时一致，
+才允许阶段 2 通过。
 ```
 
 ---
@@ -439,6 +479,31 @@ results/stable_dml_report.md
 - rss 非负，仅允许机器精度量级负值并截断为 0，同时记录；
 - 主路径不含固定 1e-10；
 - 完成后停止。
+
+
+额外的附加约束：
+对白化器采用有效子空间降维形式：
+
+    C = Ur*Lambda_r*Ur'
+    T = Lambda_r^(-1/2)*Ur'
+
+因此 T 的维度为 rank(C) × B，并要求：
+
+    T*C*T' ≈ I_rank(C)
+
+不要使用奇异 B×B 白化坐标并把投影矩阵误报为单位协方差。
+
+concentrated DML 使用有效白化维数 rC：
+
+    sigma2_hat = RSS / (rC*L)
+
+这是最大似然估计，不进行无偏自由度修正。
+
+当 rank(Gw)<requested_K 时允许计算其列空间评分，
+但必须返回 rank-deficient 状态，不能把该候选视为正常可辨识 K 目标模型。
+
+RSS 只允许对机器精度量级的负值做 0 截断；
+明显负值必须使测试失败。
 ```
 
 ---

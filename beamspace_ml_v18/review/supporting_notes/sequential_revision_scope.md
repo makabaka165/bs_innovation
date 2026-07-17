@@ -1,8 +1,8 @@
 # v0.19 顺序测角修订范围说明
 
-> 版本：Step12.0，2026-07-17  
+> 版本：Step12.2，2026-07-17
 > 活跃相位模型：`phase_factor=1`  
-> 当前结论：仅接收流形、解析导数、方向图和波束宽度验证通过；后续算法均未实现。
+> 当前结论：接收流形、真实先俯仰后方位 DBF 和稳定白化/SVD-DML 数值后端验证通过；角度搜索、分组、FIM 和 K1/K2 均未实现。
 
 ## 1. 系统层级
 
@@ -67,7 +67,16 @@ $K=3$ 不属于主范围，只能在全主链通过后进入可选阶段 10A；�
 | 新流形逐元素等于 factor=1 解析公式 | 9 个角中心，最大绝对误差 0 | supported |
 | 解析导数相对于 radian 正确 | 9 中心有限差分，最大相对误差 az `1.020e-9`、el `1.476e-9` | supported |
 | factor=1 主瓣比 factor=2 历史对照更宽 | 方位宽度比 `2.000075`、俯仰宽度比 `2.000147` | supported for deterministic model check |
-| 真实顺序 DBF 已实现 | 无 | not supported |
+| legacy/canonical 阵元映射严格可逆 | 随机复向量和多维张量 roundtrip/permutation/坐标误差均为 0 | supported |
+| 真实顺序 DBF 与等效 `Wseq^H` 一致 | 随机/单目标/双目标误差均 `<2e-15` | supported |
+| 条件因子化流形与完整 factor=1 流形一致 | 9 个角中心最大误差 `9.353e-15` | supported |
+| 方位权依赖俯仰条件 | 公式最大误差 `6.707e-15`，非零条件变化量 `>1.49` | supported |
+| 白噪声输出协方差趋近 `Wseq^H Wseq` | 20,000 样本相对误差 `0.02195` | supported for registered white-noise test |
+| PSD 白化使用有效子空间坐标 | rank-deficient `Cb` 返回 `4x5` whitener，误差 `8.306e-16` | supported |
+| 稳定 SVD 评分与良态参考一致 | 对 `pinv` 最大相对误差 `1.681e-15`，对 QR 为 `7.202e-16` | supported |
+| 流形整体尺度不改变投影评分 | `1e-8/1/1e8` 相对展宽 `5.937e-16` | supported |
+| 重复列及 `B<K` 返回秩亏状态 | 重复列秩 1；`B=2<K=3` 返回 `RANK_DEFICIENT` | supported |
+| 集中方差使用 ML 分母 `rC*L` | rank-deficient 白化坐标 `rC=3`，公式误差 0 | supported |
 | 分组/条件 DML 有效 | 无 | not supported |
 | FIM 波束设计有效 | 无 | not supported |
 | K1/K2 bootstrap 已校准 | 无 | not supported |
@@ -83,4 +92,4 @@ $K=3$ 不属于主范围，只能在全主链通过后进入可选阶段 10A；�
 
 ## 7. 后续阶段门
 
-阶段 2 只能实现并验证真实先俯仰后方位数据流。阶段 2 未通过时停止算法创新路线；不得继续分组 DML。阶段 4、6、7、8 分别是可辨识性、局部理论、exact-subset FIM 和 K1/K2 校准的强制否决门，不能跳过。
+阶段 3 的稳定白化和 DML 数值后端已经通过注册门。下一阶段只能验证俯仰组 DML 与 `rank(Ge)`、`rank(Ce)` 和局部唯一性，不得直接进入条件方位联合修正或 FIM。阶段 4、6、7、8 分别是可辨识性、局部理论、exact-subset FIM 和 K1/K2 校准的强制否决门，不能跳过。
