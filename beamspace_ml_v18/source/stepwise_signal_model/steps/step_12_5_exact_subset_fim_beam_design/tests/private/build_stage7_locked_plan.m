@@ -1,17 +1,20 @@
-function plan = build_stage7_locked_plan(cfg, repo_dir, step_dir)
+function plan = build_stage7_locked_plan(cfg, repo_dir, step_dir, opts)
 %BUILD_STAGE7_LOCKED_PLAN Freeze every design and holdout object.
 
+if nargin < 4 || isempty(opts), opts = struct(); end
+opts = normalize_options_local(opts);
+if isstring(step_dir), step_dir = char(step_dir); end
+if ~(ischar(step_dir) && isrow(step_dir) && exist(step_dir, 'dir') == 7)
+    error('build_stage7_locked_plan:StepDir', ...
+        'step_dir must identify the Stage 7 implementation directory.');
+end
 if ~strcmp(version('-release'), '2022b')
     error('build_stage7_locked_plan:MatlabRelease', ...
         'Stage 7 is registered for MATLAB R2022b.');
 end
 baseline_commit = 'ea1c0320b7ba9639d6d955a1a45037cdc6cfdb31';
-runtime_head = strtrim(git_output_local(repo_dir, 'rev-parse HEAD'));
-origin_main = strtrim(git_output_local(repo_dir, 'rev-parse origin/main'));
-if ~strcmp(runtime_head, baseline_commit) || ~strcmp(origin_main, baseline_commit)
-    error('build_stage7_locked_plan:Baseline', ...
-        'HEAD and origin/main must equal the registered baseline.');
-end
+read_stage7_git_provenance( ...
+    repo_dir, baseline_commit, opts.git_provenance_options);
 
 pool = build_stage7_candidate_pool(cfg);
 subset_family = enumerate_stage7_rectangular_subsets(pool, cfg);
@@ -99,15 +102,30 @@ hashes.stage7_fim_holdout_hash = stage7_stable_hash(fim_holdout_scenarios);
 hashes.stage7_finite_sample_plan_hash = stage7_stable_hash(finite_sample_plan);
 hashes.stage7_controls_hash = stage7_stable_hash( ...
     controls, solver, cost, success, prior_art);
-hashes.stage7_source_tree_hash = source_tree_hash_local(step_dir);
+stable_plan_hashes = hashes;
+provenance_inputs = struct('baseline_commit', baseline_commit, ...
+    'stable_plan_hashes', stable_plan_hashes, ...
+    'stage6_evidence_bundle_hash', controls.stage6_evidence_bundle_hash, ...
+    'phase_factor', controls.phase_factor, ...
+    'matlab_release_contract', 'MATLAB_R2022b');
+provenance = build_stage7_provenance_contract( ...
+    repo_dir, provenance_inputs, opts);
+hashes.stage7_source_tree_hash = provenance.stage7_source_tree_hash;
+hashes.stage7_dependency_tree_hash = provenance.stage7_dependency_tree_hash;
+hashes.stage7_provenance_hash = provenance.stage7_provenance_hash;
 hashes.stage6_evidence_bundle_hash = controls.stage6_evidence_bundle_hash;
 hashes.stage7_plan_hash = stage7_stable_hash(baseline_commit, ...
-    hashes, pool.W0_hash, cfg.arr.lambda, 'MATLAB_R2022b');
+    stable_plan_hashes, hashes.stage7_source_tree_hash, ...
+    hashes.stage7_dependency_tree_hash, hashes.stage7_provenance_hash, ...
+    pool.W0_hash, cfg.arr.lambda, 'MATLAB_R2022b');
 
 plan = struct();
 plan.baseline_commit = baseline_commit;
-plan.runtime_head_commit = runtime_head;
-plan.origin_main_commit = origin_main;
+plan.runtime_head_commit = provenance.runtime_head_commit;
+plan.origin_main_commit = provenance.origin_main_commit;
+plan.baseline_ancestor_flag = provenance.baseline_ancestor_flag;
+plan.working_tree_clean_at_start = provenance.working_tree_clean_at_start;
+plan.provenance_status = provenance.provenance_status;
 plan.matlab_release = 'R2022b';
 plan.pool = pool;
 plan.subset_family = subset_family;
@@ -124,6 +142,11 @@ plan.cost = cost;
 plan.success = success;
 plan.prior_art = prior_art;
 plan.hashes = hashes;
+plan.source_manifest = provenance.source_manifest;
+plan.dependency_manifest = provenance.dependency_manifest;
+plan.source_scope_version = provenance.source_scope_version;
+plan.dependency_scope_version = provenance.dependency_scope_version;
+plan.provenance_contract_version = provenance.provenance_contract_version;
 plan.phase_factor = 1;
 plan.plan_freeze_status = 'FROZEN_BEFORE_ANY_STAGE7_FIM_RESULT';
 end
@@ -305,30 +328,18 @@ pass = all(targets(:, 1) >= 7.4 & targets(:, 1) <= 8.6 & ...
     targets(:, 2) >= 9.6 & targets(:, 2) <= 10.4);
 end
 
-function output = git_output_local(repo_dir, arguments)
-command = sprintf('git -C "%s" %s', repo_dir, arguments);
-[status, output] = system(command);
-if status ~= 0
-    error('build_stage7_locked_plan:Git', ...
-        'Git command failed: %s.', arguments);
+function opts = normalize_options_local(opts)
+if ~(isstruct(opts) && isscalar(opts))
+    error('build_stage7_locked_plan:Options', ...
+        'opts must be a scalar struct.');
 end
+allowed = {'git_provenance_options'};
+unknown = setdiff(fieldnames(opts), allowed);
+if ~isempty(unknown)
+    error('build_stage7_locked_plan:UnknownOption', ...
+        'Unknown option: %s.', unknown{1});
 end
-
-function digest = source_tree_hash_local(step_dir)
-files = [dir(fullfile(step_dir, '**', '*.m')); ...
-    dir(fullfile(step_dir, '**', '*.md'))];
-full_paths = string(fullfile({files.folder}, {files.name}));
-excluded = contains(full_paths, string([filesep, 'results', filesep])) | ...
-    contains(full_paths, string([filesep, 'figures', filesep]));
-files = files(~excluded);
-relative_paths = strings(numel(files), 1);
-contents = cell(numel(files), 1);
-for index = 1:numel(files)
-    path_now = fullfile(files(index).folder, files(index).name);
-    relative_paths(index) = replace(string(path_now), string(step_dir), "");
-    contents{index} = uint8(fileread(path_now));
+if ~isfield(opts, 'git_provenance_options')
+    opts.git_provenance_options = struct();
 end
-[relative_paths, order] = sort(relative_paths);
-contents = contents(order);
-digest = stage7_stable_hash(relative_paths, contents);
 end

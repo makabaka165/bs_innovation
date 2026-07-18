@@ -3696,6 +3696,21 @@ results/stage7_fim_beam_design_report.md
 - 完成后停止。
 ```
 
+# 阶段 7.1A：Stage7 收束审计工具（code-only）
+
+> **执行状态（2026-07-18）：Stage7.1 code tools implemented, closure rerun pending。**
+
+本子阶段只修复 Stage7 可复现合同并实现隔离的只读收束工具：历史 baseline
+改为祖先约束，正式运行入口增加干净工作树门，source/dependency 使用 Git
+`mode/blob/path` manifest，runtime HEAD 不进入稳定 hash。另实现顺序 3/5
+通道语义、物理子集 alias、`eta0=0.80` 最小成本可行族、既有有限样本 Pareto
+敏感性、修正复杂度记账和固定边缘诊断计划。
+
+本状态没有重跑 Stage7 长流程，没有生成新 trial、CSV 或 PNG，没有改变
+Stage7 exact operating point、tie-break、FIM/DML/有限样本公式或
+`PASS_SYSTEM_ANALYSIS_ONLY` 主结论。Stage7.1B closure rerun 只能在后续单独
+授权下执行；本状态不授权阶段 8。
+
 # 阶段 8：K1/K2 bootstrap、`K2_UNRESOLVED` 与 false-resolved 控制
 
 > **当前状态：`NOT_AUTHORIZED_BY_STAGE7_RESULT`。** 阶段 7 没有通过有限样本 Pareto 门；本阶段不得自动执行。
