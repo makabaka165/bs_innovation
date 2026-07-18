@@ -1,0 +1,7 @@
+test_id,case_id,metric,tolerance,pass_flag
+covariance_exact,WHITE_DIRECT,2.3711012855793e-15,1e-12,1
+covariance_exact,CORRELATED_DIRECT,1.07198917193982e-15,1e-12,1
+covariance_exact,WHITE_WHITENING,3.13563818231964e-11,1e-08,1
+covariance_exact,CORRELATED_WHITENING,1.49848917789098e-10,1e-08,1
+covariance_mc,WHITE_MC,0.00362895651660611,0.02,1
+covariance_mc,CORRELATED_MC,0.00269385261454982,0.02,1

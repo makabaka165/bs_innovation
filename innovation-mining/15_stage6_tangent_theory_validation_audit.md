@@ -20,8 +20,8 @@
 - 统计范围：`DETERMINISTIC_GEOMETRIC_VALIDATION`；本阶段不存在也不报告统计置信区间。
 - 基准提交：`0430f25272690a3ddf378dcf0bab465ca93edb68`（`feat: complete stage 5 grouped conditional DML`）。
 - 分支：`main`；MATLAB：R2022b / PCWIN64 / double；活动模型：`phase_factor=1`。
-- 阶段 6 控制哈希：`7344172be8a6cba67eb96c4453bcfaf8fdafea7784137d2faf8186ddc675dd53`。
-- 阶段 6 实验计划哈希：`d76ec3ca634608f351af919d63f6fe2a8acabe5ee4fffc532f84e8db32a28ad5`。
+- 阶段 6 控制哈希：`941f53cad599294a76b1aa07e5b1f06c5c51b73b12de63caf3d6e8886b6fa03d`。
+- 阶段 6 实验计划哈希：`baee3ecbaa7e949bab7df0d44496ccd5fddec4d935ca777dbe9d1d0e7d7b211e`。
 - 四个物理主配置均为 `NONDEGENERATE_TANGENT`，状态为 `NO_EXACT_PHYSICAL_TANGENT_NULL_FOUND`。单通道诊断仅为 `EXACT_MEASUREMENT_COLLAPSE`，不构成物理高阶分辨理论证据。
 - 六阶 exact-null 候选式仅在预注册 synthetic analytic fixture 上通过；由于主物理配置无 exact tangent null，物理六阶扩展保持未验证。
 - 本轮未实现阶段 7 的 exact-subset FIM 波束设计，也未修改阶段 4、阶段 5 或 Step11 冻结结果。
@@ -143,11 +143,11 @@ v_{3,{\rm eff}}=P_g^\perp\left(\frac{g_3}{24}-\frac{\alpha g_2}{8}\right),
 run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/run_step12_4_tangent_asymptotics_validation.m')
 ```
 
-最终 runner 状态为 `PASS`：14 项要求测试、3,491 行测试证据、Code Analyzer 0 消息、scope violation 0、CSV schema/hash/output 扫描全通过；阶段 5 冻结文件 14 个、hash mismatch 0；Step11 官方冻结清单 351 个文件、hash mismatch 0。注册复杂度为 6,813 次 receive-manifold evaluation、1,296 次 secant SVD、90 次度量特征分解、225 个导数 case，运行时间 `7.7739525 s`，固定模型内存 `38,074,687 bytes`。
+`17c2022aea3be4d1c6b090aa771e7253c79c858e` 历史 pre-provenance 证据记录的 runner 状态为 `PASS`：14 项要求测试、3,491 行测试证据、Code Analyzer 0 消息、scope violation 0、CSV schema/hash/output 扫描全通过；阶段 5 冻结文件 14 个、hash mismatch 0；Step11 官方冻结清单 351 个文件、hash mismatch 0。该历史记录中的注册复杂度为 6,813 次 receive-manifold evaluation、1,296 次 secant SVD、90 次度量特征分解、225 个导数 case，运行时间 `7.7739525 s`，固定模型内存 `38,074,687 bytes`。这些行数、运行时间和旧文件计数不再作为当前正式冻结证据身份；当前正式证据以 `results/stage6_evidence_manifest.csv` 及其中的 deterministic bundle 元数据为准。
 
-## 9. 全部结果与图件 SHA-256 清单
+## 9. 历史 pre-provenance 结果与图件 SHA-256 清单
 
-以下路径均相对于仓库根目录；哈希算法为 SHA-256。最终文件系统中共有 15 个 CSV、2 个 Markdown 结果报告和 7 个 PNG，共 24 个文件、`3,154,709 bytes`。
+以下表格是 `17c2022aea3be4d1c6b090aa771e7253c79c858e` 的历史 pre-provenance 记录，不是当前正式冻结证据清单。当前正式证据清单统一引用 `beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/results/stage6_evidence_manifest.csv`；该 manifest 注册 31 个 artifacts，其中 21 个进入确定性 bundle、总计 45,940,802 bytes，bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。下列历史路径均相对于仓库根目录，哈希算法为 SHA-256；当时记录为 15 个 CSV、2 个 Markdown 结果报告和 7 个 PNG，共 24 个文件、`3,154,709 bytes`。
 
 | 路径 | bytes | SHA-256 |
 |---|---:|---|

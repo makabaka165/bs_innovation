@@ -759,7 +759,7 @@ results/grouped_conditional_dml_report.md
 > exact tangent null，synthetic analytic fixture 支持六阶候选。本状态不授权
 > 或执行 Step12.5。
 
-> **阶段 6.1B 最终证据冻结（2026-07-18）：`STAGE6_REPRODUCIBLE_EVIDENCE_FROZEN`。** 两次独立干净 runner、Git-object 历史对照、自复现和 final-freeze validator 全部通过；21 个确定性 artifacts 的 evidence bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。阶段 6 source scope 零修改；阶段 7/FIM 仍未开始。
+> **阶段 6.1B 最终证据冻结（2026-07-18）：`STAGE6_REPRODUCIBLE_EVIDENCE_FROZEN`。** 两次独立干净 runner、Git-object 历史对照、自复现和 final-freeze validator 全部通过；21 个确定性 artifacts 的 evidence bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。阶段 6 source scope 零修改；在该冻结时点阶段 7/FIM 尚未开始，当前阶段 7 结论见下文 Step12.5。
 
 ## 目标
 
@@ -891,6 +891,8 @@ figures/column_norm_ratio_vs_separation.png
 
 # Step12.5：系统特化设计——相关顺序波束的 FIM 保真最小局部波束集
 
+> **最终状态（2026-07-18）：`PASS_SYSTEM_ANALYSIS_ONLY`。** 已在冻结的 5x5 factor=1 顺序父池上完整枚举 961 个矩形子集，并对每个子集重构相关协方差、有效白化器、流形导数和 deterministic effective FIM。`eta0=0.80` 的 exact 解 `RECT_E14_A31` 通过 design/validation/FIM-holdout，但它与最强固定 `FIXED_RECT_3X5` 完全相同；`eta0=0.90/0.95` 高于父池设计上限 `0.823236874`，按注册规则不可行。有限样本 Pareto 门为 0/3，故只保留系统设计分析，不进入 Step12.6。
+
 ## 目标
 
 在已有归一化 FIM 和最少选择框架上，实现适用于相关顺序规则波束输出的 exact-subset 设计，并用有限样本 holdout 验收。不得假设逐束 FIM 可加。
@@ -1011,30 +1013,31 @@ Chepuri–Leus 型 SDP/稀疏松弛只作独立观测参考，除非重新推导
 
 - threshold SNR；
 - wrong local peak；
-- K1 false split；
-- K2 missed split；
-- false resolved；
+- oracle-K success 与 Wilson 95% 区间；
+- 相对固定矩形和完整父池的配对成功/误差区间；
 - unconditional penalized error；
 - weak-secondary/coherent subgroup；
+- covariance/gain-phase/position/channel-failure mismatch；
 - runtime/memory/bandwidth。
+
+Step12.5 固定 Q/K/Kq 为 oracle，不执行 K1/K2 模型阶数、bootstrap 或 resolved/unresolved 指标；这些对象只属于 Step12.6。
 
 不把第二阶段指标重新线性加权进设计目标；任一预注册风险不通过即否决或降级。
 
 ## 输出
 
 ```text
-results/subset_covariance_validation.csv
-results/fim_design_scenarios.csv
-results/fim_subset_design.csv
-results/fim_subset_validation.csv
-results/fim_subset_normal_holdout.csv
-results/fim_subset_threshold_holdout.csv
-results/fim_subset_mismatch_holdout.csv
+results/stage7_plan_registry.csv
+results/stage7_candidate_pool.csv
+results/stage7_subset_family.csv
+results/fim_subset_enumeration.csv
+results/fim_subset_pareto.csv
+results/fim_operating_points.csv
+results/fim_greedy_exact_gap.csv
+results/finite_sample_{normal,threshold,mismatch,stress}_holdout.csv
 results/fim_vs_finite_sample_risk.csv
-results/beam_cost_pareto.csv
-results/fim_baseline_comparison.csv
-results/fim_beam_budget_keypoints.csv
-results/fim_beam_budget_report.md
+results/stage7_keypoints.csv
+results/stage7_fim_beam_design_report.md
 ```
 
 ## 否决标准
@@ -1046,7 +1049,11 @@ results/fim_beam_budget_report.md
 - 相关噪声 exact 设计成本过高且无可实现简化；
 - 只能重复已有 CRB 保真 BML，无本系统特化收益。
 
+最终结果触发“相对于固定相邻波束无成本/性能收益”降级条件。实现和证据保留用于系统设计复核，但不恢复旧 W-score，也不把 greedy 或完整父池冒充 exact 优势。
+
 # Step12.6：K1/K2 bootstrap、分辨状态与独立风险控制
+
+> **当前门状态：未授权。** Step12.5 的有限样本 Pareto 门为 0/3，阶段 7 判定不允许自动或技术性进入本阶段。
 
 ## 目标
 
@@ -1665,10 +1672,10 @@ success
 
 ## M6：系统特化设计——相关规则波束 exact-subset FIM
 
-- 每个子集重构相关噪声协方差与白化器；
-- FIM 保真与结构化成本；
-- design/validation/threshold holdout；
-- 与固定相邻波束、B7、刘旗 2026、Chepuri–Leus 参考和穷举比较。
+- 已完成 961/961 个矩形子集的相关协方差重构、FIM 保真与结构化成本评估；
+- design/validation/FIM holdout 技术门通过，`eta0=0.80` 为唯一可行 operating point；
+- oracle-K normal/threshold/mismatch/stress 共 29 个场景、每场景 200 次；
+- exact 解等于最强固定 3x5 矩形，有限样本 Pareto 0/3；里程碑以 `PASS_SYSTEM_ANALYSIS_ONLY` 关闭。
 
 ## M7：K1/K2 bootstrap
 

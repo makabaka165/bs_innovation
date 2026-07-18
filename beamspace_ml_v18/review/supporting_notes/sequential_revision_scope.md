@@ -1,11 +1,12 @@
 # v0.19 顺序测角修订范围说明
 
-> 版本：Step12.4 阶段 6 修订，2026-07-17
+> 版本：Step12.5 阶段 7 修订，2026-07-18
 > 活跃相位模型：`phase_factor=1`
 > 当前结论：接收流形、真实先俯仰后方位 DBF、稳定 SVD-DML，以及
 > oracle-Q 注册局部网格下的俯仰组 DML、matrix-normal 行/列白化、
 > 三层状态语义、物理环向组恢复、条件方位 DML 和固定完整顺序流形修正已通过技术与 Pareto 工程门；固定白化顺序流形的近双目标非退化三式与 synthetic exact-null 六阶候选已通过确定性验证。所有有噪声结果仍未统计校准。
 > 阶段 6.1B 已完成两次独立重跑、历史 Git-object 对照、自复现和最终冻结；确定性 evidence bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。source scope 零修改；物理 exact tangent null 仍未出现，六阶候选仍仅由 synthetic fixture 支持。
+> 阶段 7 已在冻结 5x5 顺序父池上评估 961/961 个矩形子集。`eta0=0.80` 的 exact 解与最强固定 3x5 矩形相同，`eta0=0.90/0.95` 不可行，有限样本 Pareto 为 0/3；最终状态为 `PASS_SYSTEM_ANALYSIS_ONLY`，阶段 8 未获授权。
 
 ## 1. 系统层级
 
@@ -144,7 +145,28 @@ $\sigma_2^2\sim r^6\|v_{3,\rm eff}\|^2/2$，拟合阶数为 6；但 4 个主物�
 `DETERMINISTIC_GEOMETRIC_VALIDATION`，不得写成有限样本可分辨、低 SNR
 threshold 已解决或强相干已解决。
 
-## 7. 当前证据
+## 7. 阶段 7 exact-subset FIM 合同
+
+阶段 7 的父池固定为 `W0 [2080,25]`，来自 5 个俯仰波束
+`[9.2,9.6,10.0,10.4,10.8] deg` 与 5 个方位波束
+`[6.8,7.4,8.0,8.6,9.2] deg` 的先俯仰后方位组合。主设计族仅包含
+961 个非空 `I_e x I_a` 矩形子集。每个子集均重新构造
+`C_I=W_I^H R_n W_I`、有效白化器、流形、弧度导数和多目标
+deterministic effective FIM，不使用逐束可加假设。
+
+design、validation 和 FIM holdout 分别包含 640、288 和 256 个冻结场景。
+有限样本层固定 Q/K/Kq 为 oracle，包含 6 个 normal、18 个 threshold、
+4 个 mismatch 和 1 个 Stage-5 coherent-weak stress 场景，每个场景
+`Nmc=200`。该层不执行模型阶数、bootstrap 或 resolved/unresolved 指标。
+
+完整父池的最坏 design eta 为 `0.823236874`。唯一通过三重 FIM 门的
+`EXACT_ETA_080` 为 `RECT_E14_A31`，其 design/validation/FIM-holdout eta
+为 `0.812182048 / 0.854926015 / 0.816394840`，MAC 为 7215。它与
+`FIXED_RECT_3X5` 使用同一物理子集，故相对最强固定矩形的成本和有限样本
+差异均为 0。该结果相对完整父池减少 40% MAC，但不构成新的波束选择
+Pareto 收益。
+
+## 8. 当前证据
 
 | 主张 | 证据 | 状态 |
 |---|---|---|
@@ -171,10 +193,13 @@ threshold 已解决或强相干已解决。
 | 固定白化近双目标非退化三式 | 1296 case、144/144 注册尾区通过 | scenario-specific deterministic corollary |
 | synthetic exact-null 六阶候选 | 拟合阶数 6，ratio 误差 `2.220e-16` | supported on analytic fixture only |
 | 主物理 exact tangent null | 4 个主配置均未发现 | `NO_EXACT_PHYSICAL_TANGENT_NULL_FOUND` |
-| FIM、bootstrap、自动 Q、K=3 | 无 | not started |
+| exact rectangular-subset FIM | 961/961 子集，FIM operating point 1/3 | technically passed |
+| `EXACT_ETA_080` 相对最强固定矩形 | 同一 `RECT_E14_A31`，有限样本 Pareto 0/3 | system-design analysis only |
+| oracle-K mismatch/stress | M0-M3 成功率 1/0.995/0.995/1；coherent-weak 0/200 | bounded evidence / failure retained |
+| bootstrap、自动 Q、K=3 | 无 | not started |
 
 阶段 5 另含方位/俯仰半网格、同时 off-grid、边界、部分出域、极近、弱目标、相干、相关噪声、缩孔径和 `L=1/L>1` 场景。成功判定使用固定最终网格门；出域样本不扩窗并计入无条件失败。AP 属经典方法，PR-DML/Kim 的准确复现缺口仍保留，没有用自定义简化版本替代。
 
-## 8. 后续阶段门
+## 9. 后续阶段门
 
-阶段 6 已通过固定测量、导数、投影几何、非退化三式、精确恒等式、几何不变性、synthetic null 和 prior-art 边界门，但本轮必须停止。只有用户后续单独授权，才可进入阶段 7。exact-subset FIM、模型阶数 bootstrap、自动 Q、K=3、cache 与硬件映射均未实现。
+阶段 7 的技术门全部通过，但唯一 FIM-qualified exact 子集没有超过最强固定矩形，有限样本 Pareto 为 0/3。该路线已按预注册规则降级为系统设计分析，不恢复经验 W-score。阶段 8 的 K1/K2 bootstrap 与 resolved/unresolved 校准未获技术授权，本轮必须停在阶段 7；自动 Q、K=3、cache 与硬件映射也均未实现。

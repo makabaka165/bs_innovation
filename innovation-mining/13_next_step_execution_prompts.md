@@ -3587,6 +3587,8 @@ J. 下一阶段判定
 
 # 阶段 7：系统特化设计——相关顺序波束 exact-subset FIM 与最小局部波束集
 
+> **执行完成（2026-07-18）：`PASS_SYSTEM_ANALYSIS_ONLY`。** 冻结计划 hash 为 `e630a084e68108a1604527afe7a81db7150b045454b3f54b05e6cfd389259a3b`。961/961 个矩形子集和 1184 个 FIM 场景已完整评估；`eta0=0.80` 的 exact 解为 `RECT_E14_A31`，但与最强固定 `FIXED_RECT_3X5` 是同一物理子集。`eta0=0.90/0.95` 不可行，有限样本 Pareto 为 0/3。下面的提示词保留为历史执行合同，不得直接重跑或据此进入阶段 8。
+
 ## 目标
 
 用 exact subset covariance/FIM 替换旧三项 W-score，明确已有 prior art，并通过有限样本风险二阶段验收。
@@ -3664,22 +3666,25 @@ Baselines：
 
 二阶段验收：
 A. eta/FIM/CRB/rank/cost；
-B. threshold SNR、wrong local peak、K1 false split、K2 missed split、false resolved、unconditional error、weak/coherent subgroup、runtime/memory/bandwidth。
+B. oracle-K success、Wilson/配对区间、threshold SNR、wrong local peak、unconditional error、weak/coherent subgroup、mismatch、runtime/memory/bandwidth。
+
+本阶段不执行 K1/K2 模型阶数、bootstrap、false split、missed split、false resolved 或 resolved/unresolved 指标。
 
 数据严格分为 design、validation、normal_holdout、threshold_holdout、mismatch_holdout。
 
 输出：
 results/subset_covariance_validation.csv
-results/fim_subset_design.csv
+results/fim_subset_enumeration.csv
 results/fim_subset_validation.csv
-results/fim_subset_normal_holdout.csv
-results/fim_subset_threshold_holdout.csv
-results/fim_subset_mismatch_holdout.csv
+results/finite_sample_normal_holdout.csv
+results/finite_sample_threshold_holdout.csv
+results/finite_sample_mismatch_holdout.csv
+results/finite_sample_stress_holdout.csv
 results/fim_vs_finite_sample_risk.csv
-results/beam_cost_pareto.csv
-results/fim_baseline_comparison.csv
-results/fim_beam_budget_keypoints.csv
-results/fim_beam_budget_report.md
+results/fim_subset_pareto.csv
+results/fim_baseline_reproduction_status.csv
+results/stage7_keypoints.csv
+results/stage7_fim_beam_design_report.md
 
 否决：
 - 只有逐束可加假设下有效；
@@ -3692,6 +3697,8 @@ results/fim_beam_budget_report.md
 ```
 
 # 阶段 8：K1/K2 bootstrap、`K2_UNRESOLVED` 与 false-resolved 控制
+
+> **当前状态：`NOT_AUTHORIZED_BY_STAGE7_RESULT`。** 阶段 7 没有通过有限样本 Pareto 门；本阶段不得自动执行。
 
 ## 目标
 
@@ -4029,13 +4036,15 @@ cache 只写成软件实现贡献。完成后停止。
 阶段 10 K3/cache（可选）
 ```
 
+截至 2026-07-18，执行已停在阶段 7。阶段 7 的技术实现通过，但算法贡献门未通过，状态为 `PASS_SYSTEM_ANALYSIS_ONLY`；阶段 8 及以后不是当前允许的下一步。
+
 核心停止点：
 
 - 阶段 2 不通过：顺序工程模型不成立，停止算法创新；
 - 阶段 3 不通过：评分器不可信，停止；
 - 阶段 5 不通过：创新点 1 不成立或需重新定义；
 - 阶段 6 不通过：创新点 2 的理论基础不成立，停止 FIM 路线；
-- 阶段 7 holdout 不通过：记录 FIM 路线边界，不恢复经验 W-score；
+- 阶段 7 不优于最强固定矩形：记录 FIM 路线边界并降级为系统分析，不恢复经验 W-score；该条件已触发；
 - 阶段 8 false split 不受控：不能宣称未知目标数能力；
 - 阶段 9 不具 Pareto 优势：重新定位为工程模型/负结果，不叠加规则。
 

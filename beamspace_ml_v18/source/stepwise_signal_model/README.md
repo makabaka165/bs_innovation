@@ -1,6 +1,6 @@
 # 分步信号模型
 
-> **v0.19 active/legacy boundary (2026-07-18):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS；Step12.3A-C 已验证 oracle-Q 俯仰组恢复和 matrix-normal 行/列白化；Step12.3D-E 已在 oracle-Kq、统一注册角域下验证条件方位和固定完整顺序流形修正，并通过技术门与 Pareto 方案 1。主链相对两初值直接 AP 保持配对成功率且 score calls 减少 44.95%，但相干弱目标核心 stress 场景中主链、直接 AP 和 local full 均为 0/200。Step12.4 已在固定物理顺序测量与有效子空间白化下验证第二奇异值、归一化相关性和列归一化 Gram 条件数的统一局部渐近式，理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`；synthetic exact-null 六阶式通过，但四个主物理配置均无 exact tangent null。阶段 6.1B 已完成两次独立重跑、历史对照、自复现和 deterministic evidence freeze，bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。所有有噪声阶段 5 输出仍为 `NOT_CALIBRATED_STAGE5`；FIM 波束设计、模型阶数 bootstrap、自动 Q/K、K=3、cache 和硬件映射均未实现。
+> **v0.19 active/legacy boundary (2026-07-18):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS；Step12.3A-C 已验证 oracle-Q 俯仰组恢复和 matrix-normal 行/列白化；Step12.3D-E 已在 oracle-Kq、统一注册角域下验证条件方位和固定完整顺序流形修正，并通过技术门与 Pareto 方案 1。主链相对两初值直接 AP 保持配对成功率且 score calls 减少 44.95%，但相干弱目标核心 stress 场景中主链、直接 AP 和 local full 均为 0/200。Step12.4 已在固定物理顺序测量与有效子空间白化下验证第二奇异值、归一化相关性和列归一化 Gram 条件数的统一局部渐近式，理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`；synthetic exact-null 六阶式通过，但四个主物理配置均无 exact tangent null。阶段 6.1B 已完成两次独立重跑、历史对照、自复现和 deterministic evidence freeze，bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。Step12.5 已完整枚举冻结 5x5 父池的 961 个矩形子集；唯一通过 FIM 门的 `EXACT_ETA_080` 与最强固定 `FIXED_RECT_3X5` 完全相同，有限样本 Pareto 为 0/3，最终状态 `PASS_SYSTEM_ANALYSIS_ONLY`。所有有噪声阶段 5 输出仍为 `NOT_CALIBRATED_STAGE5`；模型阶数 bootstrap、自动 Q/K、K=3、cache 和硬件映射均未实现，阶段 8 未获授权。
 
 ## 1. 目的
 
@@ -105,7 +105,15 @@ run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_3_grouped_condi
 run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/run_step12_4_tangent_asymptotics_validation.m')
 ```
 
-阶段 6 使用 4 个主顺序测量配置、9 个中心、4 个固定弧度方向和 9 级分离尺度，共保留 1296 个 secant case。144 个注册尾区全部通过，三条 ratio 最大误差分别为 `4.0102e-6`、`1.0421e-5` 和 `6.1180e-6`。该证据只支持固定白化顺序流形的确定性场景化推论，不证明有限样本双目标可分辨，也未开始 FIM 波束选择。
+阶段 6 使用 4 个主顺序测量配置、9 个中心、4 个固定弧度方向和 9 级分离尺度，共保留 1296 个 secant case。144 个注册尾区全部通过，三条 ratio 最大误差分别为 `4.0102e-6`、`1.0421e-5` 和 `6.1180e-6`。该阶段证据本身只支持固定白化顺序流形的确定性场景化推论，不证明有限样本双目标可分辨；后续 FIM 波束选择由独立 Step12.5 证据承担。
+
+当前 Step12.5 阶段 7 的独立验证入口为：
+
+```matlab
+run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_5_exact_subset_fim_beam_design/run_step12_5_exact_subset_fim_design.m')
+```
+
+阶段 7 使用 25 个 factor=1 顺序输出组成的冻结 5x5 父池、961 个非空矩形子集和 1184 个 FIM 场景。完整父池的最坏 design eta 为 `0.823236874`；唯一可行的 `eta0=0.80` exact 解是 3x5 子集 `RECT_E14_A31`，与最强固定矩形相同。29 个 oracle-K 有限样本场景各使用 200 次配对 realization，最终有限样本 Pareto 为 0/3；结果只支持系统设计分析，并明确停在阶段 7。
 
 ## 4. 步骤概览
 
@@ -120,6 +128,7 @@ run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tan
 - `step_08_virtual_array_beamspace_MUSIC`：虚拟阵元的波束级 `MUSIC` 构造与路线整理
 - `step_09_cpi_track`：跨 `CPI` 的单目标局部跟踪与下一 `CPI` 波束调度
   （偏跟踪扩展，当前不作为全息凝视探测主流程的必需步骤）
+- `step_12_5_exact_subset_fim_beam_design`：相关顺序矩形子集的 exact FIM 保真、结构化成本与 oracle-K 风险审计；最终定位为系统设计分析
 
 详细的“步骤 - 脚本 - 函数”对应关系见 [docs/STEP_MAP.md](/E:/matlab_code/bishe_quanxi/stepwise_signal_model/docs/STEP_MAP.md)。
 

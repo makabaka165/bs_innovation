@@ -1,0 +1,8 @@
+profile_id,split,L,secondary_power_db,correlation_magnitude,correlation_phase_rad
+P0,DESIGN,4,0,0,0
+P1,DESIGN,4,-6,0,0
+P2,DESIGN,4,0,0.9,0
+P3,DESIGN,4,-6,0.9,1.5707963267949
+V0,VALIDATION,8,-3,0.5,1.0471975511966
+V1,VALIDATION,4,-12,0,0
+V2,VALIDATION,8,0,0.99,1.5707963267949

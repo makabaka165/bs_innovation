@@ -1,0 +1,36 @@
+function status = build_stage7_baseline_status(methods, context, operating, greedy)
+%BUILD_STAGE7_BASELINE_STATUS Record reproducible and noncomparable baselines.
+
+required_design_methods = ["EXACT_ETA_080";"EXACT_ETA_090"; ...
+    "EXACT_ETA_095";"GREEDY_ETA_080";"GREEDY_ETA_090";"GREEDY_ETA_095"];
+missing_design_methods = required_design_methods( ...
+    ~ismember(required_design_methods, methods.method_id));
+missing_status = strings(numel(missing_design_methods), 1);
+for index = 1:numel(missing_design_methods)
+    if startsWith(missing_design_methods(index), "EXACT_")
+        row = operating(operating.method_id == missing_design_methods(index), :);
+        missing_status(index) = row.status;
+    else
+        eta0 = str2double(extractAfter(missing_design_methods(index), ...
+            "GREEDY_ETA_")) / 100;
+        row = greedy(abs(greedy.eta0 - eta0) < 1e-12, :);
+        if row.eta_design < eta0
+            missing_status(index) = "DESIGN_OPERATING_POINT_INFEASIBLE";
+        else
+            missing_status(index) = "FIM_VALIDATION_OR_HOLDOUT_REJECTED";
+        end
+    end
+end
+baseline_id = [methods.method_id;missing_design_methods; ...
+    "LEGACY_GREEDY_COMBINED_B7"; ...
+    "LIU_2026";"CHEPURI_LEUS";"CONTINUOUS_SVD"];
+reproduction_status = [repmat("REPRODUCED_FACTOR1_PHYSICAL_SUBSET", ...
+    height(methods), 1);missing_status; ...
+    string(context.plan.prior_art.legacy_greedy_b7_status); ...
+    string(context.plan.prior_art.liu_2026_status); ...
+    string(context.plan.prior_art.chepuri_leus_status); ...
+    string(context.plan.prior_art.continuous_svd_status)];
+factor1_physical_subset_flag = [true(height(methods), 1); ...
+    false(numel(missing_design_methods) + 4, 1)];
+status = table(baseline_id, reproduction_status, factor1_physical_subset_flag);
+end
