@@ -1858,7 +1858,7 @@ J. 下一阶段判定
 
 > **执行状态（2026-07-17）：阶段 6 已完成并停止。** 固定测量合同、导数、投影几何、精确恒等式、144 个非退化注册尾区、三类不变性和 synthetic exact-null 六阶候选全部通过；理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`。1296 个主 secant case 全部保留，三条 ratio 最大尾区误差为 `4.0102e-6 / 1.0421e-5 / 6.1180e-6`。四个主物理配置均无 exact tangent null，单通道仅为 `EXACT_MEASUREMENT_COLLAPSE`。本状态记录不授权或执行阶段 7。
 
-> **阶段 6.1A provenance 修订状态（2026-07-18）：`STAGE6_PROVENANCE_PATCH_IMPLEMENTED_EVIDENCE_RERUN_PENDING`。** 提交 `17c2022` 的锁定计划错误要求 `HEAD==0430f25`，并把运行时 HEAD 混入稳定计划哈希，导致该证据提交不能从干净 checkout 自复现。6.1A 代码合同已改为“阶段 5 baseline 必须是 runtime HEAD 的祖先 + 正式运行起点工作树必须干净”，并将 runtime HEAD 与 Git blob source/dependency manifests、稳定 controls/measurement/experiment/provenance hashes 分离。本状态不表示数值证据已按新合同重跑；现有 CSV/Markdown/PNG 保留为 `17c2022` 历史证据，阶段 6.1B 必须另行授权并从干净代码提交运行。本修订不改变阶段 6 理论公式、注册配置、数值门限或数值结论，也不授权阶段 7。
+> **阶段 6.1A2 finalizer 冻结状态（2026-07-18）：`STAGE6_REPRODUCTION_FINALIZERS_IMPLEMENTED_EVIDENCE_RERUN_PENDING`。** provenance 核心合同已经在 `ac92c37` 实现；A2 进一步冻结了 core/final artifact registry、15 表显式旧证据比较合同、Git-object 比较器、raw-file SHA-256 manifest、确定性 bundle、独立快照、自复现 verifier 和三文件 final-freeze writer。A2 仍是 code-only 修订，没有运行正式数值 runner，也没有改写任何现有 CSV/Markdown/PNG；当前理论数值仍来自 `17c2022`，不得据此声明最终自复现已通过。阶段 6.1B 必须另行授权，且不得再修改阶段 6 README 或任何 `.m`。本状态不授权阶段 7。
 
 ## 阶段 6.1A 固定白化切向证据复现合同
 
@@ -1874,6 +1874,33 @@ J. 下一阶段判定
 8. 稳定数值 CSV 不再保存 wall-clock、进程峰值内存或 runtime HEAD；这些信息只写入 `stage6_runtime_diagnostics.csv`，且不参与数值复现相等门。
 9. runner 使用显式 required artifact registry，不再以“CSV 文件数量必须等于 15”作为 schema 合同。
 10. 阶段 6.1A 只验证 provenance 代码与静态协议；不得运行完整阶段 6 runner、不得生成新 CSV/PNG、不得覆盖 `17c2022` 证据。
+
+## 阶段 6.1B 正式证据重跑与最终冻结接口
+
+阶段 6.1B 只能从干净的 A2 code-only 提交开始，并严格按以下顺序执行：
+
+1. 从干净 A2 提交运行阶段 6 runner；
+2. 使用 `capture_stage6_evidence_snapshot` 将第一轮快照保存到仓库外临时目录；
+3. 恢复工作树到干净 A2 提交；
+4. 第二次运行阶段 6 runner；
+5. 将第二轮快照保存到另一个仓库外临时目录；
+6. 使用 `compare_stage6_evidence_to_commit` 对比固定历史提交 `17c2022aea3be4d1c6b090aa771e7253c79c858e`；
+7. 使用 `verify_stage6_self_reproduction` 比较两个独立快照；
+8. 生成 `stage6_reproduction_comparison.csv`；
+9. 生成 raw-file `stage6_evidence_manifest.csv` 和确定性 bundle hash；
+10. 使用 `write_stage6_final_freeze_artifacts` 写入 comparison、manifest 和 self-check 三个 final-freeze 文件；
+11. 使用 `validation_scope=FINAL_FREEZE` 执行 artifact validator；
+12. 只更新阶段 6 source scope 之外的论文与审计文档；
+13. 创建 evidence commit；
+14. 从 evidence commit 的干净 checkout 再执行 smoke reproduction；
+15. 不再修改阶段 6 source scope。
+
+阶段 6.1B 永久禁止修改：
+
+- `step_12_4_near_pair_tangent_asymptotics/README.md`；
+- `step_12_4_near_pair_tangent_asymptotics/**/*.m`。
+
+若 6.1B 需要修改上述文件，必须停止并退回新的 code-only 修订轮次，不能在正式证据运行中顺手修改。
 
 ## 可直接复制的提示词
 

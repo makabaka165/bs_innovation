@@ -1,0 +1,49 @@
+function summary = run_stage6_reproduction_finalizer_unit_tests()
+%RUN_STAGE6_REPRODUCTION_FINALIZER_UNIT_TESTS Run only stage-6 A2 tests.
+
+started = tic;
+step_dir = fileparts(mfilename('fullpath'));
+old_path = path;
+addpath(fullfile(step_dir, 'common'));
+addpath(fullfile(step_dir, 'tests'));
+cleanup = onCleanup(@() path(old_path));
+provenance_summary = run_stage6_provenance_unit_tests();
+tests = { ...
+    'final_freeze_registry', @() test_stage6_final_freeze_registry(); ...
+    'comparison_contract', @() test_stage6_reproduction_comparison_contract(); ...
+    'evidence_comparator', @() test_stage6_evidence_comparator(); ...
+    'evidence_manifest', @() test_stage6_evidence_manifest_contract(); ...
+    'self_reproduction', @() test_stage6_self_reproduction_contract(); ...
+    'readme_stability', @() test_stage6_readme_stability(step_dir); ...
+    'finalizer_scope', @() test_stage6_finalizer_scope_rules(step_dir)};
+finalizer_rows = cell(size(tests, 1), 1);
+assertion_count = sum(provenance_summary.assertion_count);
+pass_count = assertion_count;
+for index = 1:size(tests, 1)
+    test_started = tic;
+    result = tests{index, 2}();
+    assertions = height(result);
+    passed = nnz(result.pass_flag);
+    assertion_count = assertion_count + assertions;
+    pass_count = pass_count + passed;
+    finalizer_rows{index} = struct('test_id', string(tests{index, 1}), ...
+        'assertion_count', assertions, 'runtime_sec', toc(test_started), ...
+        'pass_flag', all(result.pass_flag));
+end
+finalizer_summary = struct2table(vertcat(finalizer_rows{:}));
+provenance_test_group_count = height(provenance_summary);
+finalizer_test_group_count = height(finalizer_summary);
+failure_count = assertion_count - pass_count;
+runtime_sec = toc(started);
+summary = table(provenance_test_group_count, finalizer_test_group_count, ...
+    assertion_count, pass_count, failure_count, runtime_sec);
+fprintf(['Stage 6 reproduction finalizer tests: %d provenance groups, ', ...
+    '%d finalizer groups, %d/%d assertions PASS.\n'], ...
+    provenance_test_group_count, finalizer_test_group_count, pass_count, ...
+    assertion_count);
+disp(finalizer_summary);
+disp(summary);
+assert(failure_count == 0 && all(finalizer_summary.pass_flag), ...
+    'run_stage6_reproduction_finalizer_unit_tests:Failed', ...
+    'At least one stage-6 reproduction finalizer unit test failed.');
+end
