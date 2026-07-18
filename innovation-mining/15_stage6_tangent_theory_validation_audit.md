@@ -1,16 +1,17 @@
 # 阶段 6 固定白化近双目标切向理论验证审计
 
-## 0. 阶段 6.1A2 reproduction-finalizer 修订状态
+## 0. 阶段 6.1B 最终证据冻结状态
 
-- 当前状态：`STAGE6_REPRODUCTION_FINALIZERS_IMPLEMENTED_EVIDENCE_RERUN_PENDING`。
-- 本文第 1–10 节及全部结果 SHA-256 清单仍审计提交 `17c2022aea3be4d1c6b090aa771e7253c79c858e` 生成的阶段 6 历史数值证据；6.1A/A2 均没有重新生成或改写任何 `results/` CSV/Markdown 或 `figures/` PNG。
-- `17c2022` 中的 `build_stage6_locked_plan.m` 要求 `HEAD==0430f25`，导致阶段 6 证据提交自身无法在干净 checkout 执行；其稳定 controls/measurement/experiment hash 还包含 runtime HEAD。该缺陷不改变已运行的几何公式值，但使原复现合同不闭合。
-- provenance 核心合同已在 `ac92c37` 实现：baseline 语义为“阶段 5 通过提交必须是 runtime HEAD 的祖先”，正式 runner 起点必须是干净工作树；runtime HEAD 只进入独立 runtime diagnostics。
-- 阶段 6 可执行源码和 14 个显式直接依赖使用排序的 Git mode/blob/path manifest 识别，避免 CRLF/LF checkout 差异。controls、measurement plan、experiment plan、source tree、dependency tree 和 provenance 分别哈希。
-- `fixed_measurement_hash` 只表达物理测量对象及 measurement-plan 身份，不包含 runtime HEAD、日期、运行时间或结果文件 hash。
-- 未来稳定 CSV schema 将增加 baseline、source/dependency trees、controls/measurement/experiment/provenance hashes、合同版本、祖先/干净树标志等字段；wall-clock 和内存从稳定 keypoints/report 隔离到 `stage6_runtime_diagnostics.csv`。
-- A2 冻结了 core/final artifact 分类、15 表显式旧证据比较合同、Git-object 比较器、raw-file SHA-256 evidence manifest、确定性 bundle、自复现 verifier、仓库外快照工具和 final-freeze writer。README 与全部阶段 6 `.m` 在后续 6.1B 中不得再修改。
-- 正式数值重跑仍未执行，当前理论数值仍来自 `17c2022`；A2 单元测试通过不能写成“最终自复现已通过”。只有后续独立授权的阶段 6.1B 从干净 A2 提交完成两次正式运行、历史比较、自复现和 final-freeze 后，才能更新该状态。本轮不授权阶段 6.1B 或阶段 7。
+- 当前状态：`STAGE6_REPRODUCIBLE_EVIDENCE_FROZEN`。
+- A2 code-only 起点为 `90f1e08e4622a620d7ebcb64dcc83d26d07ebf15`；Run 1、Run 2 均从该提交的干净 `main` 工作树和独立 MATLAB R2022b 进程启动。
+- 阶段 5 baseline `0430f25272690a3ddf378dcf0bab465ca93edb68` 是 runtime HEAD 的祖先；历史比较从 Git object `17c2022aea3be4d1c6b090aa771e7253c79c858e` 读取，未覆盖历史证据。
+- 两次 runner 均 PASS：1296/1296 secant case、144/144 注册尾区、Code Analyzer 0、scope violation 0、Stage5/Step11 mismatch 0；physical 状态均为 `NO_EXACT_PHYSICAL_TANGENT_NULL_FOUND`，单通道仅为 `EXACT_MEASUREMENT_COLLAPSE`。
+- source scope 为 62 个文件，dependency scope 为 14 个文件；阶段 6 `.m`、README、直接依赖的 Git blob 和树哈希均保持冻结。A2 source/dependency tree hash 分别为 `605d76b653c633c5eabf6c95422403256b9d0da6000e6e2561a518635cf6e5ce` 和 `c5ed245229e0273dbfe6295530c14630054b091045981f837c83c69a6b8d3453`。
+- 稳定合同 hash 为：controls `941f53cad599294a76b1aa07e5b1f06c5c51b73b12de63caf3d6e8886b6fa03d`、measurement `28425e98c333d60e88417dfa7dfa7e50ea30d420cc66e630f456c8c9836e30b2`、experiment `baee3ecbaa7e949bab7df0d44496ccd5fddec4d935ca777dbe9d1d0e7d7b211e`、provenance `f2209ac492954ccca41e6a6e3860e1286ebdbbc22b29189117049bc01cec48be`。
+- Run 1/Run 2 core bundle hash 均为 `f85e03894cb4c5a9527dd0cc7d872302b494525a47f2d5ddcda28f734ae7e286`；历史比较为 15/15 artifacts、缺失/主键/数值/exact 失败均为 0，数值最大绝对/相对漂移为 0。
+- FINAL_FREEZE manifest 为 31 artifacts；确定性 bundle 包含 21 artifacts、45,940,802 bytes，bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`；runtime 1 个、PNG 7 个和自引用元文件 2 个排除。pre/post bundle hash 一致，manifest/self-check 均无自引用。
+- A2 finalizer 单元测试为 `187/187` PASS；阶段 6 source scope 之外的文档更新只记录上述复现事实、限制和未开始阶段，不改变理论公式、中心、方向、分离尺度或验收门。
+- 阶段 7 exact-subset FIM、K1/K2 bootstrap、自动 Q/K、K=3、cache 和硬件映射仍未开始；物理六阶 exact-null 仍未验证。本审计不授权自动进入阶段 7。
 
 ## 1. 审计结论与冻结边界
 

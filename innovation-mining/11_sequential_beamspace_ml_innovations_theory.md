@@ -3,7 +3,7 @@
 > 建议保存路径：`innovation-mining/11_sequential_beamspace_ml_innovations_theory.md`  
 > 默认仓库：`makabaka165/bs_innovation`  
 > 文档日期：2026-07-17  
-> 文档状态：阶段 6 已完成固定白化顺序流形的确定性验证；非退化三式和 synthetic exact-null 六阶候选通过，主物理配置无 exact tangent null。该结果只支持场景化显式推论，不代表投稿新颖性或有限样本分辨性能已经成立。
+> 文档状态：阶段 6 已完成固定白化顺序流形的确定性验证并冻结可复现证据；非退化三式和 synthetic exact-null 六阶候选通过，主物理配置无 exact tangent null。最终确定性 evidence bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。该结果只支持场景化显式推论，不代表投稿新颖性或有限样本分辨性能已经成立。
 > 本文替代旧的“controlled pair2d + greedy_combined_B7 + fixed topK3 + C05”创新组织方式，但不删除旧源码和旧证据。
 >
 > 必须联合阅读：

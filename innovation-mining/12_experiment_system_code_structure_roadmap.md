@@ -759,6 +759,8 @@ results/grouped_conditional_dml_report.md
 > exact tangent null，synthetic analytic fixture 支持六阶候选。本状态不授权
 > 或执行 Step12.5。
 
+> **阶段 6.1B 最终证据冻结（2026-07-18）：`STAGE6_REPRODUCIBLE_EVIDENCE_FROZEN`。** 两次独立干净 runner、Git-object 历史对照、自复现和 final-freeze validator 全部通过；21 个确定性 artifacts 的 evidence bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。阶段 6 source scope 零修改；阶段 7/FIM 仍未开始。
+
 ## 目标
 
 验证编号 11 中的显式局部推论，而不是重新证明经典 FIM。物理 Wseq、选择索引、噪声协方差和白化有效秩在每个验证配置中固定。

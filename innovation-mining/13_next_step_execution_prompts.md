@@ -1858,7 +1858,9 @@ J. 下一阶段判定
 
 > **执行状态（2026-07-17）：阶段 6 已完成并停止。** 固定测量合同、导数、投影几何、精确恒等式、144 个非退化注册尾区、三类不变性和 synthetic exact-null 六阶候选全部通过；理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`。1296 个主 secant case 全部保留，三条 ratio 最大尾区误差为 `4.0102e-6 / 1.0421e-5 / 6.1180e-6`。四个主物理配置均无 exact tangent null，单通道仅为 `EXACT_MEASUREMENT_COLLAPSE`。本状态记录不授权或执行阶段 7。
 
-> **阶段 6.1A2 finalizer 冻结状态（2026-07-18）：`STAGE6_REPRODUCTION_FINALIZERS_IMPLEMENTED_EVIDENCE_RERUN_PENDING`。** provenance 核心合同已经在 `ac92c37` 实现；A2 进一步冻结了 core/final artifact registry、15 表显式旧证据比较合同、Git-object 比较器、raw-file SHA-256 manifest、确定性 bundle、独立快照、自复现 verifier 和三文件 final-freeze writer。A2 仍是 code-only 修订，没有运行正式数值 runner，也没有改写任何现有 CSV/Markdown/PNG；当前理论数值仍来自 `17c2022`，不得据此声明最终自复现已通过。阶段 6.1B 必须另行授权，且不得再修改阶段 6 README 或任何 `.m`。本状态不授权阶段 7。
+> **阶段 6.1A2 finalizer 冻结状态（2026-07-18）：`STAGE6_REPRODUCTION_FINALIZERS_IMPLEMENTED_EVIDENCE_RERUN_PENDING`。** provenance 核心合同已经在 `ac92c37` 实现；A2 进一步冻结了 core/final artifact registry、15 表显式旧证据比较合同、Git-object 比较器、raw-file SHA-256 manifest、确定性 bundle、独立快照、自复现 verifier 和三文件 final-freeze writer。
+
+> **阶段 6.1B 最终证据冻结状态（2026-07-18）：`STAGE6_REPRODUCIBLE_EVIDENCE_FROZEN`。** 从干净 `90f1e08e4622a620d7ebcb64dcc83d26d07ebf15` 独立运行两次，runner、历史 `17c2022` 对照、自复现和 FINAL_FREEZE validator 全部通过。Run1/Run2 core bundle 均为 `f85e03894cb4c5a9527dd0cc7d872302b494525a47f2d5ddcda28f734ae7e286`；最终确定性 bundle 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`，21 个 artifacts、45,940,802 bytes。阶段 6 `.m`、README、source/dependency scope 均零修改；物理 exact tangent null 仍未出现，synthetic 六阶候选仍不构成物理验证。本状态只允许后续单独授权进入阶段 7，不自动进入。
 
 ## 阶段 6.1A 固定白化切向证据复现合同
 

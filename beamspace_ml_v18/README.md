@@ -50,8 +50,11 @@ oracle-Q 俯仰组恢复，以及阶段 5 的条件方位和固定完整顺序�
 - `source/stepwise_signal_model/steps/step_12_1_sequential_dbf_model/`
 - `source/stepwise_signal_model/steps/step_12_2_stable_dml_backend/`
 - `source/stepwise_signal_model/steps/step_12_3_grouped_conditional_dml/`
+- `source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/`
 
 阶段 5 在 oracle `Q/Kq`、统一注册局部角域和 `phase_factor=1` 下通过技术门与 Pareto 方案 1：455 个 holdout 配对中，主链与两初值直接 AP 的成功率相同，配对差异 95% 区间为 `[0,0]`；主链端到端 score calls 平均减少 `44.95%`，相对 local-full 减少 `74.95%`。该证据只支持一种工程初始化和数据组织收益，不把条件 DML、AP、坐标上升或 SVD 投影声明为新算法。所有有噪声输出均为 `NOT_CALIBRATED_STAGE5`；相干弱目标核心 stress 场景中三种 DML 路线均为 `0/200`，自动 Q/K、FIM、bootstrap、K=3、cache 和硬件映射尚未实现。
+
+阶段 6 已在固定白化顺序接收流形上完成确定性渐近验证；6.1B 从同一 A2 提交独立重跑两次，完成历史 Git-object 对照、自复现和最终证据冻结。确定性 bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`；physical exact tangent null 仍未出现，阶段 7 尚未开始。
 
 ## 绘图代码
 

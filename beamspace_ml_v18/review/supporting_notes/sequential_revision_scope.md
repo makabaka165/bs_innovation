@@ -5,6 +5,7 @@
 > 当前结论：接收流形、真实先俯仰后方位 DBF、稳定 SVD-DML，以及
 > oracle-Q 注册局部网格下的俯仰组 DML、matrix-normal 行/列白化、
 > 三层状态语义、物理环向组恢复、条件方位 DML 和固定完整顺序流形修正已通过技术与 Pareto 工程门；固定白化顺序流形的近双目标非退化三式与 synthetic exact-null 六阶候选已通过确定性验证。所有有噪声结果仍未统计校准。
+> 阶段 6.1B 已完成两次独立重跑、历史 Git-object 对照、自复现和最终冻结；确定性 evidence bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。source scope 零修改；物理 exact tangent null 仍未出现，六阶候选仍仅由 synthetic fixture 支持。
 
 ## 1. 系统层级
 

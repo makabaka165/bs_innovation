@@ -2,8 +2,14 @@
 phase_factor: 1
 theory_status: THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY
 statistical_scope: DETERMINISTIC_GEOMETRIC_VALIDATION
-stage6_controls_hash: 7344172be8a6cba67eb96c4453bcfaf8fdafea7784137d2faf8186ddc675dd53
-stage6_experiment_plan_hash: d76ec3ca634608f351af919d63f6fe2a8acabe5ee4fffc532f84e8db32a28ad5
+baseline_commit: 0430f25272690a3ddf378dcf0bab465ca93edb68
+stage6_source_tree_hash: 605d76b653c633c5eabf6c95422403256b9d0da6000e6e2561a518635cf6e5ce
+stage6_dependency_tree_hash: c5ed245229e0273dbfe6295530c14630054b091045981f837c83c69a6b8d3453
+stage6_controls_hash: 941f53cad599294a76b1aa07e5b1f06c5c51b73b12de63caf3d6e8886b6fa03d
+stage6_measurement_plan_hash: 28425e98c333d60e88417dfa7dfa7e50ea30d420cc66e630f456c8c9836e30b2
+stage6_experiment_plan_hash: baee3ecbaa7e949bab7df0d44496ccd5fddec4d935ca777dbe9d1d0e7d7b211e
+stage6_provenance_hash: f2209ac492954ccca41e6a6e3860e1286ebdbbc22b29189117049bc01cec48be
+provenance_contract_version: STAGE6_PROVENANCE_CONTRACT_V1
 ---
 
 # Step12.4 Fixed-Whitening Tangent-Asymptotic Validation
@@ -34,7 +40,7 @@ The four primary configurations have 9, 9, 6 and 6 sequential outputs; the diagn
 
 ## F. Tests and command
 
-The unified runner executed 14 required tests, Code Analyzer, scope/schema/hash scans, 14-file stage-5 SHA-256 verification and 351-file Step11 official-manifest verification. Command: `run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/run_step12_4_tangent_asymptotics_validation.m')`. Analyzer messages: 0.
+The unified runner executed the registered numerical and provenance tests, Code Analyzer, scope/schema/hash scans, 14-file stage-5 SHA-256 verification and 351-file Step11 official-manifest verification. Command: `run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/run_step12_4_tangent_asymptotics_validation.m')`. Analyzer messages: 0.
 
 ## G. Key results
 
@@ -45,7 +51,7 @@ The unified runner executed 14 required tests, Code Analyzer, scope/schema/hash 
 
 ## H. Complexity
 
-Registered secant SVDs: 1296; metric eigendecompositions: 90; derivative cases: 225; receive-manifold evaluations: 6813; runtime: 7.773953 s; fixed-model memory: 38074687 bytes.
+Registered secant SVDs: 1296; metric eigendecompositions: 90; derivative cases: 225; receive-manifold evaluations: 6813. Runtime and memory diagnostics are isolated in `stage6_runtime_diagnostics.csv`.
 
 ## I. Risks and unfinished work
 
