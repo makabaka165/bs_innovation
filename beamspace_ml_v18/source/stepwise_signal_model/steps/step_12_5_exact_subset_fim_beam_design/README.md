@@ -36,9 +36,10 @@ Stage 6 bundle identity. Formal plan artifacts expose
 `stage7_source_tree_hash`, `stage7_dependency_tree_hash`, and
 `stage7_provenance_hash`.
 
-The committed Stage 7 results still describe the original frozen execution.
-Stage7.1 code tools are implemented, but a clean closure rerun is pending and
-must not be inferred from the existing result registry.
+This README is part of the source-hashed contract and intentionally contains
+no execution, rerun, or closure status. Runtime status and hashes belong in
+Stage7.1 result artifacts and `innovation-mining/16_stage7_exact_subset_fim_audit.md`.
+Subsequent Stage7.1B work must not modify this README.
 
 The registered evidence includes 640 design, 288 validation, and 256 frozen
 FIM-holdout scenarios. Finite-sample evaluation keeps Q/K/Kq oracle and uses 6
@@ -47,8 +48,7 @@ paired realizations per scenario. It does not run model-order selection,
 bootstrap, resolved/unresolved metrics, K=3, cache, or output-SNR
 renormalization.
 
-The current registered result is `PASS_SYSTEM_ANALYSIS_ONLY`: eta0=0.80 has one
-FIM-qualified exact 3x5 subset, but that physical subset is identical to the
-strongest fixed 3x5 rectangle; eta0=0.90 and 0.95 exceed the parent-pool design
-ceiling. The finite-sample Pareto gate therefore retains the implementation as
-system-design analysis and does not authorize Stage 8.
+The stable decision rule retains a physically duplicated exact/fixed result as
+system-design analysis rather than an independent method improvement. A
+failed finite-sample Pareto gate cannot authorize Stage 8. Concrete execution
+outcomes are recorded outside this source-hashed README.

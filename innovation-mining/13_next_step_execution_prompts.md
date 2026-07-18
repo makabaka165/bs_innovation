@@ -3698,18 +3698,36 @@ results/stage7_fim_beam_design_report.md
 
 # 阶段 7.1A：Stage7 收束审计工具（code-only）
 
-> **执行状态（2026-07-18）：Stage7.1 code tools implemented, closure rerun pending。**
+> **A2 code-only 修订与短单测已通过；Stage7.1B 未执行，closure 未完成。**
 
-本子阶段只修复 Stage7 可复现合同并实现隔离的只读收束工具：历史 baseline
-改为祖先约束，正式运行入口增加干净工作树门，source/dependency 使用 Git
-`mode/blob/path` manifest，runtime HEAD 不进入稳定 hash。另实现顺序 3/5
-通道语义、物理子集 alias、`eta0=0.80` 最小成本可行族、既有有限样本 Pareto
-敏感性、修正复杂度记账和固定边缘诊断计划。
+Stage7.1A2 只修复收束工具合同。Stage7 的 source-hashed README 已删除运行
+状态，后续状态只由 Stage7.1 results 与
+`innovation-mining/16_stage7_exact_subset_fim_audit.md` 记录；Stage7.1B 不得
+再次修改该 README，其冻结 Git blob 为
+`ad2e11de647e31a8c92de9fdc653e5d1f1040d18`。
 
-本状态没有重跑 Stage7 长流程，没有生成新 trial、CSV 或 PNG，没有改变
-Stage7 exact operating point、tie-break、FIM/DML/有限样本公式或
-`PASS_SYSTEM_ANALYSIS_ONLY` 主结论。Stage7.1B closure rerun 只能在后续单独
-授权下执行；本状态不授权阶段 8。
+固定 edge plan 保留原六个 scenario ID、三个方法、`[0,5,10] dB`、`Nmc=200`
+和 seed 基数。18 个 scenario-by-SNR 组各有唯一 seed 和 `paired_group_id`，组内
+三个方法共享 seed；执行合同要求先生成一次公共阵元域 trial，再应用三个物理
+子集。角域检查保留 historical pass，并增加只由参数维数、角域尺度和 `eps`
+决定的 tolerant pass；D0286 固定为 historical false、tolerant true、boundary
+disagreement true，edge gate 使用 tolerant pass。
+
+既有方法 Pareto 工具在计算前强制相同 scenario 集合及逐 scenario 相同
+`n_trials`，同时保留 full-parent conservative shared-reference interval 标签。
+正式 complexity accounting 必须显式使用 frozen plan 的
+`N_el/N_az/B_el/B_az`；默认维数只允许显式 unit-test opt-in。Stage7.1 code
+identity 绑定 source base commit
+`5ed1b5686b0cdfb74a835c7d298b8e3181961e28`、Git `mode/blob/path` tree hash
+`89c54fd78a60f3b9eb506446f638a757534ee02b1998f4c76c7867ead95055b8` 和
+identity hash
+`e78bb4b9eae45f2f4cb8d2ca252ad3065895bcdb5b957ee7327dc1d23f86303e`。
+
+A2 code-only 总入口 523 条断言通过，Code Analyzer 与 scope violation 均为
+0；Stage7 core、results/figures 修改数为 0（Stage7 仅稳定化 README），Stage6、
+Stage5 和 Step11 冻结证据通过。本轮没有重跑 Stage7 长流程、生成 edge trial、
+CSV 或 PNG，也没有改变 FIM、DML、961 子集枚举、eta、Pareto 门或任何 Stage8
+内容；本状态不授权 Stage7.1B 或阶段 8。
 
 # 阶段 8：K1/K2 bootstrap、`K2_UNRESOLVED` 与 false-resolved 控制
 

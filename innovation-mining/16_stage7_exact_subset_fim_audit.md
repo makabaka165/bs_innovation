@@ -239,23 +239,43 @@ bootstrap、false-resolved 控制、resolved/unresolved calibration 或任何阶
 代码。若未来重新提出阶段 8，必须由用户另行授权，并先处理阶段 7 没有超过
 固定矩形这一贡献边界；当前证据本身不能作为自动继续的许可。
 
-## Stage7.1A code-only 补充审计
+## Stage7.1A2 code-only 补充审计
 
-**Stage7.1 code tools implemented, closure rerun pending.**
+**A2 code-only 修订与短单测已通过；Stage7.1B 未执行，closure 未完成。**
 
-本轮新增的隔离工具只读取既有 Stage7 CSV，明确顺序 3/5 的正式语义为
-“3 个俯仰中间通道，每通道 5 个条件方位输出”，并审计物理子集 alias、
-`eta0=0.80` 最小成本可行族、同成本 dominance、既有方法 Pareto 敏感性、
-修正复杂度记账和固定边缘诊断计划。边缘计划仅冻结指定旧 scenario ID、
-固定方法、`[0,5,10] dB`、`Nmc=200` 和 seed 基数 `20260719`，未运行 Monte
-Carlo。
+Stage7 source-hashed README 已稳定化：不再保存运行或 rerun 状态，后续状态只
+由 Stage7.1 results 和本文记录，且 Stage7.1B 不得再次修改。该 README 的
+冻结 Git blob 为 `ad2e11de647e31a8c92de9fdc653e5d1f1040d18`。
 
-Stage7 provenance 已改为历史 baseline 祖先合同、正式入口干净工作树门和 Git
-`mode/blob/path` source/dependency manifest；runtime HEAD 只作运行元数据。
-code-only 测试共 463 条断言通过，Code Analyzer 与 scope violation 均为 0；
-Stage7 results/figures 修改数为 0，Stage6 `21/21`、Stage5 `14/14`、Step11
-`351/351` 冻结证据通过。
+edge diagnostic 仍是原六个 scenario ID、三个方法、`[0,5,10] dB`、
+`Nmc=200` 和 seed 基数 `20260719`，但随机设计改为 18 个
+scenario-by-SNR paired group：每组一个 seed、一个 `paired_group_id`，三个方法
+共享公共阵元域 trial，再分别应用物理子集。计划只被冻结和测试，本轮没有执行
+Monte Carlo。
 
-Stage7.1B 的 clean closure rerun 尚未执行。技术工具已为后续单独授权的
-Stage7.1B 做好准备，但本轮不授权或进入 Stage7.1B，更不改变阶段 8 的
+角域合同保留 `historical_registered_domain_pass`，新增
+`tolerant_registered_domain_pass`、`boundary_numeric_disagreement_flag` 和
+`domain_tolerance_deg`。容差严格为
+`parameter_dimension*eps(domain_scale_deg)`，不含经验角度常数。D0286 固定为
+historical false、tolerant true、boundary disagreement true，后续 edge gate
+使用 tolerant pass。
+
+既有方法 Pareto 敏感性在任何计算前检查所有比较方法拥有相同 scenario 集合，
+并检查各 scenario 的 `n_trials` 一致；full-parent conservative
+shared-reference interval 标签保留。正式 complexity accounting 必须显式传入
+frozen plan 的 `N_el/N_az/B_el/B_az`，内置默认值仅能在 unit-test mode 与
+default opt-in 同时为 true 时使用。
+
+Stage7.1 code identity 记录 source base commit
+`5ed1b5686b0cdfb74a835c7d298b8e3181961e28`、Git `mode/blob/path` tree hash
+`89c54fd78a60f3b9eb506446f638a757534ee02b1998f4c76c7867ead95055b8` 和
+identity hash
+`e78bb4b9eae45f2f4cb8d2ca252ad3065895bcdb5b957ee7327dc1d23f86303e`，供未来
+获授权的 Stage7.1B 输出绑定。
+
+A2 code-only 总入口共 523 条断言通过，Code Analyzer 与 scope violation 均为
+0；Stage7 core 与 results/figures 修改数为 0（Stage7 仅稳定化 README），
+Stage6 `21/21`、Stage5 `14/14`、Step11 `351/351` 冻结证据通过。本轮没有修改
+FIM、DML、961 子集枚举、eta、Pareto 门或任何 Stage8 内容。Stage7.1 closure
+仍未完成，本轮不授权或进入 Stage7.1B，也不改变阶段 8 的
 `NOT_AUTHORIZED_BY_STAGE7_RESULT` 状态。
