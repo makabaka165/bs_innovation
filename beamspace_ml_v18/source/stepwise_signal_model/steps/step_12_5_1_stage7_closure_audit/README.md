@@ -81,6 +81,21 @@ finite-sample success counts are exact. Other numeric fields use absolute
 source/provenance/plan identity values are excluded from the numeric equality
 gate; unexpected core columns are rejected.
 
+The Stage 7 `peak_memory_estimate` keypoint is retained as a legacy
+schema-dependent workspace diagnostic. Its `whos`-based value includes the
+serialized context, finite trials, and enumeration schemas, so provenance
+manifest fields can change the estimate without changing FIM, DML, or
+finite-sample behavior. The comparator preserves both numeric values and their
+difference while auditing the `byte`/`ESTIMATE`/passing-row contract
+separately from scientific equality.
+
+Deterministic memory evidence is independently derived from the frozen plan
+and persisted Stage 7 results: array dimensions, candidate and subset counts,
+selected sequential dimensions, materialized and factorized weight bytes, and
+unique versus label-charged score calls must all match the frozen contract.
+Runtime HEAD, runtime timing, and a true measured process peak are not inputs
+to the stable identity or deterministic evidence bundle.
+
 `run_stage7_1_closure_audit.m` applies all identity, frozen-evidence,
 historical-comparison, semantic, alignment, complexity, and paired-execution
 gates before invoking the writer. `stage7_1_artifact_registry.m` defines 16
