@@ -1,6 +1,6 @@
 # 分步信号模型
 
-> **v0.19 active/legacy boundary (2026-07-18):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0 已验证接收流形与解析导数；Step12.1 已验证真实先俯仰后方位数据流、等效 Kronecker 波束和白噪声协方差；Step12.2 已验证有效子空间 PSD 白化、稳定 SVD/QR DML 评分与集中 RSS；Step12.3A-C 已验证 oracle-Q 俯仰组恢复和 matrix-normal 行/列白化；Step12.3D-E 已在 oracle-Kq、统一注册角域下验证条件方位和固定完整顺序流形修正，并通过技术门与 Pareto 方案 1。主链相对两初值直接 AP 保持配对成功率且 score calls 减少 44.95%，但相干弱目标核心 stress 场景中主链、直接 AP 和 local full 均为 0/200。Step12.4 已在固定物理顺序测量与有效子空间白化下验证第二奇异值、归一化相关性和列归一化 Gram 条件数的统一局部渐近式，理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`；synthetic exact-null 六阶式通过，但四个主物理配置均无 exact tangent null。阶段 6.1B 已完成两次独立重跑、历史对照、自复现和 deterministic evidence freeze，bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。Step12.5 已完整枚举冻结 5x5 父池的 961 个矩形子集；唯一通过 FIM 门的 `EXACT_ETA_080` 与最强固定 `FIXED_RECT_3X5` 完全相同，有限样本 Pareto 为 0/3，最终状态 `PASS_SYSTEM_ANALYSIS_ONLY`。所有有噪声阶段 5 输出仍为 `NOT_CALIBRATED_STAGE5`；模型阶数 bootstrap、自动 Q/K、K=3、cache 和硬件映射均未实现，阶段 8 未获授权。
+> **v0.19 active/legacy boundary (2026-07-19):** 活跃接收阵列空间相位已统一为 `factor=1`。`steps/step_11_*` 下保存的圆柱阵结果均为 `factor=2` legacy evidence，不得覆盖或作为 Step12 新证据。Step12.0-12.3 已完成接收流形、真实顺序 DBF、稳定 SVD/QR-DML 与 oracle-Q/Kq 分组条件链；阶段 5 通过技术门与 Pareto 方案 1，但有噪声输出仍为 `NOT_CALIBRATED_STAGE5`。Step12.4 与阶段 6.1B 已冻结场景化渐近证据，bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。Step12.5 已完整枚举冻结 5x5 父池的 961 个矩形子集；唯一通过 FIM 门的 `EXACT_ETA_080` 与最强固定 `FIXED_RECT_3X5` 完全相同，有限样本 Pareto 为 0/3，状态 `PASS_SYSTEM_ANALYSIS_ONLY`。Stage7.1 两次独立 closure 的 deterministic bundle 均为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。模型阶数 bootstrap、自动 Q/K、K=3、cache 和硬件映射均未实现；Stage8 未执行。
 
 ## 1. 目的
 
@@ -115,6 +115,8 @@ run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_5_exact_subset_
 
 阶段 7 使用 25 个 factor=1 顺序输出组成的冻结 5x5 父池、961 个非空矩形子集和 1184 个 FIM 场景。完整父池的最坏 design eta 为 `0.823236874`；唯一可行的 `eta0=0.80` exact 解是 3x5 子集 `RECT_E14_A31`，与最强固定矩形相同。29 个 oracle-K 有限样本场景各使用 200 次配对 realization，最终有限样本 Pareto 为 0/3；结果只支持系统设计分析，并明确停在阶段 7。
 
+Stage7.1 closure 明确 3/5 是 3 个俯仰中间通道、每通道 5 个条件方位输出；`EXACT_ETA_080` 与 `FIXED_RECT_3X5` 是同一物理子集。科学核心与历史提交 `85615e0` 一致，唯一历史变化是 provenance schema 导致 legacy workspace estimate 增加 69,742 bytes；该值不是真实进程峰值，也不代表 FIM、DML 或 finite-sample 变化。独立 deterministic memory contract 通过，closure bundle 为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。Stage8 未执行，未来若另行授权，只用于完成阶段 5 的 K1/K2 统计闭环。
+
 ## 4. 步骤概览
 
 - `step_01_lfm_pc`：单通道 `LFM + 回波 + 脉压`
@@ -129,6 +131,7 @@ run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_5_exact_subset_
 - `step_09_cpi_track`：跨 `CPI` 的单目标局部跟踪与下一 `CPI` 波束调度
   （偏跟踪扩展，当前不作为全息凝视探测主流程的必需步骤）
 - `step_12_5_exact_subset_fim_beam_design`：相关顺序矩形子集的 exact FIM 保真、结构化成本与 oracle-K 风险审计；最终定位为系统设计分析
+- `step_12_5_1_stage7_closure_audit`：Stage7 历史科学对照、3/5/alias/minimum-cost、确定性内存合同与 paired edge closure；不改变 Stage7 selection
 
 详细的“步骤 - 脚本 - 函数”对应关系见 [docs/STEP_MAP.md](/E:/matlab_code/bishe_quanxi/stepwise_signal_model/docs/STEP_MAP.md)。
 

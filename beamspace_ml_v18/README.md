@@ -5,7 +5,7 @@
 ## 权威材料
 
 - `paper/full_manuscript_v0.18_引用文献支撑修订稿.md`：便于检索、批注和代码映射的正文源稿。
-- `paper/full_manuscript_v0.19_sequential_dbf_revision.md`：当前 factor=1、Step12.3 阶段 5 活跃修订源稿。
+- `paper/full_manuscript_v0.19_sequential_dbf_revision.md`：当前 factor=1、Stage7.1 closure 活跃修订源稿。
 - `paper/beamspace_ml_paper_v0.18_引用文献支撑修订稿.docx`：当前 v18 Word 稿。
 - `paper/beamspace_ml_paper_v0.18_引用文献支撑修订稿.pdf`：当前 v18 PDF 稿。
 - `paper/figures_v16_image2/`：正文 Markdown 当前引用的 17 张最终图片，并额外保留图 4-2 的矢量 PDF。目录名沿用正文中的现有相对路径，内容对应 v18。
@@ -51,10 +51,14 @@ oracle-Q 俯仰组恢复，以及阶段 5 的条件方位和固定完整顺序�
 - `source/stepwise_signal_model/steps/step_12_2_stable_dml_backend/`
 - `source/stepwise_signal_model/steps/step_12_3_grouped_conditional_dml/`
 - `source/stepwise_signal_model/steps/step_12_4_near_pair_tangent_asymptotics/`
+- `source/stepwise_signal_model/steps/step_12_5_exact_subset_fim_beam_design/`
+- `source/stepwise_signal_model/steps/step_12_5_1_stage7_closure_audit/`
 
 阶段 5 在 oracle `Q/Kq`、统一注册局部角域和 `phase_factor=1` 下通过技术门与 Pareto 方案 1：455 个 holdout 配对中，主链与两初值直接 AP 的成功率相同，配对差异 95% 区间为 `[0,0]`；主链端到端 score calls 平均减少 `44.95%`，相对 local-full 减少 `74.95%`。该证据只支持一种工程初始化和数据组织收益，不把条件 DML、AP、坐标上升或 SVD 投影声明为新算法。所有有噪声输出均为 `NOT_CALIBRATED_STAGE5`；相干弱目标核心 stress 场景中三种 DML 路线均为 `0/200`，自动 Q/K、FIM、bootstrap、K=3、cache 和硬件映射尚未实现。
 
-阶段 6 已在固定白化顺序接收流形上完成确定性渐近验证；6.1B 从同一 A2 提交独立重跑两次，完成历史 Git-object 对照、自复现和最终证据冻结。确定性 bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`；physical exact tangent null 仍未出现，阶段 7 尚未开始。
+阶段 6 已在固定白化顺序接收流形上完成确定性渐近验证；6.1B 的确定性 bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`，physical exact tangent null 仍未出现。阶段 7 随后完整枚举 961 个矩形子集：唯一 FIM-qualified exact 解 `RECT_E14_A31` 与最强固定 3x5 是同一物理子集，有限样本 Pareto 为 0/3，结论保持 `PASS_SYSTEM_ANALYSIS_ONLY`。
+
+Stage7.1 于 2026-07-19 完成两次独立 closure。3/5 表示 3 个俯仰中间通道、每通道 5 个条件方位输出。Stage7 科学核心与历史提交 `85615e0` 一致；唯一历史差异是 schema-dependent legacy workspace estimate 的 69,742 bytes，不代表 FIM、DML、finite-sample 或真实进程峰值内存变化，独立 deterministic memory contract 已通过。两次 13-artifact bundle 均为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。Stage8 未执行；未来若单独授权，只服务阶段 5 尚未完成的 K1/K2 统计闭环。
 
 ## 绘图代码
 

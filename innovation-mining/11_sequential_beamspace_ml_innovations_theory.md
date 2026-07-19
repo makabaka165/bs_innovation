@@ -3,7 +3,7 @@
 > 建议保存路径：`innovation-mining/11_sequential_beamspace_ml_innovations_theory.md`  
 > 默认仓库：`makabaka165/bs_innovation`  
 > 文档日期：2026-07-17  
-> 文档状态：阶段 6 已完成固定白化顺序流形的确定性验证并冻结可复现证据；非退化三式和 synthetic exact-null 六阶候选通过，主物理配置无 exact tangent null。最终确定性 evidence bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。该结果只支持场景化显式推论，不代表投稿新颖性或有限样本分辨性能已经成立。
+> 文档状态：阶段 6 已冻结确定性流形证据；阶段 7 已完成 961 子集系统分析，Stage7.1 于 2026-07-19 完成两次独立 closure。Stage7.1 deterministic evidence bundle hash 为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。阶段 7 仍为 `PASS_SYSTEM_ANALYSIS_ONLY`，不代表投稿新颖性、未知模型阶数或有限样本分辨闭环已经成立。
 > 本文替代旧的“controlled pair2d + greedy_combined_B7 + fixed topK3 + C05”创新组织方式，但不删除旧源码和旧证据。
 >
 > 必须联合阅读：
@@ -85,6 +85,8 @@ T_{\rm seq}(\mathbf c)
 该部分不声称首次提出归一化 FIM、FIM 保真或最少选择问题；可保留的差异是**相关噪声、实际顺序规则波束、结构化成本和近双目标风险验证的联合特化**。
 
 > **阶段 7 最终证据（2026-07-18）：`PASS_SYSTEM_ANALYSIS_ONLY`。** 冻结的 factor=1、5x5 父池包含 961 个非空矩形子集。完整父池相对阵元域的最坏设计保真上限仅为 `0.823236874`，因此 `eta0=0.90/0.95` 按注册规则不可行。`eta0=0.80` 的 exact 解为 `RECT_E14_A31`，即中心 3 个俯仰波束与全部 5 个方位波束；其 design/validation/FIM-holdout 保真率为 `0.812182048 / 0.854926015 / 0.816394840`。该物理子集与最强固定基线 `FIXED_RECT_3X5` 完全相同，有限样本 Pareto 门为 `0/3`，故本部分已降级为系统设计分析，不再列为核心算法贡献，也不授权进入阶段 8。
+
+> **Stage7.1 closure（2026-07-19）：`PASS_STAGE7_1_CLOSURE_AUDIT`。** 科学和算法核心与历史提交 `85615e0` 一致；唯一历史变化是 legacy `peak_memory_estimate` 随 provenance context schema 增加而变化 69,742 bytes。它不是 FIM、DML、finite-sample 或真实进程峰值变化。独立确定性合同验证 `workspace=34,611,200` bytes、materialized/factorized weights `499,200/17,136` bytes 和 unique/charged score calls `9,152,562/11,734,516`。这里的 3/5 明确表示 **3 个俯仰中间通道，每通道 5 个条件方位输出**；`EXACT_ETA_080` 与 `FIXED_RECT_3X5` 是同一 `RECT_E14_A31` 物理子集。Stage8 未执行，未来若另行授权，只用于完成阶段 5 遗留的 K1/K2 模型阶数与 resolved/unresolved 统计闭环。
 
 ### 0.4 统计支撑机制：K1/K2 校准与 `K2_UNRESOLVED`
 

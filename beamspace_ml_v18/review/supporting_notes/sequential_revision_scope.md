@@ -1,12 +1,13 @@
 # v0.19 顺序测角修订范围说明
 
-> 版本：Step12.5 阶段 7 修订，2026-07-18
+> 版本：Stage7.1 closure 修订，2026-07-19
 > 活跃相位模型：`phase_factor=1`
 > 当前结论：接收流形、真实先俯仰后方位 DBF、稳定 SVD-DML，以及
 > oracle-Q 注册局部网格下的俯仰组 DML、matrix-normal 行/列白化、
 > 三层状态语义、物理环向组恢复、条件方位 DML 和固定完整顺序流形修正已通过技术与 Pareto 工程门；固定白化顺序流形的近双目标非退化三式与 synthetic exact-null 六阶候选已通过确定性验证。所有有噪声结果仍未统计校准。
 > 阶段 6.1B 已完成两次独立重跑、历史 Git-object 对照、自复现和最终冻结；确定性 evidence bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。source scope 零修改；物理 exact tangent null 仍未出现，六阶候选仍仅由 synthetic fixture 支持。
 > 阶段 7 已在冻结 5x5 顺序父池上评估 961/961 个矩形子集。`eta0=0.80` 的 exact 解与最强固定 3x5 矩形相同，`eta0=0.90/0.95` 不可行，有限样本 Pareto 为 0/3；最终状态为 `PASS_SYSTEM_ANALYSIS_ONLY`，阶段 8 未获授权。
+> Stage7.1 已完成两次独立 closure，13-artifact deterministic bundle 均为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。科学核心与 `85615e0` 一致；唯一差异为 schema-dependent legacy workspace estimate 的 69,742 bytes，不是 FIM/DML/真实进程峰值变化。独立 deterministic memory contract 通过。
 
 ## 1. 系统层级
 
@@ -166,6 +167,26 @@ design、validation 和 FIM holdout 分别包含 640、288 和 256 个冻结场�
 差异均为 0。该结果相对完整父池减少 40% MAC，但不构成新的波束选择
 Pareto 收益。
 
+### 7.1 Stage7.1 closure 合同
+
+3/5 的顺序语义固定为 3 个俯仰中间通道、每通道 5 个条件方位输出，
+`B_out=15`。`EXACT_ETA_080` 与 `FIXED_RECT_3X5` 绑定同一
+`RECT_E14_A31` 物理子集；`RECT_E28_A31` 只保留为同成本 post-hoc
+sensitivity，不改变注册选择。
+
+Stage7 科学与算法核心同历史提交 `85615e0` 一致。legacy
+`peak_memory_estimate` 包含 provenance context 的 `whos` bytes，
+本次增加 69,742 bytes 只属于 schema-dependent diagnostic，不是 FIM、
+DML、finite-sample 或真实进程峰值变化。独立确定性合同验证
+`workspace=34,611,200` bytes、materialized/factorized weights
+`499,200/17,136` bytes，以及 unique/charged score calls
+`9,152,562/11,734,516`。
+
+两次独立 closure 的 13 个 deterministic artifacts 逐文件一致，bundle hash
+均为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。
+Stage7 仍为 `PASS_SYSTEM_ANALYSIS_ONLY`。Stage8 未执行，未来若另行授权，
+只用于完成阶段 5 的 K1/K2 false-split、false-resolved 与 unresolved 统计闭环。
+
 ## 8. 当前证据
 
 | 主张 | 证据 | 状态 |
@@ -195,6 +216,7 @@ Pareto 收益。
 | 主物理 exact tangent null | 4 个主配置均未发现 | `NO_EXACT_PHYSICAL_TANGENT_NULL_FOUND` |
 | exact rectangular-subset FIM | 961/961 子集，FIM operating point 1/3 | technically passed |
 | `EXACT_ETA_080` 相对最强固定矩形 | 同一 `RECT_E14_A31`，有限样本 Pareto 0/3 | system-design analysis only |
+| Stage7.1 deterministic closure | Run1/Run2 13-artifact bundle 均为 `af40f8a7...bc322` | `PASS_STAGE7_1_CLOSURE_AUDIT` |
 | oracle-K mismatch/stress | M0-M3 成功率 1/0.995/0.995/1；coherent-weak 0/200 | bounded evidence / failure retained |
 | bootstrap、自动 Q、K=3 | 无 | not started |
 
@@ -202,4 +224,4 @@ Pareto 收益。
 
 ## 9. 后续阶段门
 
-阶段 7 的技术门全部通过，但唯一 FIM-qualified exact 子集没有超过最强固定矩形，有限样本 Pareto 为 0/3。该路线已按预注册规则降级为系统设计分析，不恢复经验 W-score。阶段 8 的 K1/K2 bootstrap 与 resolved/unresolved 校准未获技术授权，本轮必须停在阶段 7；自动 Q、K=3、cache 与硬件映射也均未实现。
+阶段 7 的技术门全部通过，但唯一 FIM-qualified exact 子集没有超过最强固定矩形，有限样本 Pareto 为 0/3。Stage7.1 closure 已封存该边界，不恢复经验 W-score，也不升级算法贡献。Stage8 未执行；未来只能由用户单独授权，用于完成阶段 5 的 K1/K2 bootstrap 与 resolved/unresolved 统计闭环。自动 Q、K=3、cache 与硬件映射也均未实现。

@@ -1,9 +1,9 @@
 # 圆柱阵顺序数字波束形成后局部未分辨目标簇测角：接收单程模型修订稿
 
-> **版本：v0.19 Step12.5 阶段 7 修订，2026-07-18**
+> **版本：v0.19 Stage7.1 closure 修订，2026-07-19**
 > **活跃空间相位：`phase_factor=1`**  
 > **证据状态：v0.18/Step11 的圆柱阵数值结果由 `phase_factor=2` 产生，已失效并冻结为 legacy，不构成本稿结论。**  
-> **完成状态：本稿已完成接收模型、真实先俯仰后方位 DBF、稳定白化/SVD-DML 数值后端，以及 oracle-Q/Kq、统一注册局部角域下的俯仰组恢复、条件方位 DML、原始完整顺序观测上的经典坐标联合修正和等域基线比较。阶段 5 通过技术门与 Pareto 方案 1；所有有噪声输出仍为 `NOT_CALIBRATED_STAGE5`。阶段 6 在固定物理顺序测量和有效子空间白化下完成近双目标局部几何的确定性验证，理论状态为 `THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY`，冻结 bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。阶段 7 完整枚举冻结 5x5 父池的 961 个矩形子集；唯一通过 FIM 门的 `EXACT_ETA_080` 与最强固定 `FIXED_RECT_3X5` 完全相同，有限样本 Pareto 为 0/3，故定位为 `PASS_SYSTEM_ANALYSIS_ONLY`。K1/K2 模型阶数 bootstrap、自动 Q/K、K=3、cache 与硬件映射均未完成，阶段 8 未获授权。**
+> **完成状态：本稿已完成接收模型、真实先俯仰后方位 DBF、稳定白化/SVD-DML 数值后端，以及 oracle-Q/Kq、统一注册局部角域下的俯仰组恢复、条件方位 DML、原始完整顺序观测上的经典坐标联合修正和等域基线比较。阶段 5 通过技术门与 Pareto 方案 1；所有有噪声输出仍为 `NOT_CALIBRATED_STAGE5`。阶段 6 的冻结 bundle hash 为 `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`。阶段 7 完整枚举 961 个矩形子集，唯一通过 FIM 门的 `EXACT_ETA_080` 与最强固定 `FIXED_RECT_3X5` 完全相同，有限样本 Pareto 为 0/3，故定位为 `PASS_SYSTEM_ANALYSIS_ONLY`。Stage7.1 已完成两次独立 closure，deterministic bundle hash 均为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`；科学核心与历史证据一致。K1/K2 模型阶数 bootstrap、自动 Q/K、K=3、cache 与硬件映射均未完成，阶段 8 未执行。**
 
 ## 版本说明与术语账本
 
@@ -40,6 +40,8 @@ v0.19 是从物理模型重新起步的修订源稿，不继承 v0.18 的波束�
 
 阶段 7 在由 25 个 factor=1 顺序输出构成的冻结 5x5 父池上，完整评估了 961 个非空矩形子集以及 640/288/256 个 design/validation/FIM-holdout 场景。完整父池的最坏 design 信息保真率为 0.823237。`eta0=0.80` 的最小 exact 子集为中心 3 个俯仰波束与全部 5 个方位波束，其 design、validation 和 FIM-holdout 保真率分别为 0.812182、0.854926 和 0.816395，MAC 为 7215，较完整父池低 40%。但该子集与最强固定 3x5 矩形完全相同；在 29 个 oracle-K 有限样本场景、每场景 200 次配对 realization 上，两者指标逐项一致，有限样本 Pareto 门为 0/3。相干弱目标 stress 场景中完整父池、exact 子集和最强固定矩形均为 0/200。该结果只支持相关顺序波束的系统设计分析，不支持新的波束选择算法贡献；本阶段未执行模型阶数、bootstrap 或 resolved/unresolved 指标。
 
+Stage7.1 closure 进一步确认，3/5 的物理含义是 3 个俯仰中间通道、每通道 5 个条件方位输出，总计 15 个顺序输出；exact 与 fixed 3/5 使用同一 `RECT_E14_A31` 物理子集。阶段 7 科学与算法核心同历史提交 `85615e0` 一致。唯一历史差异是包含 provenance context `whos` bytes 的 legacy workspace estimate 增加 69,742 bytes；该诊断不表示 FIM、DML、有限样本或真实进程峰值内存变化。独立确定性内存合同通过。Stage8 未执行；未来若另行授权，只用于完成阶段 5 未完成的 K1/K2 统计闭环。
+
 **关键词：** 圆柱阵；接收阵列；单程空间相位；顺序数字波束形成；Fisher 信息；波束子集选择；局部未分辨目标；方向估计
 
 # Abstract
@@ -55,6 +57,8 @@ Phase 5 propagated the full correlated recovery-noise matrix, formed an elevatio
 Phase 6 fixed $W_{\rm seq}$, $C_{\rm seq}$, the effective-subspace whitener $T_{\rm seq}$ and whitening rank while varying only the receive-manifold angle. Across 1,296 preregistered cases formed by four primary measurement configurations, nine centers, four fixed directions in radian coordinates and nine separation scales, the maximum registered-tail ratio errors for the second singular value, normalized-coherence deficit and normalized-Gram condition were $4.010\times10^{-6}$, $1.042\times10^{-5}$ and $6.118\times10^{-6}$, respectively. The maximum first-, second- and third-derivative relative errors were $5.890\times10^{-9}$, $3.212\times10^{-5}$ and $6.583\times10^{-4}$. An analytic exact-null fixture yielded a fitted order of six and a maximum sixth-order ratio error of $2.220\times10^{-16}$. No exact tangent null occurred in the four primary physical configurations; the single-channel case was retained only as an exact measurement collapse. These deterministic results support a scenario-specific corollary of classical projected-FIM/manifold geometry, not finite-sample resolution or a new Fisher-information theory. The evidence was independently reproduced and frozen in a deterministic bundle with hash `0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`.
 
 Phase 7 then evaluated all 961 nonempty rectangular subsets of a frozen factor-1 sequential 5-by-5 parent pool over 640 design, 288 validation and 256 FIM-holdout scenarios. The full-parent worst-case design retention was 0.823237. At the only feasible operating point, $\eta_0=0.80$, the minimum exact subset retained the central three elevation beams and all five azimuth beams, with design, validation and FIM-holdout retentions of 0.812182, 0.854926 and 0.816395. Its 7,215 complex MACs per sample were 40% below the full parent. However, this exact subset was identical to the strongest fixed 3-by-5 rectangle. Across 29 oracle-$K$ finite-sample scenarios with 200 paired realizations each, their metrics were identical and none of the three preregistered finite-sample Pareto operating points passed. The coherent weak-target stress case remained a common failure boundary at 0/200 for the full parent, exact subset and strongest fixed rectangle. Thus, Phase 7 supports system-design analysis rather than a new beam-selection contribution; model-order bootstrap and resolved/unresolved calibration were not performed.
+
+The Stage7.1 closure reproduced the deterministic bundle in two independent processes. Here 3-by-5 denotes three elevation intermediate channels, each followed by five elevation-conditioned azimuth outputs; the exact and fixed labels bind the same physical subset. The scientific core matched historical commit `85615e0`. The sole historical variation was a 69,742-byte change in a legacy schema-dependent workspace estimate that includes provenance-context `whos` bytes, not a FIM, DML, finite-sample, or measured process-peak change. A separate deterministic memory contract passed. Phase 8 was not run and, if separately authorized, is limited to closing the Phase-5 $K1/K2$ statistical loop.
 
 **Keywords:** cylindrical array; receive manifold; one-way spatial phase; sequential digital beamforming; Fisher information; beam-subset selection; locally unresolved targets; direction finding
 
@@ -469,7 +473,7 @@ T_I C_I T_I^H=I_{\operatorname{rank}(C_I)},
 
 并重新计算白化流形、弧度导数和消去确定性复幅度后的 effective FIM。
 相对信息保真率只在阵元域 FIM 的稳定可辨识子空间上计算。冻结计划 hash
-为 `e630a084e68108a1604527afe7a81db7150b045454b3f54b05e6cfd389259a3b`；
+为 `1c6f99f158a118e5dc79efaa02076009cf103f87c9861d1dd52da27fb8608f23`；
 640 个 design、288 个 validation 和 256 个 FIM holdout 场景均在选择前注册。
 
 | 指标 | `EXACT_ETA_080` | 完整 5x5 父池 |

@@ -3587,7 +3587,7 @@ J. 下一阶段判定
 
 # 阶段 7：系统特化设计——相关顺序波束 exact-subset FIM 与最小局部波束集
 
-> **执行完成（2026-07-18）：`PASS_SYSTEM_ANALYSIS_ONLY`。** 冻结计划 hash 为 `e630a084e68108a1604527afe7a81db7150b045454b3f54b05e6cfd389259a3b`。961/961 个矩形子集和 1184 个 FIM 场景已完整评估；`eta0=0.80` 的 exact 解为 `RECT_E14_A31`，但与最强固定 `FIXED_RECT_3X5` 是同一物理子集。`eta0=0.90/0.95` 不可行，有限样本 Pareto 为 0/3。下面的提示词保留为历史执行合同，不得直接重跑或据此进入阶段 8。
+> **执行与 closure 完成（2026-07-19）：`PASS_SYSTEM_ANALYSIS_ONLY`。** 当前冻结计划 hash 为 `1c6f99f158a118e5dc79efaa02076009cf103f87c9861d1dd52da27fb8608f23`。961/961 个矩形子集和 1184 个 FIM 场景已完整评估；`eta0=0.80` 的 exact 解为 `RECT_E14_A31`，但与最强固定 `FIXED_RECT_3X5` 是同一物理子集。`eta0=0.90/0.95` 不可行，有限样本 Pareto 为 0/3。Stage7.1 closure 未改变该结论。下面的提示词保留为历史执行合同，不得直接重跑或据此进入阶段 8。
 
 ## 目标
 
@@ -3696,51 +3696,52 @@ results/stage7_fim_beam_design_report.md
 - 完成后停止。
 ```
 
-# 阶段 7.1A：Stage7 收束审计工具（code-only）
+# 阶段 7.1：Stage7 收束审计（A4 + B）
 
-> **A3 稳定工具与短单测已冻结；Stage7.1B 未执行，正式 closure 未完成。**
+> **正式完成并封存（2026-07-19）：`PASS_STAGE7_1_CLOSURE_AUDIT`。**
 
-Stage7.1A3 将 identity 改为稳定的 tracked-source 合同：source tree 只包含
-Stage7.1 下全部 tracked `.m` 与稳定 README，并按 Git `mode/blob/path` 清单计算
-SHA-256；stable identity 再绑定 source-scope 与 identity-contract 版本。runtime
-HEAD 只属于 provenance metadata，不进入 stable identity 或 deterministic
-evidence bundle。历史 baseline 固定为
-`25e063730309dac2595390d46744040ba6fbe4b3`；正式入口要求 baseline 为 runtime
-HEAD 祖先、工作树干净且不存在未跟踪 `.m` 或 README。
+A4 code-only commit 为
+`854e649205913c9fa579a696b141b6c34fd20981`。Stage7.1 source tree hash 为
+`bdcea5bf6c863bd9648773ec1e01b1bade656eea0c0e0bec4059d9f4c917185a`，
+stable code identity 为
+`f3e84ecd77e63632d9e2eb0e70c0600fa0f370193ad27d6fa5717f0381700b4c`。
+runtime HEAD 只属于 provenance metadata，不进入 stable identity 或
+deterministic evidence bundle。A4 完整 code-only 套件为 647 条断言，
+Code Analyzer/scope 均为 `0/0`，Stage7/6/5/Step11 冻结检查通过。
 
-A3 source tree hash 为
-`4713a52ef81be61958a5dc79ec9a939b1795a764c8b7f50cf1d4f8a5e52c59b1`，stable
-code identity 为
-`0775f9ea32b26e6bef6cf326561d7a3772f5ef05ea0d60276c6cc2f054dbf8de`；未来单独
-获授权的 Stage7.1B 必须把核心结果绑定到该稳定身份，而不是 runtime HEAD。
+Stage7 已完成一次外部长跑并从排序 SHA-256 manifest 验证后导入，evidence
+commit 为 `364c5b30f8cf85f9bc164de0b7fcb5bc8f167628`；当前 plan hash 为
+`1c6f99f158a118e5dc79efaa02076009cf103f87c9861d1dd52da27fb8608f23`。
+修订后的 Git-object comparator 对 `85615e0` 的 11 个核心 CSV 得到 scientific
+failures `0`、total failures `0`、diagnostic variations `1`。唯一变化是
+legacy `peak_memory_estimate` 从 110,347,346 变为 110,417,088 bytes，
+差 69,742 bytes；原因是 provenance schema 改变了 context 的 `whos` bytes。
+它不是 FIM、DML、finite-sample 或真实进程峰值变化。
 
-固定 edge plan 仍保留六个 scenario ID、三个方法、`[0,5,10] dB`、`Nmc=200`
-和 seed 基数 `20260719`。18 个 paired group 使用 stride `1000` 的非重叠 seed
-block，公式为 `group_seed_start + trial_index - 1`：3600 个公共 trial seed 全部
-唯一，三个方法映射为 10800 行且方法标签不进入 seed。正式 generator 先生成
-一次公共阵元域数据，再由 evaluator 应用 `RECT_E14_A31`、`RECT_E28_A31`
-和 `RECT_E31_A31` 三个物理子集；D0286 继续使用 tolerant domain gate。
+独立 deterministic memory contract 验证 workspace `34,611,200` bytes、
+materialized/factorized weights `499,200/17,136` bytes、actual unique /
+label-charged score calls `9,152,562/11,734,516`，duplicate charge 为
+`2,581,954`。顺序 3/5 明确表示 **3 个俯仰中间通道，每通道 5 个条件方位
+输出**，总输出 15。`EXACT_ETA_080` 与 `FIXED_RECT_3X5` 是同一
+`RECT_E14_A31` 物理子集；`STAGE6_CENTER_3X3` 与 `FIXED_RECT_3X3`
+也为 alias。eta0=0.80 的 minimum-cost family 有 6 个 MAC=7215 成员，
+`RECT_E28_A31` 只作 post-hoc sensitivity，不改变注册选择。
 
-正式 closure runner 已冻结 identity、Stage7/6/5/Step11 证据、Git-object 历史
-比较、顺序 3/5 语义、alias、minimum-cost、same-cost、Pareto、复杂度与 edge
-执行的顺序门。历史比较器直接读取 `85615e0` 的 11 个 CSV，显式主键，精确
-保护 ID/status/flags/counts/961 子集/选中子集/有限样本成功计数，其他数值使用
-绝对 `1e-12` 或相对 `1e-10`；只排除明确的 runtime、file-size 和
-source/provenance/plan identity 变化，其他新增核心列会失败。
+edge diagnostic 固定 18 个 paired groups、3600 个公共阵元域 trial 和 10800
+个方法行。每个公共 trial 只生成一次，三方法共享 truth、seed、realized SNR
+和 identity hash；D0286 保持 historical false、tolerant true、boundary
+disagreement true，并使用 tolerant gate。两次全新 MATLAB 进程产生的 13 个
+deterministic artifacts 逐路径、byte count、SHA-256 和 stable identity 全部
+一致，bundle hash 均为
+`af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。
 
-artifact registry 冻结 16 个正式产物，其中 13 个进入 deterministic bundle；
-runtime provenance、runtime diagnostics 与 manifest 自身不进入 bundle。writer
-接受仓库已有 `.gitkeep` 占位但拒绝其他旧结果，所有门通过前不写正式产物。
-
-A3 code-only 总入口 599 条断言通过，Code Analyzer 与 scope violation 均为
-0；Stage7 core 与 results/figures 修改数均为 0，Stage6 `21/21`、Stage5
-`14/14`、Step11 `351/351` 冻结证据通过。Stage7 README 未修改；本轮未运行
-Stage7 长流程、3600-trial edge Monte Carlo、正式 closure，未生成正式 CSV/PNG，
-也未进入 Stage7.1B 或 Stage8。当前状态不构成后续执行授权。
+Stage7 继续保持 `PASS_SYSTEM_ANALYSIS_ONLY`，不升级为波束选择算法贡献。
+Stage8 未执行；未来若由用户单独授权，只用于完成阶段 5 遗留的 K1/K2
+false-split、false-resolved 与 resolved/unresolved 统计闭环。
 
 # 阶段 8：K1/K2 bootstrap、`K2_UNRESOLVED` 与 false-resolved 控制
 
-> **当前状态：`NOT_AUTHORIZED_BY_STAGE7_RESULT`。** 阶段 7 没有通过有限样本 Pareto 门；本阶段不得自动执行。
+> **当前状态：`NOT_EXECUTED_REQUIRES_SEPARATE_AUTHORIZATION`。** 阶段 7 没有通过有限样本 Pareto 门；Stage7.1 closure 不会自动执行本阶段。未来若单独授权，只允许服务阶段 5 的 K1/K2 统计闭环。
 
 ## 目标
 
@@ -4078,7 +4079,7 @@ cache 只写成软件实现贡献。完成后停止。
 阶段 10 K3/cache（可选）
 ```
 
-截至 2026-07-18，执行已停在阶段 7。阶段 7 的技术实现通过，但算法贡献门未通过，状态为 `PASS_SYSTEM_ANALYSIS_ONLY`；阶段 8 及以后不是当前允许的下一步。
+截至 2026-07-19，Stage7.1 已正式完成并封存；阶段 7 的技术实现通过但算法贡献门未通过，状态仍为 `PASS_SYSTEM_ANALYSIS_ONLY`。阶段 8 未执行，只有用户未来单独授权后，才可用于完成阶段 5 的 K1/K2 统计闭环。
 
 核心停止点：
 

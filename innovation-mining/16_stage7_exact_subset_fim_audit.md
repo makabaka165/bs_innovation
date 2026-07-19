@@ -1,21 +1,23 @@
 # 阶段 7 / Step12.5 exact rectangular-subset FIM 审计
 
-> 日期：2026-07-18
+> 日期：2026-07-19
 > 仓库：`makabaka165/bs_innovation`
 > 基线：`ea1c0320b7ba9639d6d955a1a45037cdc6cfdb31`
 > 分支：`main`
 > MATLAB：R2022b
 > 活跃相位：`phase_factor=1`
-> 冻结计划 hash：`e630a084e68108a1604527afe7a81db7150b045454b3f54b05e6cfd389259a3b`
-> Stage 7 source-tree hash：`2b3f71fcb63d2393cf0f49ab4e3583628c564a9d8d72525b74a05e83bbe30482`
+> 冻结计划 hash：`1c6f99f158a118e5dc79efaa02076009cf103f87c9861d1dd52da27fb8608f23`
+> Stage 7 source-tree hash：`16ee445f7045de64fc3add07f401b802b0da1df9a3b1c26661a34238cc90191d`
 > 阶段 6 evidence bundle hash：`0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839`
+> Stage7.1 evidence bundle hash：`af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`
 
 ## A. 阶段结论
 
 最终状态为 **`PASS_SYSTEM_ANALYSIS_ONLY`**。
 
 开始前的 remote、main、HEAD/origin、R2022b、phase factor 和上游冻结 hash
-预检均通过。全过程未创建或切换分支，未提交、推送或创建 PR。
+预检均通过。本次创建了三个获授权的本地提交边界；未创建或切换分支，未推送
+或创建 PR，也未执行 Stage8。
 
 Stage 7 的数学实现、冻结计划、961 个矩形子集枚举、1184 个 FIM 场景、
 oracle-K 有限样本风险验证和技术门均完成。唯一通过三重 FIM 门的
@@ -54,10 +56,11 @@ beamspace_ml_v18/source/stepwise_signal_model/steps/
   step_12_5_exact_subset_fim_beam_design/
 ```
 
-其中包含 runner、`common/`、`tests/`、`results/` 和 `figures/`。26 个必需
-结果文件全部存在，另保存 `stage7_finite_sample_plan.csv` 和
-`online_dbf_runtime.csv`；8 幅注册 PNG
-全部可解码并已目检。关键结果入口为：
+其中包含 runner、`common/`、`tests/`、`results/` 和 `figures/`。当前
+Stage7 bundle 含 31 个结果文件与 8 幅注册 PNG，全部非空；排序外部
+SHA-256 manifest 的文件 hash 为
+`cc287ffee9852d2e39f58f1ec057d3466f3281a7a84db69932dad01013f91659`。
+关键结果入口为：
 
 - `results/stage7_plan_registry.csv`
 - `results/fim_subset_enumeration.csv`
@@ -117,17 +120,13 @@ cache、硬件或输出 SNR 单独归一化。
 run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_5_exact_subset_fim_beam_design/run_step12_5_exact_subset_fim_design.m')
 ```
 
-鉴于 R2022b 多线程长跑的 native heap instability，正式完整运行由
-`matlab -singleCompThread -batch` 启动；该执行模式不改变冻结计划、种子、
-候选、求解器或判门。
+本轮复用了在干净 A3 基准上已经完成的 MATLAB R2022b Stage7 长跑，没有再次
+执行 1429 秒流程。该长跑正常退出，wall runtime 为 `1428.9983 s`，完成
+961/961 子集、1184 个 FIM 场景、FIM gate 1/3、finite Pareto 0/3，并打印
+`PASS_SYSTEM_ANALYSIS_ONLY`；Analyzer/scope/data-processing 为 `0/0/0`。
+导入前在干净 A4 commit 上重建 locked plan 并逐字匹配当前 plan hash。
 
-主脚本完成全部计算、写出结果和 8 幅图后打印
-`Step12.5 Stage 7 result: PASS_SYSTEM_ANALYSIS_ONLY`，wall runtime 为
-`1641.6270 s`。MATLAB R2022b 随后在进程清理阶段返回
-`0xc0000374 Heap corruption`。异常发生在最终报告和图形落盘之后，没有
-未完成场景；但它作为运行环境风险保留，不能隐藏。
-
-为区分证据计算与退出清理异常，另起短进程独立复核并以退出码 0 完成：
+修订后的历史比较和独立短进程复核以退出码 0 完成：
 
 - 计划 hash 与 source-tree hash 逐字匹配；
 - Stage 6 `21/21`、Stage 5 `14/14`、Step11 `351/351`；
@@ -135,6 +134,9 @@ run('beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_5_exact_subset_
 - Code Analyzer 0；
 - scope 与 no-model-order 扫描通过；
 - data-processing violation 0；
+- scientific/total historical comparison failures `0/0`；
+- schema-dependent diagnostic variation count `1`；
+- deterministic memory contract overall pass；
 - `git diff --check` 通过。
 
 关键数值误差包括：FIM projection/Schur 最大相对误差
@@ -206,20 +208,32 @@ rate。
 | derivative evaluations | 2,368 |
 | generalized-eigenvalue evaluations | 2,585,856 |
 | greedy add/drop/swap candidate evaluations | 122 |
-| finite-sample DML score calls | 11,734,516 |
+| actual unique physical-subset score calls | 9,152,562 |
+| label-charged finite-sample DML score calls | 11,734,516 |
+| duplicate method-label charge | 2,581,954 |
 | finite-sample SVD calls | 11,734,516 |
-| exact enumeration runtime sum | 399.0746 s |
-| complete runner wall runtime | 1641.6270 s |
-| peak-memory estimate | 110,347,346 bytes |
-| generated result volume at bundle close | 1,378,536 bytes |
+| exact enumeration runtime sum | 246.6689 s |
+| complete runner wall runtime | 1428.9983 s |
+| legacy schema-dependent workspace estimate, historical/current | 110,347,346 / 110,417,088 bytes |
+| legacy estimate delta / relative delta | 69,742 bytes / 0.00063202245 |
+| deterministic workspace contract | 34,611,200 bytes |
+| materialized / factorized sequential weights | 499,200 / 17,136 bytes |
+| generated result volume at bundle close | 1,401,807 bytes |
 
-`EXACT_ETA_080` 的输出为 15 个 complex-double 通道，即 240 bytes；权重内存
-为 499,200 bytes，估计数据搬运为 33,520 bytes，每样本 MAC 相对常规中心
-1x1 增量为 5070。其单子集离线 1184 场景评估时间为 0.3474 s。
+`EXACT_ETA_080` 的 3/5 顺序语义是 3 个俯仰中间通道、每通道 5 个条件
+方位输出，共 15 个 complex-double 通道，即 240 bytes；materialized 等效
+权重为 499,200 bytes，factorized 俯仰/方位权重为 1,536/15,600 bytes，估计
+数据搬运为 33,520 bytes，每样本 MAC 相对常规中心 1x1 增量为 5070。其单
+子集离线 1184 场景评估时间为 0.2736 s。
 
 冻结后且未参与选择的 256-sample batch 微基准测得 exact 3x5 与 full 5x5
-的在线两级 DBF 时间分别约为 12.116 和 17.183 microseconds/sample。
+的在线两级 DBF 时间分别约为 6.069 和 10.015 microseconds/sample。
 该微基准只作实现诊断，不改变以 MAC 为主目标的冻结选择结果。
+
+legacy `peak_memory_estimate` 由 `whos('context')`、finite trials 和
+enumeration 的 schema 大小组成；当前 plan 增加 source/dependency manifests
+和 provenance metadata 后产生 69,742-byte 差异。该字段不是内存泄漏证据，
+也不是真实进程峰值。正式 deterministic memory contract 与该诊断分离。
 
 ## I. 风险、失败边界与降级项
 
@@ -229,61 +243,98 @@ rate。
 4. Coherent-weak stress 对 full/exact/fixed 同时失败，未删除或改门。
 5. 刘旗 2026、PR-DML、Kim 2012 和旧 factor=2 B7 均没有伪造同条件复现。
 6. Physical exact tangent null 仍未验证；阶段 6 六阶式仍只由 synthetic fixture 支持。
-7. 主长跑存在落盘后的 R2022b heap-cleanup 异常；独立短进程验证均正常退出。
+7. legacy workspace estimate 依赖 provenance schema，不能解释为真实进程峰值。
 8. `exact` 不外推到 ragged 子集、任意通道组合、更大父池或连续波束空间。
 
 ## J. 下一阶段判定
 
-阶段 8 **不获技术授权**。本轮已按要求停在阶段 7，没有执行 K1/K2
-bootstrap、false-resolved 控制、resolved/unresolved calibration 或任何阶段 8
-代码。若未来重新提出阶段 8，必须由用户另行授权，并先处理阶段 7 没有超过
-固定矩形这一贡献边界；当前证据本身不能作为自动继续的许可。
+阶段 8 **未执行且不由 closure 自动授权**。本轮没有执行 K1/K2 bootstrap、
+false-resolved 控制、resolved/unresolved calibration 或任何阶段 8 代码。
+若未来由用户另行授权，Stage8 只服务阶段 5 遗留的 K1/K2 统计闭环；它不得
+改变阶段 7 没有超过固定矩形的贡献边界。
 
-## Stage7.1A3 code-only 补充审计
+## K. Stage7.1 A4 + B 正式 closure
 
-**A3 稳定工具与短单测已冻结；Stage7.1B 未执行，正式 closure 未完成。**
+最终状态为 **`PASS_STAGE7_1_CLOSURE_AUDIT`**。A4 code-only commit 为
+`854e649205913c9fa579a696b141b6c34fd20981`；Stage7 重生成 evidence
+commit 为 `364c5b30f8cf85f9bc164de0b7fcb5bc8f167628`。A4 后不再修改
+Stage7/Stage7.1 `.m` 或 README。
 
-Stage7 README 在 A3 中零修改，仍是独立 source-hashed 稳定合同；运行状态只由
-Stage7.1 results 与本文记录，未来 Stage7.1B 不得修改该 README。
+Stage7.1 source tree hash 为
+`bdcea5bf6c863bd9648773ec1e01b1bade656eea0c0e0bec4059d9f4c917185a`，
+stable code identity 为
+`f3e84ecd77e63632d9e2eb0e70c0600fa0f370193ad27d6fa5717f0381700b4c`。
+runtime HEAD 只进入 provenance/runtime metadata。A4 code-only 总入口 647
+条断言通过，Code Analyzer/scope 为 `0/0`；Stage7/6/5/Step11 冻结检查和
+`git diff --check` 通过。
 
-Stage7.1 stable identity 不再包含 runtime HEAD。source tree 按 Stage7.1 下全部
-tracked `.m` 与稳定 README 的 Git `mode/blob/path` 清单计算 SHA-256；stable
-identity 再绑定 source-scope 与 identity-contract 版本。runtime HEAD 仅写
-provenance/runtime metadata。正式入口固定历史 baseline
-`25e063730309dac2595390d46744040ba6fbe4b3`，并强制祖先关系、干净工作树和无
-未跟踪 `.m`/README。A3 source tree hash 为
-`4713a52ef81be61958a5dc79ec9a939b1795a764c8b7f50cf1d4f8a5e52c59b1`，stable
-code identity 为
-`0775f9ea32b26e6bef6cf326561d7a3772f5ef05ea0d60276c6cc2f054dbf8de`。
+### K.1 历史科学对照与内存分类
 
-edge diagnostic 仍固定六个 scenario ID、三个方法、`[0,5,10] dB`、`Nmc=200`
-和 seed 基数 `20260719`。18 个 paired group 使用 `seed_block_stride=1000`，
-`trial_seed=group_seed_start+trial_index-1`；3600 个公共 trial seed 全部唯一且
-区间不重叠，三个方法共生成 10800 行。公共阵元域 trial 只生成一次，再应用
-`RECT_E14_A31`、`RECT_E28_A31`、`RECT_E31_A31`；方法顺序不改变 seed。
+修订后的 comparator 从提交 `85615e0` 读取 11 个核心 CSV。321 条 comparison
+rows 中 scientific failures 为 0、total failures 为 0、diagnostic variations
+为 1；961 子集、`RECT_E14_A31`、Stage7 status 和有限样本成功计数均一致。
 
-角域合同继续保留 historical/tolerant/boundary-disagreement 字段，容差严格为
-`parameter_dimension*eps(domain_scale_deg)`。D0286 固定为 historical false、
-tolerant true、boundary disagreement true，正式 generator/evaluator 使用
-tolerant pass。
+唯一变化是 legacy `peak_memory_estimate`：
 
-正式 closure runner、公共 trial generator、三方法 evaluator、edge runner、
-Git-object 历史比较器、artifact registry、deterministic writer 和 evidence
-manifest 均已实现并冻结。历史比较器从 `85615e0` 读取 11 个 CSV，使用显式
-主键，精确比较核心 ID/status/flags/counts/961 子集/选中子集/有限样本成功计数，
-其他数值门为 absolute `1e-12` 或 relative `1e-10`；只允许明确的 runtime、
-file-size、source/provenance/plan identity 变化。
+| 项目 | 数值 |
+|---|---:|
+| historical | 110,347,346 bytes |
+| current | 110,417,088 bytes |
+| delta | 69,742 bytes |
+| relative delta | 0.0006320224503 |
+| status | `EXPECTED_PROVENANCE_SCHEMA_DEPENDENT_VARIATION` |
 
-registry 共 16 个正式 artifact，13 个 deterministic artifact 进入 bundle；
-runtime provenance、runtime diagnostics 和 manifest 自身排除。writer 接受
-`.gitkeep` 占位，拒绝其他旧结果；runtime HEAD 不进入 deterministic artifacts。
+该值含 `whos('context')`、finite trials 和 enumeration schema bytes；当前
+context 增加 source/dependency manifests 与 provenance metadata。它不作为
+FIM/算法相等门、内存泄漏证据或真实进程峰值。
 
-A3 code-only 总入口共 599 条断言通过，Code Analyzer 与 scope violation 均为
-0；Stage7 core 与 results/figures 修改数均为 0，Stage6 `21/21`、Stage5
-`14/14`、Step11 `351/351` 冻结证据通过。edge plan hash 冻结为
-`eecc3a75927ea9a5851f5c2f0da6223cce2e5e86038eaae55f9fa78963e403ea`。
+独立 deterministic memory contract 全部通过：
 
-本轮未运行完整 Stage7、3600-trial edge Monte Carlo 或正式 closure，未生成
-Stage7.1 正式 CSV/PNG，也未修改 FIM、DML、961 子集枚举、eta、Pareto 门或
-任何 Stage8 内容。Stage7.1B 仍需未来单独授权；阶段 8 继续保持
-`NOT_AUTHORIZED_BY_STAGE7_RESULT`。
+| 合同 | 数值 |
+|---|---:|
+| workspace | 34,611,200 bytes |
+| candidate / admissible / evaluated | 25 / 961 / 961 |
+| selected subset | `RECT_E14_A31` |
+| `B_el/B_az/B_out` | 3 / 5 / 15 |
+| materialized equivalent weights | 499,200 bytes |
+| factorized elevation / azimuth / total | 1,536 / 15,600 / 17,136 bytes |
+| actual unique score calls | 9,152,562 |
+| charged score calls / duplicate charge | 11,734,516 / 2,581,954 |
+
+### K.2 顺序、alias 与 minimum-cost 语义
+
+3/5 明确表示 **3 个俯仰中间通道，每通道 5 个条件方位输出**，不是两个可交换
+的独立波束计数。`EXACT_ETA_080` 与 `FIXED_RECT_3X5` 同为
+`RECT_E14_A31`；`STAGE6_CENTER_3X3` 与 `FIXED_RECT_3X3` 也为同一
+物理子集。eta0=0.80 的 minimum-cost family 含 6 个 MAC=7215 成员；注册
+selection 保持 `RECT_E14_A31`，`RECT_E28_A31` 只作同成本 post-hoc
+sensitivity。full-parent 区间保留 conservative shared-reference 标签。
+
+### K.3 Paired edge diagnostics
+
+edge plan 为 54 行、18 个 paired groups、每组 3 个固定方法。`Nmc=200`，
+共生成 3600 个唯一公共阵元域 trial 和 10800 个方法行；每个公共 trial 的
+truth、seed、realized SNR 和 identity hash 在三方法间一致。summary 为 54 行，
+每行 200 trials。D0286 的 historical/tolerant/disagreement/edge pass 固定为
+`false/true/true/true`，正式路径使用 tolerant gate。全部 edge 结果均为
+post-hoc sensitivity，不参与 Stage7 selection。
+
+### K.4 两次独立 closure
+
+两个全新 MATLAB R2022b 进程均得到：
+
+- closure `PASS_STAGE7_1_CLOSURE_AUDIT`；
+- Stage7 `PASS_SYSTEM_ANALYSIS_ONLY`；
+- Stage8 technical permission `false`；
+- common/method counts `3600/10800`；
+- 16 个 registry artifacts、13 个 deterministic artifacts；
+- deterministic bundle hash
+  `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。
+
+13 个 deterministic artifacts 的 relative path、byte count、SHA-256 和 stable
+identity 逐项一致。只变化了被排除的 runtime diagnostics 和自引用 manifest。
+Run2 保留为正式结果。
+
+Stage7 因此正式封存为系统设计分析，不升级为波束选择算法贡献。Stage8 未执行；
+未来若由用户单独授权，只用于完成阶段 5 遗留的 K1/K2 false-split、
+false-resolved 与 resolved/unresolved 统计闭环。

@@ -893,6 +893,8 @@ figures/column_norm_ratio_vs_separation.png
 
 > **最终状态（2026-07-18）：`PASS_SYSTEM_ANALYSIS_ONLY`。** 已在冻结的 5x5 factor=1 顺序父池上完整枚举 961 个矩形子集，并对每个子集重构相关协方差、有效白化器、流形导数和 deterministic effective FIM。`eta0=0.80` 的 exact 解 `RECT_E14_A31` 通过 design/validation/FIM-holdout，但它与最强固定 `FIXED_RECT_3X5` 完全相同；`eta0=0.90/0.95` 高于父池设计上限 `0.823236874`，按注册规则不可行。有限样本 Pareto 门为 0/3，故只保留系统设计分析，不进入 Step12.6。
 
+> **Stage7.1 closure（2026-07-19）：已封存。** A4 code commit 为 `854e649`，Stage7 重生成证据 commit 为 `364c5b3`，Stage7.1 source/stable identity 为 `bdcea5bf...7185a` / `f3e84ecd...00b4c`。两次独立 closure 的 13-artifact deterministic bundle 均为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。科学核心与 `85615e0` 一致；69,742-byte legacy workspace estimate 差异仅为 provenance schema diagnostic，独立 deterministic memory contract 通过。3/5 表示 3 个俯仰中间通道各产生 5 个条件方位输出；exact 与 fixed 3/5 为同一物理子集。Stage8 未执行，且只能在后续单独授权下服务阶段 5 的 K1/K2 统计闭环。
+
 ## 目标
 
 在已有归一化 FIM 和最少选择框架上，实现适用于相关顺序规则波束输出的 exact-subset 设计，并用有限样本 holdout 验收。不得假设逐束 FIM 可加。
@@ -1676,9 +1678,12 @@ success
 - design/validation/FIM holdout 技术门通过，`eta0=0.80` 为唯一可行 operating point；
 - oracle-K normal/threshold/mismatch/stress 共 29 个场景、每场景 200 次；
 - exact 解等于最强固定 3x5 矩形，有限样本 Pareto 0/3；里程碑以 `PASS_SYSTEM_ANALYSIS_ONLY` 关闭。
+- Stage7.1 已用 18 个 paired groups、3600 个公共阵元域 trial 和 10800 个方法行完成 post-hoc closure；结果不改变注册选择或贡献定位。
+- legacy workspace estimate 单列为 schema-dependent diagnostic；确定性内存、子集与 score-call 合同独立通过。
 
 ## M7：K1/K2 bootstrap
 
+- 尚未执行；若未来由用户单独授权，只用于完成阶段 5 的 K1/K2 false-split、false-resolved 与 unresolved 统计闭环，不得把 Stage7 系统分析升级为算法贡献。
 - false split；
 - unresolved；
 - 模型失配。
