@@ -1,15 +1,15 @@
-# Stage8.1 calibration / K1 validation 执行审计合同
+# Stage8.1A2 calibration / primary K1 validation 执行审计合同
 
 > 日期：2026-07-19
 > 仓库：`makabaka165/bs_innovation`
 > MATLAB：R2022b
 > 活跃相位：`phase_factor=1`
-> 当前门：`AUTHORIZED_STAGE8_1A_CODE_ONLY`
+> 当前门：`AUTHORIZED_STAGE8_1A2_CODE_ONLY`
 > 正式执行：未授权、未执行
 
 ## A. 分层边界
 
-Stage8.1A 只冻结可执行代码、miniature tests、checkpoint、writer 和 manifest
+Stage8.1A2 只冻结可执行代码、miniature/synthetic tests、checkpoint、writer 和 manifest
 合同。Stage8.1B 才允许在后续单独授权下执行 59,700 个 calibration bootstrap
 样本和 12,000 个 K1 validation method rows。Stage8.2 必须等待 Stage8.1B
 threshold evidence 锁定且 validation gate 通过，并再次单独授权。
@@ -19,10 +19,11 @@ threshold evidence 锁定且 validation gate 通过，并再次单独授权。
 Calibration data seed 为 `2026072100 + c - 1`，`c=1,...,300`。Bootstrap
 block start 为 `2126072100 + 1000*(c-1)`，cell 内第 `b` 个 seed 为 block
 start 加 `b-1`，`b=1,...,199`。Validation seed base 为 `2226072200`；六个
-`L × noise` stratum 各占一个不重叠的 2000-seed block，其中 1000 个 seed
-生成公共阵元 trial，另 1000 个为注册 auxiliary seed；separation bootstrap
-以 auxiliary seed 加 199 个固定 RandStream substream 生成，避免相邻 trial
-使用连续 seed 时发生重叠。所有 split 必须在写证据
+`L × noise` stratum 各占一个不重叠的 3000-seed block，其中前 1000 个只生成
+center/SNR 参数，中间 1000 个只生成阵元噪声，后 1000 个注册 separation
+auxiliary seed；separation bootstrap 以 auxiliary seed 加 199 个固定
+RandStream substream 生成。两个 measurement configs 对同一 common trial 共享
+三种 seed 角色。所有 split 必须在写证据
 前重新验证唯一性和互斥性。
 
 ## C. Measurement registry
@@ -50,6 +51,9 @@ identities 一致。Calibration 不允许删除失败 bootstrap 后继续取分�
 
 最小 checkpoint 单位为一个 calibration cell。已有 checkpoint 只有在 source、
 plan、model 和 cell-input hash 全匹配时才复用；不匹配立即失败且不得覆盖。
+Formal 模式必须显式指定 Git 仓库外 checkpoint root；`FORMAL_SHARD` 只物化
+`cell_indices`，cell-input hash 不依赖 shard 顺序或大小。manifest loader 和
+collector 必须拒绝缺失、重复、malformed 或 stale checkpoint。
 Aggregate 必须看到 300 个 PASS cell、59,700 个唯一 seed 和每配置跨两个 noise
 profile 的 150 个 cell，才可各输出一个 `q_global=max(q_cell_0p95)`。
 
@@ -57,7 +61,13 @@ profile 的 150 个 cell，才可各输出一个 `q_global=max(q_cell_0p95)`。
 
 六个 stratum 各生成 1000 个公共 K1 阵元 realization；PRIMARY 和 FULL_PARENT
 只改变固定测量投影，形成严格配对的 12,000 行。Validation 只能调用 locked
-threshold lookup，不能调用 calibration，也不能修改 `q_global`。报告 false
+threshold lookup，且在第一行 trial 前 exact 校验 stable source、Stage8 plan、
+calibration plan、measurement registry 和 threshold artifact hash；不能调用
+calibration，也不能修改 `q_global`。summary 按 config × overall/stratum 固定
+14 行。PRIMARY overall/stratum 的 Wilson 样本数分别为 6000/1000，且只有
+PRIMARY 进入授权门；FULL_PARENT 只输出
+`SENSITIVITY_ONLY_NOT_USED_FOR_STAGE8_2_AUTHORIZATION` 和 paired discordance。
+报告 false
 split、false resolved、K2_UNRESOLVED、search/rank failure、decision availability
 及 Wilson interval。任何冻结 gate 失败都禁止进入 Stage8.2。
 
@@ -65,16 +75,22 @@ split、false resolved、K2_UNRESOLVED、search/rank failure、decision availabi
 
 Artifact registry 固定 calibration/results 的计划、模型、cell、seed、Lambda、
 threshold、complexity、provenance、source/evidence manifest、validation trials、
-summary、keypoints、report 和 runtime diagnostics 路径。确定性 bundle 排除
+summary、paired sensitivity、keypoints、report 和 runtime diagnostics 路径。
+threshold table 显式保存 source/plan/calibration-plan/measurement-registry identity
+与 threshold artifact hash，finalize 要求 validation 使用的 threshold-set hash
+完全一致。确定性 bundle 排除
 runtime、manifest 自身和 checkpoint 临时文件，并以逐文件 SHA-256 生成身份。
 
 ## I. Stage8.1B 执行顺序
 
-1. 从干净、已提交的 Stage8.1A source identity 启动 calibration。
-2. 完成并审计 300 个 cell checkpoint。
-3. 聚合两个 config-level threshold 并提交 threshold evidence。
-4. 从干净 threshold evidence commit 启动 paired K1 validation。
-5. Finalize evidence；validation 不回写或调整 threshold。
+1. 从干净、已提交的 Stage8.1A2 code identity 启动 calibration。
+2. 在 Git 仓库外完成并审计 300 个 cell checkpoint。
+3. 聚合两个 config-level threshold 并创建
+   `docs(stage8.1): freeze k1 bootstrap thresholds`。
+4. 从该干净 threshold evidence commit 重建 frozen plan，完成 provenance preflight，
+   再启动 paired K1 validation。
+5. Finalize primary/sensitivity evidence，不回写或调整 threshold，并创建
+   `docs(stage8.1): validate k1 false-split control`。
 6. 停止并报告 gate；Stage8.2 仍需单独授权。
 
 ## J. 当前未完成

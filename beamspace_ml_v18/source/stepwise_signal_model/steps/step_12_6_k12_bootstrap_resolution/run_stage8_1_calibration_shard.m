@@ -7,6 +7,15 @@ if nargin < 5 || isempty(opts)
     opts = struct();
 end
 opts = normalize_options_local(opts, numel(cells));
+if isfield(opts.cell_options, 'formal_run') && opts.cell_options.formal_run
+    [status, repo_dir] = system('git rev-parse --show-toplevel');
+    if status ~= 0
+        error('run_stage8_1_calibration_shard:Repository', ...
+            'Unable to locate the Git repository root.');
+    end
+    opts.checkpoint_dir = validate_stage8_formal_checkpoint_root( ...
+        strtrim(repo_dir), opts.checkpoint_dir);
+end
 artifacts = cell(numel(opts.cell_indices), 1);
 reused = false(numel(opts.cell_indices), 1);
 start_clock = tic;

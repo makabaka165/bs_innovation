@@ -1,17 +1,17 @@
-# Stage8.1A / Step12.6B-pre calibration 执行合同审计
+# Stage8.1A2 / Step12.6B-pre 最终执行合同审计
 
 > 日期：2026-07-19
 > 仓库：`makabaka165/bs_innovation`
-> 基线：`8899023cd608f53c271b5ca429ad41b17d8e0f22`
+> 基线：`26b94b57e9d17699783109566468e59df86346e4`
 > 分支：`main`
 > MATLAB：R2022b
 > 活跃相位：`phase_factor=1`
-> 当前状态：`AUTHORIZED_STAGE8_1A_CODE_ONLY`
-> 性能状态：`STAGE8_1A_CODE_ONLY_NO_PERFORMANCE_RESULTS`
+> 当前状态：`AUTHORIZED_STAGE8_1A2_CODE_ONLY`
+> 性能状态：`STAGE8_1A2_CODE_ONLY_NO_PERFORMANCE_RESULTS`
 
 ## A. 审计结论边界
 
-Stage8.1A 只修订并冻结可执行代码合同，使用小型 deterministic/synthetic fixture
+Stage8.1A2 只修订并冻结最终可执行代码合同，使用小型 deterministic/synthetic fixture
 验证接口。它不执行 59,700 个正式 K1 calibration bootstrap 样本，不执行
 validation 或 independent holdout，不生成正式阈值、CSV、PNG、Monte Carlo
 结果或论文性能数字，也不进入 Stage8.1B。
@@ -93,8 +93,10 @@ q_{global}=\max_{150\ cells}q_{cell,0.95}.
 \]
 
 固定 `alpha=0.05`、`Bboot_per_cell=199`、
-`TYPE1_ORDER_STATISTIC`。lookup 只接受 measurement config ID 和 locked
-artifact，禁止场景、真值、estimated separation、score gap 或难度标签输入。
+`TYPE1_ORDER_STATISTIC`。lookup 只接受 measurement config ID、locked artifact
+和 expected contract，并 exact 校验 stable source、Stage8 plan、calibration plan、
+measurement registry 与 threshold artifact hash；禁止场景、真值、estimated
+separation、score gap 或难度标签输入。
 普通卡方只作 diagnostic。
 
 ## F. Separation confidence 与状态机
@@ -119,7 +121,8 @@ mismatch 风险。
   stride 1000。本阶段不执行。
 - K1 validation：6 个 `L × noise` strata，各 1000 个公共阵元 trial；两个
   measurement config 共享阵元 realization，形成 6000 个公共 trial 和 12,000
-  个 method rows。seed base 为 `2226072200`，每 stratum 占一个 2000-seed block。
+  个 method rows。seed base 为 `2226072200`，每 stratum 占一个 3000-seed block，
+  依次保留 1000 parameter、1000 element-noise 和 1000 separation-auxiliary seeds。
 - K1 independent holdout：同分布 6000 trials/config，seed 20260723。
 - K2 validation：主配置 1200 trials，seed 20260724，分离 log-uniform
   `[0.05,0.40]` degree，其余生成规则按 locked plan。
@@ -148,7 +151,7 @@ truth/holdout-dependent threshold、candidate-dependent measurement、hidden-tru
 mismatch、bootstrap 固定点评分、只重拟合 K2 的 calibration，或从主风险删除
 unresolved。
 
-## I. Stage8.1A 未完成项
+## I. Stage8.1A2 未完成项
 
 - 正式 bootstrap threshold 未生成；
 - validation/holdout 未执行；
@@ -158,13 +161,13 @@ unresolved。
 
 ## J. 下一阶段门
 
-只有 Stage8.1A 全部 code-only 测试、Code Analyzer、scope、upstream freeze、
+只有 Stage8.1A2 全部 code-only 测试、Code Analyzer、scope、upstream freeze、
 identity 和 `git diff --check` 门通过后，才可判定“技术上允许后续单独授权
 Stage8.1B”。该判定本身不执行 Stage8.1B，也不授权 Stage8.2。
 
-## K. Stage8.1A 合同修订
+## K. Stage8.1A2 合同修订
 
-Stage8.1A 将 Stage8.0 的实验计划改成可审计执行合同，但不运行正式实验：
+Stage8.1A2 将 Stage8.1A 的可执行计划收紧为最终证据合同，但不运行正式实验：
 
 - calibration plan 删除 active `seed`，显式保存 global cell index、data seed、
   bootstrap block start/end、stride 和公式；59,700 个 active bootstrap seed
@@ -176,8 +179,19 @@ Stage8.1A 将 Stage8.0 的实验计划改成可审计执行合同，但不运行
 - `validate_stage8_fit_for_lrt` 统一 returned、converged、rank、RSS、variance、
   log-likelihood 和 fixed identity 门；formal calibration 任一 refit 失败即令
   整个 cell 为 `CALIBRATION_CELL_REFIT_FAILURE`，不删除样本；
+- `FORMAL_SHARD` 只物化显式 `cell_indices`，cell-input hash 与 shard 顺序和大小
+  无关；formal checkpoint root 必须位于 Git 仓库外，collector 拒绝缺失、重复、
+  malformed 或 stale checkpoint；
 - cell/shard/aggregate runner 以 source/plan/model/cell 四类 hash 管理 checkpoint，
-  只有 300 个 PASS cell 和全部唯一 seed 才能锁定两个 config-level threshold；
-- K1 validation 只查 locked threshold，不重新校准；writer 的确定性 identity
+  只有 300 个 PASS cell 和全部唯一 seed 才能锁定两个 provenance-bound threshold；
+- invalid group-noise scale 使当前 grouped partition unavailable，不再替换成单位尺度；
+- K1 summary 按 config × overall/stratum 输出 14 行，PRIMARY 独占授权门，
+  FULL_PARENT 只进入独立 paired-sensitivity 表；K1 validation 只查 locked threshold；
+  writer 的确定性 identity
   排除 runtime、manifest 自身和 checkpoint 临时文件；所有 Stage8.1 runner
   在 Stage8.2 边界停止。
+
+Stage8.1B 必须分成两个证据提交：先从干净 A2 code commit 完成 calibration 并
+创建 `docs(stage8.1): freeze k1 bootstrap thresholds`；再从该干净 threshold
+evidence commit 完成 primary validation，并创建
+`docs(stage8.1): validate k1 false-split control`。

@@ -24,9 +24,10 @@ rank_failure = false(opts.Bsep, 1);
 search_failure = false(opts.Bsep, 1);
 K1_fit_count = 0;
 K2_fit_count = 0;
+seed_schedule = build_stage8_separation_seed_schedule(opts.seed, opts.Bsep);
 for index = 1:opts.Bsep
     if opts.formal_run
-        seed = opts.seed;
+        seed = seed_schedule.separation_auxiliary_seed(index);
     else
         seed = opts.seed + index - 1;
     end
@@ -125,8 +126,10 @@ debug = struct('r_squared', r_squared, 'matched_angles_deg', ...
     matched_angles, 'valid_flags', valid, 'rank_failure_flags', ...
     rank_failure, 'search_failure_flags', search_failure, ...
     'K1_fit_count', K1_fit_count, 'K2_fit_count', K2_fit_count, ...
+    'separation_seed_schedule', seed_schedule, ...
     'complete_K2_refit_flag', K2_fit_count == opts.Bsep, ...
-    'truth_used_flag', false, 'metric', metric, 'phase_factor', 1);
+    'truth_used_flag', false, 'metric', metric, ...
+    'auxiliary_seed_substream_flag', opts.formal_run, 'phase_factor', 1);
 end
 
 function opts = normalize_options_local(opts)

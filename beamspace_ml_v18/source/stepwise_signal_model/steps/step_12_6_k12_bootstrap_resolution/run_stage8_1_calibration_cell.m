@@ -132,8 +132,7 @@ hash_payload.score_call_count = score_calls;
 hash_payload.svd_call_count = svd_calls;
 hash_payload.initialization_factory_rebuild_count = factory_rebuild_count;
 hash_payload.failure_count = failure_count;
-cell_artifact_hash = stage8_stable_hash( ...
-    'STAGE8_1_CALIBRATION_CELL_ARTIFACT_V1', hash_payload);
+cell_artifact_hash = stage8_calibration_artifact_hash(hash_payload);
 artifact = hash_payload;
 artifact.K1_fit_count = k1_fit_count;
 artifact.K2_fit_count = k2_fit_count;
@@ -286,7 +285,8 @@ if ~isfield(loaded, 'artifact')
 end
 artifact = loaded.artifact;
 if ~isfield(artifact, 'cell_artifact_hash') || ...
-        ~strcmp(artifact.cell_artifact_hash, artifact_hash_local(artifact))
+        ~strcmp(artifact.cell_artifact_hash, ...
+        stage8_calibration_artifact_hash(artifact))
     error('run_stage8_1_calibration_cell:CheckpointArtifactHashMismatch', ...
         'Checkpoint artifact hash verification failed: %s.', path_now);
 end
@@ -301,14 +301,6 @@ for field_index = 1:numel(fields)
 end
 debug = struct('checkpoint_reused_flag', true, ...
     'checkpoint_path', path_now, 'runtime', 0, 'phase_factor', 1);
-end
-
-function digest = artifact_hash_local(artifact)
-excluded = intersect(fieldnames(artifact), ...
-    {'runtime','cell_artifact_hash','phase_factor'});
-payload = rmfield(artifact, excluded);
-digest = stage8_stable_hash( ...
-    'STAGE8_1_CALIBRATION_CELL_ARTIFACT_V1', payload);
 end
 
 function write_checkpoint_local(path_now, artifact)

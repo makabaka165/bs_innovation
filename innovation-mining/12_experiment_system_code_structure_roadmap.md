@@ -14,7 +14,7 @@
 >
 > 目的：把修订后的主张拆成可执行、可复现、可否决的代码阶段与实验体系。所有新代码、结果和论文论述必须主动区分“已有数学基础”“系统特化”和“经实验才可能成立的候选贡献”。
 >
-> 当前门（2026-07-19）：`AUTHORIZED_STAGE8_1A_CODE_ONLY`。Stage8.0 的基础合同已冻结；Stage8.1A 只允许修订可执行 calibration/validation 合同并运行 miniature fixture。Stage8.1B 的正式离线 calibration 与 K1 validation、Stage8.2 的 independent holdout 均未执行，也没有任何 Stage8 性能数字。
+> 当前门（2026-07-19）：`AUTHORIZED_STAGE8_1A2_CODE_ONLY`。Stage8.0/8.1A 的基础合同已冻结；Stage8.1A2 只允许修订最终 calibration/primary-validation 证据合同并运行 miniature/synthetic fixture。Stage8.1B 的正式离线 calibration 与 K1 validation、Stage8.2 的 independent holdout 均未执行，也没有任何 Stage8 性能数字。
 
 ---
 
@@ -1057,13 +1057,13 @@ results/stage7_fim_beam_design_report.md
 
 # Step12.6：K1/K2 bootstrap、分辨状态与独立风险控制
 
-> **当前门状态：`AUTHORIZED_STAGE8_1A_CODE_ONLY`。** 这是用户对 Stage8.1A 可执行合同修订的单独授权，不改变 Step12.5 的 0/3 Pareto 结论，也不自动授权 Stage8.1B 或 Stage8.2。
+> **当前门状态：`AUTHORIZED_STAGE8_1A2_CODE_ONLY`。** 这是用户对 Stage8.1A2 最终执行合同修订的单独授权，不改变 Step12.5 的 0/3 Pareto 结论，也不自动授权 Stage8.1B 或 Stage8.2。
 
 ## 四层冻结路线
 
 1. **Stage8.0 / Step12.6A（已冻结）：** 建立独立代码目录；冻结 fixed measurement、共同局部域、K1 两起点、K2 三起点、`r_C*L` LRT、separation confidence、六状态输出和未来实验计划；只运行小型 fixture，无性能结果。
-2. **Stage8.1A / Step12.6B-pre（当前）：** 修复非重叠 calibration seed block，冻结 PRIMARY/FULL_PARENT × WHITE/CORRELATED 四模型 registry、阵元域 bootstrap、真实 Stage4/5 初始化、统一 fit-validity、cell checkpoint/shard/aggregate、paired K1 validation 和确定性 writer/manifest；仍只运行 miniature fixture，不执行正式样本。
-3. **Stage8.1B（尚未授权、尚未执行）：** 仅在后续单独授权后，按 150 cells/config、199 samples/cell 执行 59,700 个离线 K1 bootstrap 样本，聚合并锁定两个 `q_global`；随后从干净 threshold evidence commit 执行 6000 个公共 K1 trial、12,000 个 config-evaluation rows。validation 只能查表，不得改变 alpha、beta、start set、状态门或阈值策略。
+2. **Stage8.1A2 / Step12.6B-pre（当前）：** 将 K1 summary 改为 2 configs × 7 scopes 的 14 行，主授权只使用 PRIMARY；将 threshold exact 绑定 source/Stage8 plan/calibration plan/measurement registry；`FORMAL_SHARD` 只物化请求 cell，formal checkpoint root 强制位于 Git 仓库外；无效 group-noise scale 不再静默替换为 1；validation 参数、阵元噪声和 separation auxiliary RNG 使用三个互斥 1000-seed block。仍只运行 fixture，不执行正式样本。
+3. **Stage8.1B（尚未授权、尚未执行）：** 仅在后续单独授权后，从干净 A2 code commit 在仓库外 checkpoint root 完成 300 cells 和两个 `q_global`，创建 `docs(stage8.1): freeze k1 bootstrap thresholds`；随后从干净 threshold evidence commit 重建计划、exact 验证 provenance，执行 6000 个公共 K1 trial/12,000 config rows，并创建 `docs(stage8.1): validate k1 false-split control`。FULL_PARENT 只作 paired sensitivity，不能抵消 PRIMARY 失败。
 4. **Stage8.2（尚未执行）：** 仅在 Stage8.1B artifact 锁定、K1 validation gate 通过且再次单独授权后，执行 K1/K2 independent holdout、full-parent paired sensitivity、mismatch holdout 和 Stage5 coherent-weak boundary；holdout 不重新校准阈值，并按预注册 Wilson 门给出 PASS/PARTIAL/FAIL。
 
 四层的 seed、artifact 和 Git identity 独立。Stage8.1A 不生成正式 threshold table、calibration CSV、validation CSV、holdout CSV 或 PNG。
@@ -1078,7 +1078,7 @@ results/stage7_fim_beam_design_report.md
 function fit = fit_local_model_k(Zlocal, K, domains, model, opts)
 function lr = nested_dml_likelihood_ratio(fitK1, fitK2, dims, opts)
 function calib = calibrate_parametric_bootstrap_lrt(config_grid, Bboot, opts)
-function p = lookup_locked_lrt_threshold(sample_meta, calib, opts)
+function p = lookup_locked_lrt_threshold(measurement_config_id, locked_artifact, expected_contract)
 function ci = bootstrap_separation_confidence(fitK2, Bboot, opts)
 function state = classify_local_cluster_state(fitK1, fitK2, lr, ci, diagnostics, opts)
 ```

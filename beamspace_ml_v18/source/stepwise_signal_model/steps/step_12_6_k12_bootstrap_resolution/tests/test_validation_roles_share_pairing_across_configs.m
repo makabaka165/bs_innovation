@@ -1,0 +1,19 @@
+function result = test_validation_roles_share_pairing_across_configs()
+%TEST_VALIDATION_ROLES_SHARE_PAIRING_ACROSS_CONFIGS Check all paired seeds.
+
+registry = materialize_stage8_k1_validation_plan( ...
+    build_stage8_validation_plan());
+ids = unique(registry.common_trial_id);
+pass = true;
+for index = 1:numel(ids)
+    rows = registry(registry.common_trial_id == ids(index), :);
+    pass = pass && height(rows) == 2 && ...
+        numel(unique(rows.parameter_seed)) == 1 && ...
+        numel(unique(rows.element_noise_seed)) == 1 && ...
+        numel(unique(rows.separation_auxiliary_seed)) == 1;
+end
+assert(pass, 'test_validation_roles_share_pairing_across_configs:Failed', ...
+    'Measurement configurations do not share all common-trial RNG roles.');
+result = table(pass, numel(ids), ...
+    'VariableNames', {'pass_flag','paired_trial_count'});
+end
