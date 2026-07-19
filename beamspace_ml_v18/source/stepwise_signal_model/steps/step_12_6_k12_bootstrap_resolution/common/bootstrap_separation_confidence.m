@@ -1,0 +1,170 @@
+function [confidence, debug] = bootstrap_separation_confidence( ...
+    fit2, local_domain, model, opts)
+%BOOTSTRAP_SEPARATION_CONFIDENCE Refit K2 and build a projected-metric region.
+
+if nargin < 4 || isempty(opts)
+    opts = struct();
+end
+opts = normalize_options_local(opts);
+validate_fit_local(fit2, model);
+reference = fit2.angles_hat_deg;
+center = mean(reference, 1);
+[g_center, derivatives] = build_full_sequential_local_manifold( ...
+    center, model, struct('rank_multiplier', 1));
+[metric, ~] = compute_projected_jacobian_metric(g_center, ...
+    [derivatives.azimuth, derivatives.elevation], struct());
+d_hat_deg = reference(2, :) - reference(1, :);
+d_hat_rad = deg2rad(d_hat_deg).';
+r_squared = NaN(opts.Bsep, 1);
+azimuth_max_error = NaN(opts.Bsep, 1);
+elevation_max_error = NaN(opts.Bsep, 1);
+matched_angles = NaN(2, 2, opts.Bsep);
+valid = false(opts.Bsep, 1);
+rank_failure = false(opts.Bsep, 1);
+search_failure = false(opts.Bsep, 1);
+K1_fit_count = 0;
+K2_fit_count = 0;
+for index = 1:opts.Bsep
+    seed = opts.seed + index - 1;
+    boot_data = simulate_under_k2_local(fit2, seed);
+    if isempty(opts.refit_callback)
+        context = opts.initialization_factory(boot_data);
+        [fit1_boot, ~] = fit_local_model_k(boot_data, 1, ...
+            local_domain, model, context, opts.fit_options);
+        context.k1_fit = fit1_boot;
+        [fit_boot, ~] = fit_local_model_k(boot_data, 2, ...
+            local_domain, model, context, opts.fit_options);
+        K1_fit_count = K1_fit_count + 1;
+    else
+        fit_boot = opts.refit_callback(index, boot_data);
+    end
+    K2_fit_count = K2_fit_count + 1;
+    if ~fit_boot.estimate_returned_flag || ~fit_boot.converged_flag
+        search_failure(index) = true;
+        continue;
+    end
+    if fit_boot.effective_rank < 2
+        rank_failure(index) = true;
+        continue;
+    end
+    [matched, ~, ~] = match_bootstrap_target_labels( ...
+        fit_boot.angles_hat_deg, reference);
+    matched_angles(:, :, index) = matched;
+    d_boot_deg = matched(2, :) - matched(1, :);
+    error_rad = deg2rad(d_boot_deg - d_hat_deg).';
+    r_squared(index) = real(error_rad.' * metric.T * error_rad);
+    angle_error = abs(matched - reference);
+    azimuth_max_error(index) = max(angle_error(:, 1));
+    elevation_max_error(index) = max(angle_error(:, 2));
+    valid(index) = true;
+end
+valid_fraction = nnz(valid) / opts.Bsep;
+confidence = base_confidence_local(opts, valid_fraction);
+if valid_fraction < opts.minimum_valid_fraction
+    if nnz(rank_failure) > nnz(search_failure)
+        confidence.confidence_status = 'NUMERIC_RANK_DEFICIENT';
+    else
+        confidence.confidence_status = 'SEARCH_NOT_CONVERGED';
+    end
+else
+    r_conf_squared = stage8_type1_quantile(r_squared(valid), 1 - opts.beta);
+    az_halfwidth = stage8_type1_quantile( ...
+        azimuth_max_error(valid), 1 - opts.beta);
+    el_halfwidth = stage8_type1_quantile( ...
+        elevation_max_error(valid), 1 - opts.beta);
+    zero_distance_squared = real(d_hat_rad.' * metric.T * d_hat_rad);
+    confidence.r_conf_squared = r_conf_squared;
+    confidence.zero_distance_squared = zero_distance_squared;
+    confidence.zero_excluded_flag = zero_distance_squared > r_conf_squared;
+    confidence.azimuth_simultaneous_halfwidth_deg = az_halfwidth;
+    confidence.elevation_simultaneous_halfwidth_deg = el_halfwidth;
+    confidence.engineering_halfwidth_pass = ...
+        az_halfwidth <= opts.engineering_halfwidth_gate_deg && ...
+        el_halfwidth <= opts.engineering_halfwidth_gate_deg;
+    confidence.confidence_status = 'OK';
+end
+debug = struct('r_squared', r_squared, 'matched_angles_deg', ...
+    matched_angles, 'valid_flags', valid, 'rank_failure_flags', ...
+    rank_failure, 'search_failure_flags', search_failure, ...
+    'K1_fit_count', K1_fit_count, 'K2_fit_count', K2_fit_count, ...
+    'complete_K2_refit_flag', K2_fit_count == opts.Bsep, ...
+    'truth_used_flag', false, 'metric', metric, 'phase_factor', 1);
+end
+
+function opts = normalize_options_local(opts)
+if ~(isstruct(opts) && isscalar(opts))
+    error('bootstrap_separation_confidence:Options', ...
+        'opts must be a scalar struct.');
+end
+allowed = {'beta','Bsep','minimum_valid_fraction', ...
+    'engineering_halfwidth_gate_deg','seed','initialization_factory', ...
+    'fit_options','refit_callback','formal_run'};
+unknown = setdiff(fieldnames(opts), allowed);
+if ~isempty(unknown)
+    error('bootstrap_separation_confidence:UnknownOption', ...
+        'Unknown option: %s.', unknown{1});
+end
+defaults = struct('beta', 0.05, 'Bsep', 199, ...
+    'minimum_valid_fraction', 0.90, ...
+    'engineering_halfwidth_gate_deg', 0.21, 'seed', 20260725, ...
+    'initialization_factory', [], 'fit_options', struct(), ...
+    'refit_callback', [], 'formal_run', false);
+names = fieldnames(defaults);
+for index = 1:numel(names)
+    if ~isfield(opts, names{index})
+        opts.(names{index}) = defaults.(names{index});
+    end
+end
+if opts.formal_run && (~isempty(opts.refit_callback) || opts.Bsep ~= 199)
+    error('bootstrap_separation_confidence:FormalPlan', ...
+        'Formal separation bootstrap requires Bsep=199 and the real refit path.');
+end
+if isempty(opts.refit_callback) && ...
+        ~isa(opts.initialization_factory, 'function_handle')
+    error('bootstrap_separation_confidence:Factory', ...
+        'The real refit path requires a data-dependent initialization factory.');
+end
+end
+
+function validate_fit_local(fit2, model)
+required = {'K','angles_hat_deg','G_hat','S_hat','sigma2_hat', ...
+    'estimate_returned_flag','fixed_measurement_hash','phase_factor'};
+if ~(isstruct(fit2) && isscalar(fit2) && all(isfield(fit2, required)) && ...
+        fit2.K == 2 && fit2.estimate_returned_flag && fit2.phase_factor == 1)
+    error('bootstrap_separation_confidence:Fit', ...
+        'fit2 must be a returned phase_factor=1 K2 fit.');
+end
+if ~strcmp(fit2.fixed_measurement_hash, model.fixed_measurement_hash)
+    error('bootstrap_separation_confidence:Measurement', ...
+        'fit2 and model measurement identities differ.');
+end
+end
+
+function data = simulate_under_k2_local(fit2, seed)
+rng_state = rng;
+cleanup = onCleanup(@() rng(rng_state));
+rng(seed, 'twister');
+noise = (randn(size(fit2.G_hat, 1), size(fit2.S_hat, 2)) + ...
+    1j * randn(size(fit2.G_hat, 1), size(fit2.S_hat, 2))) / sqrt(2);
+data = struct('Zseq_white', fit2.G_hat * fit2.S_hat + ...
+    sqrt(fit2.sigma2_hat) * noise, ...
+    'fixed_measurement_hash', fit2.fixed_measurement_hash, ...
+    'phase_factor', 1, 'bootstrap_seed', seed, ...
+    'bootstrap_source', 'FITTED_K2_WHITENED_COORDINATES');
+clear cleanup
+end
+
+function confidence = base_confidence_local(opts, valid_fraction)
+confidence = struct('beta', opts.beta, 'Bsep', opts.Bsep, ...
+    'minimum_valid_fraction', opts.minimum_valid_fraction, ...
+    'valid_bootstrap_fraction', valid_fraction, ...
+    'r_conf_squared', NaN, 'zero_distance_squared', NaN, ...
+    'zero_excluded_flag', false, ...
+    'azimuth_simultaneous_halfwidth_deg', NaN, ...
+    'elevation_simultaneous_halfwidth_deg', NaN, ...
+    'engineering_halfwidth_gate_deg', opts.engineering_halfwidth_gate_deg, ...
+    'engineering_halfwidth_pass', false, ...
+    'confidence_status', 'SEARCH_NOT_CONVERGED', ...
+    'matching_rule', 'MINIMUM_TWO_DIMENSIONAL_ANGULAR_COST', ...
+    'truth_used_flag', false);
+end

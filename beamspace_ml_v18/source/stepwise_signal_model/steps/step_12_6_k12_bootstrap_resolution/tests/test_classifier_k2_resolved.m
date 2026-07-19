@@ -1,0 +1,13 @@
+function result = test_classifier_k2_resolved()
+%TEST_CLASSIFIER_K2_RESOLVED Verify all three K2 resolution gates.
+
+[fit1, fit2, lrt, threshold, separation, diagnostics] = ...
+    build_stage8_classifier_fixture();
+decision = classify_local_cluster_state(fit1, fit2, lrt, threshold, ...
+    separation, diagnostics);
+pass = strcmp(decision.state, 'K2_RESOLVED');
+assert(pass, 'test_classifier_k2_resolved:Failed', ...
+    'Passing LRT, zero exclusion, and half-width must resolve K2.');
+result = table(pass, string(decision.state), ...
+    'VariableNames', {'pass_flag','state'});
+end

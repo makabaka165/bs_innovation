@@ -1,0 +1,13 @@
+function result = test_no_hidden_truth_model_mismatch_state()
+%TEST_NO_HIDDEN_TRUTH_MODEL_MISMATCH_STATE Reject truth-driven decisions.
+
+[fit1, fit2, lrt, threshold, separation, diagnostics] = ...
+    build_stage8_classifier_fixture();
+diagnostics.truth_model_mismatch = true;
+stage8_assert_error(@() classify_local_cluster_state(fit1, fit2, lrt, ...
+    threshold, separation, diagnostics), ...
+    'classify_local_cluster_state:HiddenTruth');
+pass = true;
+result = table(pass, ...
+    'VariableNames', {'pass_flag'});
+end

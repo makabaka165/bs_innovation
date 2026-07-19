@@ -17,6 +17,8 @@
 > - `innovation-mining/FAILED_likelihood_discriminative_adaptive_wb.md`
 >
 > 本文已经把 prior-art 审查要求写入每个关键阶段：俯仰分组秩条件、固定白化定理假设、零方向高阶退化、相关波束非可加 FIM、完整复杂度、threshold-risk、false-resolved 和等预算外部基线。
+>
+> 当前执行门（2026-07-19）：`AUTHORIZED_STAGE8_0_CODE_ONLY`。只允许 Stage8.0 预实现、合同冻结、小型 fixture 测试和本地 code-only 提交；不得自动执行 Stage8.1 calibration/validation、Stage8.2 holdout、推送或 PR。
 
 ---
 
@@ -3736,12 +3738,13 @@ deterministic artifacts 逐路径、byte count、SHA-256 和 stable identity 全
 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。
 
 Stage7 继续保持 `PASS_SYSTEM_ANALYSIS_ONLY`，不升级为波束选择算法贡献。
-Stage8 未执行；未来若由用户单独授权，只用于完成阶段 5 遗留的 K1/K2
-false-split、false-resolved 与 resolved/unresolved 统计闭环。
+Stage8.0 已获用户单独 code-only 授权；Stage8.1/8.2 未授权且未执行。Stage8
+只用于完成阶段 5 遗留的 K1/K2 false-split、false-resolved 与
+resolved/unresolved 统计闭环。
 
 # 阶段 8：K1/K2 bootstrap、`K2_UNRESOLVED` 与 false-resolved 控制
 
-> **当前状态：`NOT_EXECUTED_REQUIRES_SEPARATE_AUTHORIZATION`。** 阶段 7 没有通过有限样本 Pareto 门；Stage7.1 closure 不会自动执行本阶段。未来若单独授权，只允许服务阶段 5 的 K1/K2 统计闭环。
+> **当前状态：`AUTHORIZED_STAGE8_0_CODE_ONLY`。** 本轮只允许 Stage8.0 代码与合同冻结，不执行正式 calibration、validation 或 holdout。阶段 7 没有通过有限样本 Pareto 门；Stage7.1 closure 和 Stage8.0 均不会自动进入 Stage8.1。
 
 ## 目标
 

@@ -13,6 +13,8 @@
 > - `innovation-mining/FAILED_likelihood_discriminative_adaptive_wb.md`
 >
 > 目的：把修订后的主张拆成可执行、可复现、可否决的代码阶段与实验体系。所有新代码、结果和论文论述必须主动区分“已有数学基础”“系统特化”和“经实验才可能成立的候选贡献”。
+>
+> 当前门（2026-07-19）：`AUTHORIZED_STAGE8_0_CODE_ONLY`。Stage8.0 只允许预实现、合同冻结和小型 deterministic/synthetic fixture；Stage8.1 的正式离线 calibration 与 validation、Stage8.2 的 independent holdout 均未执行，也没有任何 Stage8 性能数字。
 
 ---
 
@@ -1055,7 +1057,15 @@ results/stage7_fim_beam_design_report.md
 
 # Step12.6：K1/K2 bootstrap、分辨状态与独立风险控制
 
-> **当前门状态：未授权。** Step12.5 的有限样本 Pareto 门为 0/3，阶段 7 判定不允许自动或技术性进入本阶段。
+> **当前门状态：`AUTHORIZED_STAGE8_0_CODE_ONLY`。** 这是用户对 Stage8.0 的单独授权，不改变 Step12.5 的 0/3 Pareto 结论，也不自动授权 Stage8.1 或 Stage8.2。
+
+## 三阶段冻结路线
+
+1. **Stage8.0 / Step12.6A（当前）：** 建立独立代码目录；冻结 fixed measurement、共同局部域、K1 两起点、K2 三起点、`r_C*L` LRT、完整 bootstrap 重拟合、每配置一个全局阈值、separation confidence、六状态输出、provenance 和未来实验计划；只运行小型 fixture。状态为 code-only，无性能结果。
+2. **Stage8.1（尚未执行）：** 仅在后续单独授权后，按 150 cells/config、199 samples/cell 执行离线 K1 threshold calibration；随后使用独立 seed 执行 K1/K2 validation。不得生成 holdout 结论，不得在 validation 后改变已冻结的 alpha、beta、start set、状态门或阈值策略。
+3. **Stage8.2（尚未执行）：** 仅在 Stage8.1 artifact 锁定且再次单独授权后，执行 K1/K2 independent holdout、full-parent paired sensitivity、mismatch holdout 和 Stage5 coherent-weak boundary；holdout 不重新校准阈值，并按预注册 Wilson 门给出 PASS/PARTIAL/FAIL。
+
+三个阶段的 seed、artifact 和 Git identity 独立。Stage8.0 不生成正式 threshold table、calibration CSV、holdout CSV 或 PNG。
 
 ## 目标
 
@@ -1089,12 +1099,13 @@ function state = classify_local_cluster_state(fitK1, fitK2, lr, ci, diagnostics,
 K1
 K2_RESOLVED
 K2_UNRESOLVED
-GROUP_UNIDENTIFIABLE
 OUT_OF_LOCAL_CELL
 SEARCH_NOT_CONVERGED
-MODEL_MISMATCH
 NUMERIC_RANK_DEFICIENT
 ```
+
+Stage4 group support 只作初始化诊断，不再作为统一拒判。`MODEL_MISMATCH`
+在独立校准数据可见 GOF 前固定禁用，仿真 truth metadata 不得激活该状态。
 
 不得增加 EASY/HARD/AMBIGUOUS 搜索预算状态。
 

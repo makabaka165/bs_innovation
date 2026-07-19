@@ -3,7 +3,7 @@
 > 建议保存路径：`innovation-mining/11_sequential_beamspace_ml_innovations_theory.md`  
 > 默认仓库：`makabaka165/bs_innovation`  
 > 文档日期：2026-07-17  
-> 文档状态：阶段 6 已冻结确定性流形证据；阶段 7 已完成 961 子集系统分析，Stage7.1 于 2026-07-19 完成两次独立 closure。Stage7.1 deterministic evidence bundle hash 为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。阶段 7 仍为 `PASS_SYSTEM_ANALYSIS_ONLY`，不代表投稿新颖性、未知模型阶数或有限样本分辨闭环已经成立。
+> 文档状态：阶段 6 已冻结确定性流形证据；阶段 7 已完成 961 子集系统分析，Stage7.1 于 2026-07-19 完成两次独立 closure。Stage7.1 deterministic evidence bundle hash 为 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。阶段 7 仍为 `PASS_SYSTEM_ANALYSIS_ONLY`。Stage8.0 仅获授权进行 code-only 合同冻结与小型 fixture 测试，尚无 calibration、validation、holdout 或性能结果，不代表未知模型阶数或有限样本分辨闭环已经成立。
 > 本文替代旧的“controlled pair2d + greedy_combined_B7 + fixed topK3 + C05”创新组织方式，但不删除旧源码和旧证据。
 >
 > 必须联合阅读：
@@ -1783,7 +1783,20 @@ K=\sum_{q=1}^{Q}K_q.
 
 ### 10.2 集中似然残差
 
-对候选目标数 \(K\)，令最优残差为
+对候选目标数 \(K\)，令有效白化数据为
+
+\[
+\widetilde Z\in\mathbb C^{r_C\times L},
+\]
+
+其中 \(r_C=\operatorname{size}(\widetilde Z,1)\) 是协方差有效子空间的白化维数，
+不是白化前的原始输出数。复观测数固定为
+
+\[
+n_C=r_CL.
+\]
+
+令最优残差为
 
 \[
 RSS_K
@@ -1794,17 +1807,13 @@ RSS_K
 \|_F^2.
 \]
 
-未知噪声方差的集中对数似然为
+未知噪声方差的 ML 估计和集中对数似然为
 
 \[
+\widehat\sigma_K^2=\frac{RSS_K}{n_C},
+\qquad
 \ell_K^\star
-=
--BL
-\log
-\left(
-\frac{RSS_K}{BL}
-\right)
-+C.
+=-n_C\left[\log\!\left(\pi\widehat\sigma_K^2\right)+1\right].
 \]
 
 相邻模型的似然比统计量为
@@ -1813,11 +1822,15 @@ RSS_K
 \boxed{
 \Lambda_{K,K+1}
 =
-2BL
+2n_C
 \log
 \frac{RSS_K}{RSS_{K+1}}.
 }
 \]
+
+因此，只有当符号 \(B\) 被明确限定为有效白化维数 \(r_C\) 时，旧写法
+\(2BL\log(RSS_K/RSS_{K+1})\) 才成立。Stage8 统一保存 `r_C`、`L` 和
+`n_complex_observations=r_C*L`，不以白化前通道数替代它们。
 
 ### 10.3 为什么不能直接使用普通卡方阈值
 
