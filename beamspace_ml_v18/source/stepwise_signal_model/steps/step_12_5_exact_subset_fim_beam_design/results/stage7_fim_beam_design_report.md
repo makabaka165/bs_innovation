@@ -1,7 +1,7 @@
 ---
 phase_factor: 1
 stage7_status: PASS_SYSTEM_ANALYSIS_ONLY
-stage7_plan_hash: e630a084e68108a1604527afe7a81db7150b045454b3f54b05e6cfd389259a3b
+stage7_plan_hash: 1c6f99f158a118e5dc79efaa02076009cf103f87c9861d1dd52da27fb8608f23
 stage6_evidence_bundle_hash: 0c1f444603398e03865043af4e4c6e4a414dd15a3cc90e0539b19c56e990c839
 ---
 
@@ -53,11 +53,11 @@ Paired success difference versus full parent: 0.000862069 [-0.00375933, 0.005483
 
 Threshold SNR_80 T0/T1: 7.28571/3.65625 dB. Mismatch M0-M3 success: 1/0.995/0.995/1. Stress success: 0, Wilson 95% [0, 0.0188453].
 
-Selected output/memory/data movement: 240/499200/33520 bytes; measured online DBF runtime: 1.2115625e-05 s/sample; offline subset evaluation runtime: 0.347431 s.
+Selected output/memory/data movement: 240/499200/33520 bytes; measured online DBF runtime: 6.06894531e-06 s/sample; offline subset evaluation runtime: 0.273582 s.
 
 ## H. Complete complexity
 
-FIM evaluations: 1292928; covariance/whitener decompositions: 2184/2184; generalized-eigenvalue evaluations: 2585856; finite-sample score/SVD calls: 11734516/11734516; runtime: 1641.627 s; peak-memory estimate: 110347346 bytes; result volume: 1378536 bytes.
+FIM evaluations: 1292928; covariance/whitener decompositions: 2184/2184; generalized-eigenvalue evaluations: 2585856; finite-sample score/SVD calls: 11734516/11734516; runtime: 1428.998 s; peak-memory estimate: 110417088 bytes; result volume: 1401807 bytes.
 
 ## I. Risks, failure boundaries, and downgrades
 
