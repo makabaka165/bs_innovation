@@ -1,0 +1,19 @@
+function result = test_stage8_1_manifest_no_self_reference()
+%TEST_STAGE8_1_MANIFEST_NO_SELF_REFERENCE Verify manifest exclusions.
+
+folder = tempname;
+mkdir(folder);
+cleanup = onCleanup(@() rmdir(folder, 's'));
+evidence = write_stage8_1_results_bundle( ...
+    build_stage8_1a_writer_bundle(1), folder, struct());
+manifest = evidence.manifest;
+pass = ~any(manifest.artifact_id == "EVIDENCE_MANIFEST") && ...
+    ~any(manifest.artifact_id == "RUNTIME_DIAGNOSTICS") && ...
+    ~any(contains(lower(manifest.relative_path), "checkpoint")) && ...
+    ~evidence.manifest_self_reference_flag;
+assert(pass, 'test_stage8_1_manifest_no_self_reference:Failed', ...
+    'The deterministic evidence manifest references an excluded artifact.');
+result = table(pass, height(manifest), ...
+    'VariableNames', {'pass_flag','manifest_row_count'});
+clear cleanup
+end

@@ -1,4 +1,4 @@
-# Stage8.0 / Step12.6A K1/K2 bootstrap 预实现审计
+# Stage8.1A / Step12.6B-pre calibration 执行合同审计
 
 > 日期：2026-07-19
 > 仓库：`makabaka165/bs_innovation`
@@ -6,15 +6,15 @@
 > 分支：`main`
 > MATLAB：R2022b
 > 活跃相位：`phase_factor=1`
-> 当前状态：`AUTHORIZED_STAGE8_0_CODE_ONLY`
-> 性能状态：`STAGE8_0_CODE_ONLY_NO_PERFORMANCE_RESULTS`
+> 当前状态：`AUTHORIZED_STAGE8_1A_CODE_ONLY`
+> 性能状态：`STAGE8_1A_CODE_ONLY_NO_PERFORMANCE_RESULTS`
 
 ## A. 审计结论边界
 
-Stage8.0 只预实现并冻结代码合同，使用小型 deterministic/synthetic fixture
+Stage8.1A 只修订并冻结可执行代码合同，使用小型 deterministic/synthetic fixture
 验证接口。它不执行 59,700 个正式 K1 calibration bootstrap 样本，不执行
 validation 或 independent holdout，不生成正式阈值、CSV、PNG、Monte Carlo
-结果或论文性能数字，也不进入 Stage8.1。
+结果或论文性能数字，也不进入 Stage8.1B。
 
 Stage8 只能定位为：将已有非正则 K1/K2 bootstrap 与可分辨/不可分辨风险状态
 接入 factor=1 实际顺序 DBF、稳定白化 DML 和 Stage5 分组条件初始化链，去除
@@ -76,14 +76,16 @@ economy-SVD pseudoinverse，不计算 `inv(G'*G)`，不使用固定 ridge 或 RS
 
 ## E. Bootstrap 与 threshold 合同
 
-K1 bootstrap 在固定白化坐标生成
+K1/K2 bootstrap 在阵元坐标生成
 
 \[
-Z_{boot}=\widehat G_1\widehat S_1+\sqrt{\widehat\sigma_1^2}E,
-\quad E_{ij}\sim\mathcal{CN}(0,1).
+Y_{boot}=A_{element}(\widehat\theta_K)\widehat S_K+N_{element},
+\quad N_{element}\sim\mathcal{CN}(0,\widehat\sigma_K^2R_{n,element}),
 \]
 
-每个样本完整重拟合 K1 和 K2；不在原估计角度直接评分，不固定 K2 角度。
+随后固定执行 `Z_raw=W_I'Y_boot` 和 `Z_white=T_IZ_raw`。阵元数据保留到
+bootstrap bundle，且每个样本重新运行真实 Stage4/5 initialization factory，
+再完整重拟合 K1 和 K2；不在原估计角度直接评分，不固定 K2 角度。
 阈值策略固定为每个物理 measurement config 一个 `q_global`：
 
 \[
@@ -112,9 +114,12 @@ mismatch 风险。
 
 ## G. Calibration、validation 与 holdout 冻结
 
-- Calibration：2 configs，各 150 cells，199 samples/cell，共 59,700；独立
-  seed block 从 2026072100 派生。本阶段不执行。
-- K1 validation：6 strata/config，1000 trials/stratum，seed 20260722。
+- Calibration：2 configs，各 150 cells，199 samples/cell，共 59,700；300 个
+  data seed 从 `2026072100` 连续分配，bootstrap block 从 `2126072100` 开始、
+  stride 1000。本阶段不执行。
+- K1 validation：6 个 `L × noise` strata，各 1000 个公共阵元 trial；两个
+  measurement config 共享阵元 realization，形成 6000 个公共 trial 和 12,000
+  个 method rows。seed base 为 `2226072200`，每 stratum 占一个 2000-seed block。
 - K1 independent holdout：同分布 6000 trials/config，seed 20260723。
 - K2 validation：主配置 1200 trials，seed 20260724，分离 log-uniform
   `[0.05,0.40]` degree，其余生成规则按 locked plan。
@@ -143,7 +148,7 @@ truth/holdout-dependent threshold、candidate-dependent measurement、hidden-tru
 mismatch、bootstrap 固定点评分、只重拟合 K2 的 calibration，或从主风险删除
 unresolved。
 
-## I. Stage8.0 未完成项
+## I. Stage8.1A 未完成项
 
 - 正式 bootstrap threshold 未生成；
 - validation/holdout 未执行；
@@ -153,6 +158,26 @@ unresolved。
 
 ## J. 下一阶段门
 
-只有 Stage8.0 全部 code-only 测试、Code Analyzer、scope、upstream freeze、
+只有 Stage8.1A 全部 code-only 测试、Code Analyzer、scope、upstream freeze、
 identity 和 `git diff --check` 门通过后，才可判定“技术上允许后续单独授权
-Stage8.1”。该判定本身不执行 Stage8.1，也不授权 Stage8.2。
+Stage8.1B”。该判定本身不执行 Stage8.1B，也不授权 Stage8.2。
+
+## K. Stage8.1A 合同修订
+
+Stage8.1A 将 Stage8.0 的实验计划改成可审计执行合同，但不运行正式实验：
+
+- calibration plan 删除 active `seed`，显式保存 global cell index、data seed、
+  bootstrap block start/end、stride 和公式；59,700 个 active bootstrap seed
+  全局唯一，并与 data/validation/holdout 空间隔离；
+- measurement registry 固定 PRIMARY/FULL_PARENT × WHITE/CORRELATED 四个对象，
+  每个 cell 按 config+noise 解析自己的 fixed hash，不允许一个模型跨噪声复用；
+- 初始化从同一 `Y_element` 实际执行 conventional singleton、Q1/Kq1、
+  Q1/Kq2 和 Q2/Kq1+Kq1；grouped failure 只使对应 start unavailable；
+- `validate_stage8_fit_for_lrt` 统一 returned、converged、rank、RSS、variance、
+  log-likelihood 和 fixed identity 门；formal calibration 任一 refit 失败即令
+  整个 cell 为 `CALIBRATION_CELL_REFIT_FAILURE`，不删除样本；
+- cell/shard/aggregate runner 以 source/plan/model/cell 四类 hash 管理 checkpoint，
+  只有 300 个 PASS cell 和全部唯一 seed 才能锁定两个 config-level threshold；
+- K1 validation 只查 locked threshold，不重新校准；writer 的确定性 identity
+  排除 runtime、manifest 自身和 checkpoint 临时文件；所有 Stage8.1 runner
+  在 Stage8.2 边界停止。

@@ -6,7 +6,7 @@ if nargin < 4 || isempty(opts)
     opts = struct();
 end
 opts = normalize_options_local(opts);
-validate_fit_local(fit2, model);
+validate_fit_local(fit2, model, local_domain);
 reference = fit2.angles_hat_deg;
 center = mean(reference, 1);
 [g_center, derivatives] = build_full_sequential_local_manifold( ...
@@ -25,26 +25,64 @@ search_failure = false(opts.Bsep, 1);
 K1_fit_count = 0;
 K2_fit_count = 0;
 for index = 1:opts.Bsep
-    seed = opts.seed + index - 1;
-    boot_data = simulate_under_k2_local(fit2, seed);
+    if opts.formal_run
+        seed = opts.seed;
+    else
+        seed = opts.seed + index - 1;
+    end
+    if opts.formal_run
+        boot_data = simulate_stage8_element_bootstrap( ...
+            fit2, model, struct('seed', seed, 'substream', index, ...
+            'formal_run', true));
+    else
+        boot_data = simulate_under_k2_local(fit2, model, seed);
+    end
     if isempty(opts.refit_callback)
-        context = opts.initialization_factory(boot_data);
+        if opts.formal_run
+            context = build_stage8_initialization_context_from_data( ...
+                boot_data, model, local_domain, ...
+                opts.stage5_locked_config, model.noise_factorization, struct());
+        else
+            context = opts.initialization_factory(boot_data);
+        end
         [fit1_boot, ~] = fit_local_model_k(boot_data, 1, ...
             local_domain, model, context, opts.fit_options);
+        [fit1_valid, fit1_validity] = validate_stage8_fit_for_lrt( ...
+            fit1_boot, 1, struct('fixed_measurement_hash', ...
+            model.fixed_measurement_hash, 'local_domain_hash', ...
+            local_domain.domain_hash));
+        if ~fit1_valid
+            if strcmp(fit1_validity.status, 'NUMERIC_RANK_DEFICIENT')
+                rank_failure(index) = true;
+            else
+                search_failure(index) = true;
+            end
+            K1_fit_count = K1_fit_count + 1;
+            continue;
+        end
         context.k1_fit = fit1_boot;
         [fit_boot, ~] = fit_local_model_k(boot_data, 2, ...
             local_domain, model, context, opts.fit_options);
         K1_fit_count = K1_fit_count + 1;
+        expected_fit2 = struct('fixed_measurement_hash', ...
+            fit1_boot.fixed_measurement_hash, 'local_domain_hash', ...
+            fit1_boot.local_domain_hash, 'solver_contract_hash', ...
+            fit1_boot.solver_contract_hash, 'observation_hash', ...
+            fit1_boot.observation_hash);
     else
         fit_boot = opts.refit_callback(index, boot_data);
+        expected_fit2 = struct('fixed_measurement_hash', ...
+            model.fixed_measurement_hash, 'local_domain_hash', ...
+            local_domain.domain_hash);
     end
     K2_fit_count = K2_fit_count + 1;
-    if ~fit_boot.estimate_returned_flag || ~fit_boot.converged_flag
-        search_failure(index) = true;
-        continue;
-    end
-    if fit_boot.effective_rank < 2
+    [fit_valid, fit_validity] = validate_stage8_fit_for_lrt( ...
+        fit_boot, 2, expected_fit2);
+    if strcmp(fit_validity.status, 'NUMERIC_RANK_DEFICIENT')
         rank_failure(index) = true;
+        continue;
+    elseif ~fit_valid
+        search_failure(index) = true;
         continue;
     end
     [matched, ~, ~] = match_bootstrap_target_labels( ...
@@ -98,7 +136,7 @@ if ~(isstruct(opts) && isscalar(opts))
 end
 allowed = {'beta','Bsep','minimum_valid_fraction', ...
     'engineering_halfwidth_gate_deg','seed','initialization_factory', ...
-    'fit_options','refit_callback','formal_run'};
+    'fit_options','refit_callback','formal_run','stage5_locked_config'};
 unknown = setdiff(fieldnames(opts), allowed);
 if ~isempty(unknown)
     error('bootstrap_separation_confidence:UnknownOption', ...
@@ -108,25 +146,27 @@ defaults = struct('beta', 0.05, 'Bsep', 199, ...
     'minimum_valid_fraction', 0.90, ...
     'engineering_halfwidth_gate_deg', 0.21, 'seed', 20260725, ...
     'initialization_factory', [], 'fit_options', struct(), ...
-    'refit_callback', [], 'formal_run', false);
+    'refit_callback', [], 'formal_run', false, ...
+    'stage5_locked_config', build_stage8_stage5_locked_config());
 names = fieldnames(defaults);
 for index = 1:numel(names)
     if ~isfield(opts, names{index})
         opts.(names{index}) = defaults.(names{index});
     end
 end
-if opts.formal_run && (~isempty(opts.refit_callback) || opts.Bsep ~= 199)
+if opts.formal_run && (~isempty(opts.refit_callback) || ...
+        ~isempty(opts.initialization_factory) || opts.Bsep ~= 199)
     error('bootstrap_separation_confidence:FormalPlan', ...
         'Formal separation bootstrap requires Bsep=199 and the real refit path.');
 end
-if isempty(opts.refit_callback) && ...
+if ~opts.formal_run && isempty(opts.refit_callback) && ...
         ~isa(opts.initialization_factory, 'function_handle')
     error('bootstrap_separation_confidence:Factory', ...
         'The real refit path requires a data-dependent initialization factory.');
 end
 end
 
-function validate_fit_local(fit2, model)
+function validate_fit_local(fit2, model, domain)
 required = {'K','angles_hat_deg','G_hat','S_hat','sigma2_hat', ...
     'estimate_returned_flag','fixed_measurement_hash','phase_factor'};
 if ~(isstruct(fit2) && isscalar(fit2) && all(isfield(fit2, required)) && ...
@@ -138,9 +178,21 @@ if ~strcmp(fit2.fixed_measurement_hash, model.fixed_measurement_hash)
     error('bootstrap_separation_confidence:Measurement', ...
         'fit2 and model measurement identities differ.');
 end
+[valid, details] = validate_stage8_fit_for_lrt(fit2, 2, ...
+    struct('fixed_measurement_hash', model.fixed_measurement_hash, ...
+    'local_domain_hash', domain.domain_hash));
+if ~valid
+    error('bootstrap_separation_confidence:FitValidity', ...
+        'fit2 is not valid for LRT/separation use: %s.', details.status);
+end
 end
 
-function data = simulate_under_k2_local(fit2, seed)
+function data = simulate_under_k2_local(fit2, model, seed)
+if isfield(model, 'Rn_elem') && isfield(model, 'element_noise_factorization')
+    data = simulate_stage8_element_bootstrap( ...
+        fit2, model, struct('seed', seed, 'formal_run', false));
+    return;
+end
 rng_state = rng;
 cleanup = onCleanup(@() rng(rng_state));
 rng(seed, 'twister');

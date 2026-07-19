@@ -1,5 +1,5 @@
 function [artifact, debug] = calibrate_global_bootstrap_threshold( ...
-    calibration_cells, local_domain, model, opts)
+    calibration_cells, local_domain, model_registry, opts)
 %CALIBRATE_GLOBAL_BOOTSTRAP_THRESHOLD Refit K1/K2 and take max cell quantile.
 
 if nargin < 4 || isempty(opts)
@@ -8,13 +8,21 @@ end
 opts = normalize_options_local(opts);
 cells = normalize_cells_local(calibration_cells);
 config_ids = unique(string({cells.measurement_config_id}));
-if ~isscalar(config_ids) || config_ids ~= string(model.measurement_config_id)
+if ~isscalar(config_ids)
     error('calibrate_global_bootstrap_threshold:MeasurementConfig', ...
         'One invocation calibrates exactly one fixed measurement configuration.');
 end
 if opts.formal_run && (opts.Bboot_per_cell ~= 199 || numel(cells) ~= 150)
     error('calibrate_global_bootstrap_threshold:FormalPlan', ...
         'Formal calibration requires 150 cells and 199 samples per cell.');
+end
+if opts.formal_run && ~is_stage8_registry_local(model_registry)
+    error('calibrate_global_bootstrap_threshold:FormalRegistry', ...
+        'Formal calibration requires the four-entry noise-specific registry.');
+end
+if opts.formal_run && numel(unique(string({cells.noise_profile_id}))) ~= 2
+    error('calibrate_global_bootstrap_threshold:FormalNoiseCoverage', ...
+        'A formal config threshold must aggregate both noise profiles.');
 end
 lambda = NaN(opts.Bboot_per_cell, numel(cells));
 cell_quantile = NaN(numel(cells), 1);
@@ -24,20 +32,35 @@ score_calls = 0;
 svd_calls = 0;
 start_clock = tic;
 for cell_index = 1:numel(cells)
-    context = cells(cell_index).initialization_factory(cells(cell_index).full_data);
+    model = resolve_cell_model_local( ...
+        model_registry, cells(cell_index), opts.formal_run);
+    verify_cell_model_local(cells(cell_index), model);
+    context = build_context_local(cells(cell_index), ...
+        cells(cell_index).full_data, model, local_domain, opts);
     [fit1, ~] = fit_local_model_k(cells(cell_index).full_data, 1, ...
         local_domain, model, context, opts.fit_options);
     k1_fit_count = k1_fit_count + 1;
     score_calls = score_calls + fit1.num_score_eval;
     svd_calls = svd_calls + fit1.num_svd;
-    if ~fit1.estimate_returned_flag
+    [valid1, validity1] = validate_stage8_fit_for_lrt(fit1, 1, ...
+        struct('fixed_measurement_hash', model.fixed_measurement_hash, ...
+        'local_domain_hash', local_domain.domain_hash));
+    if ~valid1
         error('calibrate_global_bootstrap_threshold:OriginalK1Fit', ...
-            'Calibration cell %d did not return its fitted K1 null.', cell_index);
+            'Calibration cell %d rejected K1 status %s.', ...
+            cell_index, validity1.status);
     end
     for bootstrap_index = 1:opts.Bboot_per_cell
-        seed = cells(cell_index).seed + bootstrap_index - 1;
-        [boot_data, ~] = simulate_bootstrap_under_k1(fit1, struct('seed', seed));
-        boot_context = cells(cell_index).initialization_factory(boot_data);
+        seed = bootstrap_seed_local(cells(cell_index), bootstrap_index);
+        if isfield(model, 'Rn_elem')
+            [boot_data, ~] = simulate_bootstrap_under_k1(fit1, model, ...
+                struct('seed', seed, 'formal_run', opts.formal_run));
+        else
+            [boot_data, ~] = simulate_bootstrap_under_k1( ...
+                fit1, struct('seed', seed));
+        end
+        boot_context = build_context_local(cells(cell_index), ...
+            boot_data, model, local_domain, opts);
         [fit1_boot, ~] = fit_local_model_k(boot_data, 1, ...
             local_domain, model, boot_context, opts.fit_options);
         boot_context.k1_fit = fit1_boot;
@@ -48,6 +71,22 @@ for cell_index = 1:numel(cells)
         score_calls = score_calls + fit1_boot.num_score_eval + ...
             fit2_boot.num_score_eval;
         svd_calls = svd_calls + fit1_boot.num_svd + fit2_boot.num_svd;
+        [valid1_boot, validity1_boot] = validate_stage8_fit_for_lrt( ...
+            fit1_boot, 1, struct('fixed_measurement_hash', ...
+            model.fixed_measurement_hash, 'local_domain_hash', ...
+            local_domain.domain_hash));
+        expected2 = struct('fixed_measurement_hash', ...
+            fit1_boot.fixed_measurement_hash, 'local_domain_hash', ...
+            fit1_boot.local_domain_hash, 'solver_contract_hash', ...
+            fit1_boot.solver_contract_hash, 'observation_hash', ...
+            fit1_boot.observation_hash);
+        [valid2_boot, validity2_boot] = validate_stage8_fit_for_lrt( ...
+            fit2_boot, 2, expected2);
+        if ~(valid1_boot && valid2_boot)
+            error('calibrate_global_bootstrap_threshold:BootstrapRefit', ...
+                'Bootstrap validity failed: %s/%s.', ...
+                validity1_boot.status, validity2_boot.status);
+        end
         [lrt, ~] = nested_dml_likelihood_ratio(fit1_boot, fit2_boot, struct());
         if ~strcmp(lrt.lrt_status, 'OK')
             error('calibrate_global_bootstrap_threshold:BootstrapRefit', ...
@@ -88,14 +127,16 @@ if ~(isstruct(opts) && isscalar(opts))
     error('calibrate_global_bootstrap_threshold:Options', ...
         'opts must be a scalar struct.');
 end
-allowed = {'alpha','Bboot_per_cell','formal_run','fit_options'};
+allowed = {'alpha','Bboot_per_cell','formal_run','fit_options', ...
+    'stage5_locked_config'};
 unknown = setdiff(fieldnames(opts), allowed);
 if ~isempty(unknown)
     error('calibrate_global_bootstrap_threshold:UnknownOption', ...
         'Unknown option: %s.', unknown{1});
 end
 defaults = struct('alpha', 0.05, 'Bboot_per_cell', 199, ...
-    'formal_run', false, 'fit_options', struct());
+    'formal_run', false, 'fit_options', struct(), ...
+    'stage5_locked_config', build_stage8_stage5_locked_config());
 names = fieldnames(defaults);
 for index = 1:numel(names)
     if ~isfield(opts, names{index})
@@ -113,15 +154,74 @@ else
     error('calibrate_global_bootstrap_threshold:Cells', ...
         'calibration_cells must be a struct array or cell array of structs.');
 end
-required = {'measurement_config_id','calibration_cell_id','seed', ...
-    'full_data','initialization_factory'};
+required = {'measurement_config_id','calibration_cell_id','full_data'};
 if isempty(cells) || ~all(isfield(cells, required))
     error('calibrate_global_bootstrap_threshold:CellContract', ...
-        'Every calibration cell must expose data, seed, ID, and initialization factory.');
+        'Every calibration cell must expose data and its registered ID.');
 end
-if ~all(arrayfun(@(x) isa(x.initialization_factory, 'function_handle'), cells))
-    error('calibrate_global_bootstrap_threshold:Factory', ...
-        'Every calibration cell needs a data-dependent initialization factory.');
+has_seed = all(arrayfun(@(x) isfield(x, 'bootstrap_seed_start') || ...
+    isfield(x, 'seed'), cells));
+if ~has_seed
+    error('calibrate_global_bootstrap_threshold:Seed', ...
+        'Every cell needs a registered bootstrap seed start.');
+end
+end
+
+function flag = is_stage8_registry_local(registry)
+flag = isstruct(registry) && isscalar(registry) && ...
+    all(isfield(registry, {'entries','table','entry_count'})) && ...
+    registry.entry_count == 4;
+end
+
+function model = resolve_cell_model_local(registry, cell_now, formal_run)
+if is_stage8_registry_local(registry)
+    if ~isfield(cell_now, 'noise_profile_id')
+        error('calibrate_global_bootstrap_threshold:NoiseProfile', ...
+            'Registry-backed cells must expose noise_profile_id.');
+    end
+    model = resolve_stage8_measurement_model(registry, ...
+        cell_now.measurement_config_id, cell_now.noise_profile_id);
+elseif formal_run
+    error('calibrate_global_bootstrap_threshold:FormalRegistry', ...
+        'Formal calibration cannot use a single measurement model.');
+else
+    model = registry;
+end
+end
+
+function verify_cell_model_local(cell_now, model)
+if ~strcmp(cell_now.full_data.fixed_measurement_hash, ...
+        model.fixed_measurement_hash)
+    error('calibrate_global_bootstrap_threshold:MeasurementHash', ...
+        'Cell data and resolved noise-specific model identities differ.');
+end
+if isfield(cell_now, 'model_key') && ...
+        ~strcmp(cell_now.model_key, model.model_key)
+    error('calibrate_global_bootstrap_threshold:ModelKey', ...
+        'Cell model_key does not match the registry.');
+end
+end
+
+function context = build_context_local(cell_now, data, model, domain, opts)
+if opts.formal_run
+    context = build_stage8_initialization_context_from_data( ...
+        data, model, domain, opts.stage5_locked_config, ...
+        model.noise_factorization, struct());
+elseif isfield(cell_now, 'initialization_factory') && ...
+        isa(cell_now.initialization_factory, 'function_handle')
+    context = cell_now.initialization_factory(data);
+else
+    context = build_stage8_initialization_context_from_data( ...
+        data, model, domain, opts.stage5_locked_config, ...
+        model.noise_factorization, struct());
+end
+end
+
+function seed = bootstrap_seed_local(cell_now, bootstrap_index)
+if isfield(cell_now, 'bootstrap_seed_start')
+    seed = cell_now.bootstrap_seed_start + bootstrap_index - 1;
+else
+    seed = cell_now.seed + bootstrap_index - 1;
 end
 end
 

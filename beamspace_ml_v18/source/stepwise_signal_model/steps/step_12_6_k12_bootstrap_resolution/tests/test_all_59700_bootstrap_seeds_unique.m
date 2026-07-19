@@ -1,0 +1,13 @@
+function result = test_all_59700_bootstrap_seeds_unique(plan)
+%TEST_ALL_59700_BOOTSTRAP_SEEDS_UNIQUE Expand and audit every seed.
+
+if nargin < 1, plan = build_stage8_calibration_plan(); end
+seeds = reshape((plan.cells.bootstrap_seed_start + ...
+    (0:plan.Bboot_per_cell - 1)).', [], 1);
+pass = numel(seeds) == 59700 && numel(unique(seeds)) == 59700 && ...
+    min(seeds) == 2126072100;
+assert(pass, 'test_all_59700_bootstrap_seeds_unique:Failed', ...
+    'The frozen 59,700 bootstrap seeds are not globally unique.');
+result = table(pass, numel(seeds), ...
+    'VariableNames', {'pass_flag','seed_count'});
+end

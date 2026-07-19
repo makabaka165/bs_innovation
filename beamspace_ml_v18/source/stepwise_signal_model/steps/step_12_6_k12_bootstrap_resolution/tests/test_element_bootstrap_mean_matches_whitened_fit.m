@@ -1,0 +1,16 @@
+function result = test_element_bootstrap_mean_matches_whitened_fit()
+%TEST_ELEMENT_BOOTSTRAP_MEAN_MATCHES_WHITENED_FIT Check mean identity.
+
+fixture = build_stage8_1a_mini_fixture();
+[context, ~] = stage8_1a_mini_initialization_callback( ...
+    fixture.full_k1, fixture.model, fixture.domain);
+[fit, ~] = stage8_1a_mock_fit_callback( ...
+    1, 0, fixture.full_k1, context, fixture.model);
+[~, debug] = simulate_stage8_element_bootstrap( ...
+    fit, fixture.model, struct('seed', 17, 'formal_run', true));
+pass = debug.mean_identity_relative_error < 1e-12;
+assert(pass, 'test_element_bootstrap_mean_matches_whitened_fit:Failed', ...
+    'Element and whitened fitted bootstrap means disagree.');
+result = table(pass, debug.mean_identity_relative_error, ...
+    'VariableNames', {'pass_flag','relative_error'});
+end

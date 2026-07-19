@@ -15,16 +15,21 @@ end
 if ~isfield(diagnostics, 'out_of_local_cell_flag')
     diagnostics.out_of_local_cell_flag = false;
 end
+[fit1_valid, fit1_validity] = validate_stage8_fit_for_lrt( ...
+    fit1, 1, struct());
+expected_fit2 = expected_identity_local(fit1);
+[fit2_valid, fit2_validity] = validate_stage8_fit_for_lrt( ...
+    fit2, 2, expected_fit2);
 if diagnostics.out_of_local_cell_flag
     state = 'OUT_OF_LOCAL_CELL';
     reason = 'OBSERVATION_OUTSIDE_REGISTERED_LOCAL_DOMAIN';
-elseif ~(fit1.estimate_returned_flag && fit2.estimate_returned_flag && ...
-        fit1.converged_flag && fit2.converged_flag)
-    state = 'SEARCH_NOT_CONVERGED';
-    reason = 'REQUIRED_K1_OR_K2_FIT_NOT_CONVERGED';
-elseif fit1.effective_rank < 1 || fit2.effective_rank < 2
+elseif strcmp(fit1_validity.status, 'NUMERIC_RANK_DEFICIENT') || ...
+        strcmp(fit2_validity.status, 'NUMERIC_RANK_DEFICIENT')
     state = 'NUMERIC_RANK_DEFICIENT';
     reason = 'REQUIRED_MODEL_EFFECTIVE_RANK_DEFICIENT';
+elseif ~(fit1_valid && fit2_valid)
+    state = 'SEARCH_NOT_CONVERGED';
+    reason = 'REQUIRED_K1_OR_K2_FIT_INVALID';
 elseif ~strcmp(lrt.lrt_status, 'OK') || ~lrt.nested_rss_pass
     state = 'SEARCH_NOT_CONVERGED';
     reason = 'NESTED_LRT_IMPLEMENTATION_CONTRACT_FAILED';
@@ -60,5 +65,19 @@ decision = struct('state', state, 'reason', reason, ...
     {'K1','K2_RESOLVED','K2_UNRESOLVED'}), ...
     'model_mismatch_state_status', ...
     'MODEL_MISMATCH_STATE_DISABLED_UNTIL_CALIBRATED_GOF', ...
-    'hidden_truth_used_flag', false, 'phase_factor', 1);
+    'hidden_truth_used_flag', false, ...
+    'fit1_validity_status', fit1_validity.status, ...
+    'fit2_validity_status', fit2_validity.status, 'phase_factor', 1);
+end
+
+function expected = expected_identity_local(fit)
+expected = struct();
+fields = {'fixed_measurement_hash','local_domain_hash', ...
+    'solver_contract_hash','observation_hash'};
+for field_index = 1:numel(fields)
+    field = fields{field_index};
+    if isfield(fit, field)
+        expected.(field) = fit.(field);
+    end
+end
 end

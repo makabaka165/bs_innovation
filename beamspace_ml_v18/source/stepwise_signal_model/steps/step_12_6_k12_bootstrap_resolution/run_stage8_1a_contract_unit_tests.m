@@ -1,0 +1,188 @@
+function report = run_stage8_1a_contract_unit_tests()
+%RUN_STAGE8_1A_CONTRACT_UNIT_TESTS Run miniature Stage8.1A code-only gates.
+
+step_dir = fileparts(mfilename('fullpath'));
+steps_dir = fileparts(step_dir);
+project_dir = fileparts(steps_dir);
+package_dir = fileparts(fileparts(project_dir));
+repo_dir = fileparts(package_dir);
+old_path = path;
+path_cleanup = onCleanup(@() path(old_path));
+addpath(fullfile(project_dir, 'core', 'config'));
+addpath(fullfile(project_dir, 'core', 'array'));
+addpath(fullfile(steps_dir, 'step_12_0_receive_model_correction', 'common'));
+addpath(fullfile(steps_dir, 'step_12_1_sequential_dbf_model', 'common'));
+addpath(fullfile(steps_dir, 'step_12_2_stable_dml_backend', 'common'));
+addpath(fullfile(steps_dir, 'step_12_3_grouped_conditional_dml', 'common'));
+addpath(fullfile(steps_dir, ...
+    'step_12_4_near_pair_tangent_asymptotics', 'common'));
+addpath(fullfile(steps_dir, ...
+    'step_12_5_exact_subset_fim_beam_design', 'common'));
+addpath(step_dir);
+addpath(fullfile(step_dir, 'common'));
+addpath(fullfile(step_dir, 'tests'));
+
+cfg = sim_cfg();
+assert(strcmp(version('-release'), '2022b') && ...
+    cfg.beam.spatialPhaseFactor == 1, ...
+    'run_stage8_1a_contract_unit_tests:Runtime', ...
+    'Stage8.1A tests require MATLAB R2022b and phase_factor=1.');
+registry = build_stage8_measurement_registry(cfg, struct());
+calibration = build_stage8_calibration_plan(registry);
+validation = build_stage8_validation_plan();
+holdout = build_stage8_holdout_plan();
+
+tests = struct();
+tests.seed_blocks = test_calibration_bootstrap_seed_blocks_unique(calibration);
+tests.seed_data_bootstrap = ...
+    test_calibration_data_and_bootstrap_seeds_disjoint(calibration);
+tests.seed_all_splits = ...
+    test_calibration_validation_holdout_seed_spaces_disjoint( ...
+    calibration, validation, holdout);
+tests.model_resolution = test_cell_resolves_correct_noise_model(registry);
+tests.model_cross_noise = ...
+    test_cross_noise_cells_use_distinct_fixed_measurement_hash(registry);
+tests.threshold_noise_aggregation = ...
+    test_q_global_aggregates_both_noise_profiles();
+tests.element_mean = test_element_bootstrap_mean_matches_whitened_fit();
+tests.element_whitening = test_element_bootstrap_noise_whitens_to_identity();
+tests.element_retained = test_formal_bootstrap_retains_element_data();
+tests.real_init_k1 = test_real_initialization_context_k1_fields();
+tests.real_init_k2 = test_real_initialization_context_k2_partition_fields();
+tests.real_init_no_simulation_metadata = ...
+    test_real_initialization_context_uses_no_truth();
+tests.bootstrap_rebuild = test_each_bootstrap_rebuilds_initialization_context();
+tests.reject_k1 = test_calibration_rejects_nonconverged_k1();
+tests.reject_k2 = test_calibration_rejects_nonconverged_k2();
+tests.reject_rank = test_calibration_rejects_rank_deficient_fit();
+tests.checkpoint_determinism = test_calibration_cell_checkpoint_determinism();
+tests.checkpoint_mismatch = test_calibration_resume_hash_mismatch_fails();
+tests.require_300 = ...
+    test_all_300_cells_required_before_global_threshold(calibration);
+tests.all_seeds = test_all_59700_bootstrap_seeds_unique(calibration);
+tests.validation_pairing = ...
+    test_validation_common_trials_pair_measurement_configs();
+tests.validation_lookup = test_validation_threshold_lookup_only();
+tests.validation_no_recalibration = test_validation_does_not_recalibrate();
+tests.artifact_registry = test_stage8_1_artifact_registry();
+tests.manifest = test_stage8_1_manifest_no_self_reference();
+tests.writer = test_stage8_1_writer_determinism();
+tests.no_stage8_2 = test_stage8_1_no_stage8_2_execution(step_dir);
+tests.stage7_1_frozen = verify_stage7_1_frozen_evidence(package_dir);
+tests.stage6_frozen = verify_stage6_frozen_evidence(package_dir);
+tests.stage5_frozen = verify_stage5_frozen_results(package_dir);
+tests.step11_frozen = verify_step11_frozen_results(package_dir);
+
+[analyzer_count, analyzer_table] = code_analyzer_local(step_dir);
+[scope_violation_count, scope_table] = scope_scan_local(step_dir);
+[formal_artifact_count, artifact_table] = artifact_scan_local(step_dir);
+names = fieldnames(tests);
+assertion_count = 0;
+all_tests_pass = true;
+for test_index = 1:numel(names)
+    value = tests.(names{test_index});
+    if istable(value) && ismember('pass_flag', value.Properties.VariableNames)
+        assertion_count = assertion_count + height(value);
+        all_tests_pass = all_tests_pass && all(value.pass_flag);
+    end
+end
+technical_pass = all_tests_pass && analyzer_count == 0 && ...
+    scope_violation_count == 0 && formal_artifact_count == 0;
+summary = table(assertion_count, analyzer_count, scope_violation_count, ...
+    formal_artifact_count, all_tests_pass, technical_pass, ...
+    string(stage8_stable_hash(registry.table)), ...
+    string(calibration.calibration_plan_hash), ...
+    'VariableNames', {'assertion_count','analyzer_count', ...
+    'scope_violation_count','formal_artifact_count','all_tests_pass', ...
+    'technical_pass','measurement_registry_hash', ...
+    'calibration_plan_hash'});
+fprintf(['Stage8.1A code-only tests: %d assertions; analyzer/scope/artifact ', ...
+    'violations %d/%d/%d; PASS=%d.\n'], assertion_count, analyzer_count, ...
+    scope_violation_count, formal_artifact_count, technical_pass);
+if analyzer_count > 0, disp(analyzer_table); end
+if scope_violation_count > 0, disp(scope_table); end
+if formal_artifact_count > 0, disp(artifact_table); end
+assert(technical_pass, 'run_stage8_1a_contract_unit_tests:Failed', ...
+    'At least one Stage8.1A code-only gate failed.');
+report = struct('summary', summary, 'tests', tests, ...
+    'code_analyzer_table', analyzer_table, 'scope_table', scope_table, ...
+    'artifact_table', artifact_table, 'repo_dir', repo_dir);
+clear path_cleanup
+end
+
+function [count, table_out] = code_analyzer_local(step_dir)
+files = dir(fullfile(step_dir, '**', '*.m'));
+messages_by_file = cell(numel(files), 1);
+for file_index = 1:numel(files)
+    messages_by_file{file_index} = checkcode( ...
+        fullfile(files(file_index).folder, files(file_index).name), '-id');
+end
+count = sum(cellfun(@numel, messages_by_file));
+if count == 0
+    table_out = table();
+    return;
+end
+file_column = strings(count, 1);
+line_column = zeros(count, 1);
+id_column = strings(count, 1);
+message_column = strings(count, 1);
+row_index = 0;
+for file_index = 1:numel(files)
+    path_now = fullfile(files(file_index).folder, files(file_index).name);
+    messages = messages_by_file{file_index};
+    for message_index = 1:numel(messages)
+        row_index = row_index + 1;
+        file_column(row_index) = string(path_now);
+        line_column(row_index) = messages(message_index).line;
+        id_column(row_index) = string(messages(message_index).id);
+        message_column(row_index) = string(messages(message_index).message);
+    end
+end
+table_out = table(file_column, line_column, id_column, message_column, ...
+    'VariableNames', {'file','line','message_id','message'});
+end
+
+function [count, table_out] = scope_scan_local(step_dir)
+files = dir(fullfile(step_dir, 'common', '**', '*.m'));
+forbidden = ["spatialphasefactor = 2";"fixed ridge";"score_gap"; ...
+    "group_unidentifiable";"chi2inv";"truth-dependent"; ...
+    "holdout-dependent"];
+file_column = strings(numel(files) * numel(forbidden), 1);
+token_column = strings(size(file_column));
+row_index = 0;
+for file_index = 1:numel(files)
+    text_now = lower(string(fileread( ...
+        fullfile(files(file_index).folder, files(file_index).name))));
+    for token_index = 1:numel(forbidden)
+        if contains(text_now, forbidden(token_index))
+            row_index = row_index + 1;
+            file_column(row_index) = string(files(file_index).name);
+            token_column(row_index) = forbidden(token_index);
+        end
+    end
+end
+count = row_index;
+if count == 0
+    table_out = table();
+else
+    table_out = table(file_column(1:count), token_column(1:count), ...
+        'VariableNames', {'file','token'});
+end
+end
+
+function [count, table_out] = artifact_scan_local(step_dir)
+roots = ["calibration";"results";"figures"];
+paths = strings(0, 1);
+for root_index = 1:numel(roots)
+    files = dir(fullfile(step_dir, roots(root_index), '**', '*'));
+    files = files(~[files.isdir]);
+    for file_index = 1:numel(files)
+        if ~strcmp(files(file_index).name, '.gitkeep')
+            paths(end + 1, 1) = string(fullfile( ...
+                files(file_index).folder, files(file_index).name)); %#ok<AGROW>
+        end
+    end
+end
+count = numel(paths);
+table_out = table(paths, 'VariableNames', {'unexpected_artifact'});
+end
