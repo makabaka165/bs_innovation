@@ -1,0 +1,236 @@
+function [outputs, evidence_manifest, evidence_bundle] = ...
+    write_stage7_1_results_bundle(result_dir, bundle, opts)
+%WRITE_STAGE7_1_RESULTS_BUNDLE Write the fixed closure artifact registry.
+
+if nargin < 3 || isempty(opts), opts = struct(); end
+opts = normalize_options_local(opts);
+validate_bundle_local(bundle);
+if isstring(result_dir), result_dir = char(result_dir); end
+if ~(ischar(result_dir) && isrow(result_dir) && ~isempty(result_dir))
+    error('write_stage7_1_results_bundle:ResultDir', ...
+        'result_dir must be a nonempty path.');
+end
+step_dir = fileparts(result_dir);
+registry = stage7_1_artifact_registry();
+if exist(result_dir, 'dir') == 7 && ~opts.allow_overwrite
+    existing = dir(fullfile(result_dir, '*'));
+    existing = existing(~[existing.isdir]);
+    existing = existing(~strcmp({existing.name}, '.gitkeep'));
+    if ~isempty(existing)
+        error('write_stage7_1_results_bundle:ExistingResults', ...
+            'Formal closure output directory must be empty.');
+    end
+end
+if exist(result_dir, 'dir') ~= 7, mkdir(result_dir); end
+identity = bundle.identity;
+stable_hash = string(identity.stage7_1_stable_code_identity_hash);
+outputs = output_paths_local(step_dir, registry);
+
+provenance = provenance_table_local(identity, bundle);
+writetable(provenance, outputs.stage7_1_provenance);
+source_manifest = add_identity_local(identity.manifest, stable_hash);
+writetable(source_manifest, outputs.stage7_1_source_manifest);
+writetable(add_identity_local(bundle.historical_comparison, stable_hash), ...
+    outputs.stage7_core_historical_comparison);
+write_semantics_local(outputs.sequential_3by5_semantics, ...
+    bundle.sequential_semantics, stable_hash);
+writetable(add_identity_local(bundle.aliases, stable_hash), ...
+    outputs.method_subset_aliases);
+writetable(add_identity_local(bundle.minimum_cost, stable_hash), ...
+    outputs.minimum_cost_feasible_3by5);
+writetable(add_identity_local(bundle.same_cost_dominance, stable_hash), ...
+    outputs.same_cost_dominance);
+writetable(add_identity_local(bundle.pareto, stable_hash), ...
+    outputs.existing_method_pareto_sensitivity);
+complexity = table_from_value_local(bundle.complexity);
+writetable(add_identity_local(complexity, stable_hash), ...
+    outputs.complexity_accounting_correction);
+writetable(add_identity_local(bundle.edge.edge_plan, stable_hash), ...
+    outputs.edge_diagnostic_plan);
+writetable(add_identity_local(bundle.edge.trials, stable_hash), ...
+    outputs.edge_diagnostic_trials);
+writetable(add_identity_local(bundle.edge.summary, stable_hash), ...
+    outputs.edge_diagnostic_summary);
+writetable(add_identity_local(bundle.keypoints, stable_hash), ...
+    outputs.stage7_1_keypoints);
+write_report_local(outputs.stage7_1_closure_report, ...
+    bundle.closure_report, stable_hash, identity.runtime_head_commit);
+runtime = runtime_table_local(bundle, identity.runtime_head_commit);
+writetable(runtime, outputs.stage7_1_runtime_diagnostics);
+
+[evidence_manifest, evidence_bundle] = ...
+    build_stage7_1_evidence_manifest(step_dir, registry, identity);
+if ~evidence_bundle.pass_flag
+    error('write_stage7_1_results_bundle:EvidenceBundle', ...
+        'The deterministic evidence bundle failed before manifest writing.');
+end
+self_row = evidence_manifest.artifact_id == "stage7_1_evidence_manifest";
+evidence_manifest.file_exists_flag(self_row) = true;
+evidence_manifest.pass_flag(self_row) = true;
+manifest_output = add_identity_local(evidence_manifest, stable_hash);
+manifest_output.stage7_1_evidence_bundle_hash = repmat( ...
+    evidence_bundle.stage7_1_evidence_bundle_hash, ...
+    height(manifest_output), 1);
+manifest_output.bundle_contract_version = repmat( ...
+    evidence_bundle.bundle_contract_version, height(manifest_output), 1);
+writetable(manifest_output, outputs.stage7_1_evidence_manifest);
+end
+
+function validate_bundle_local(bundle)
+required = {'identity','historical_comparison','historical_summary', ...
+    'sequential_semantics','aliases','minimum_cost', ...
+    'same_cost_dominance','pareto','complexity','edge','keypoints', ...
+    'closure_report','runtime_diagnostics'};
+if ~(isstruct(bundle) && isscalar(bundle) && all(isfield(bundle, required)) && ...
+        isstruct(bundle.identity) && isscalar(bundle.identity) && ...
+        isfield(bundle.identity, 'stage7_1_stable_code_identity_hash') && ...
+        istable(bundle.historical_comparison) && ...
+        istable(bundle.historical_summary) && istable(bundle.aliases) && ...
+        istable(bundle.minimum_cost) && istable(bundle.same_cost_dominance) && ...
+        istable(bundle.pareto) && istable(bundle.keypoints) && ...
+        isstruct(bundle.edge) && all(isfield(bundle.edge, ...
+        {'edge_plan','trials','summary'})) && ...
+        istable(bundle.edge.edge_plan) && istable(bundle.edge.trials) && ...
+        istable(bundle.edge.summary))
+    error('write_stage7_1_results_bundle:Bundle', ...
+        'The closure bundle is missing a required artifact.');
+end
+if ~all(bundle.historical_summary.pass_flag)
+    error('write_stage7_1_results_bundle:HistoricalGate', ...
+        'Historical Stage 7 comparison must pass before writing.');
+end
+end
+
+function provenance = provenance_table_local(identity, bundle)
+historical_baseline_commit = string(identity.historical_baseline_commit);
+runtime_head_commit = string(identity.runtime_head_commit);
+baseline_ancestor_flag = logical(identity.baseline_ancestor_flag);
+working_tree_clean_at_start = logical(identity.working_tree_clean_flag);
+stage7_1_source_tree_hash = string(identity.stage7_1_source_tree_hash);
+stage7_1_stable_code_identity_hash = string( ...
+    identity.stage7_1_stable_code_identity_hash);
+source_scope_version = string(identity.source_scope_version);
+code_identity_contract_version = string( ...
+    identity.code_identity_contract_version);
+historical_stage7_result_commit = string( ...
+    bundle.historical_summary.historical_commit(1));
+phase_factor = 1;
+matlab_release = "R2022b";
+provenance_status = "PASS_FORMAL_STAGE7_1_PROVENANCE";
+provenance = table(historical_baseline_commit, runtime_head_commit, ...
+    baseline_ancestor_flag, working_tree_clean_at_start, ...
+    stage7_1_source_tree_hash, stage7_1_stable_code_identity_hash, ...
+    source_scope_version, code_identity_contract_version, ...
+    historical_stage7_result_commit, phase_factor, matlab_release, ...
+    provenance_status);
+end
+
+function table_out = add_identity_local(table_out, stable_hash)
+if ~istable(table_out)
+    error('write_stage7_1_results_bundle:Table', ...
+        'Core CSV artifacts must be tables.');
+end
+name = 'stage7_1_stable_code_identity_hash';
+table_out.(name) = repmat(stable_hash, height(table_out), 1);
+end
+
+function table_out = table_from_value_local(value)
+if istable(value)
+    table_out = value;
+elseif isstruct(value) && isscalar(value)
+    table_out = struct2table(value);
+else
+    error('write_stage7_1_results_bundle:Complexity', ...
+        'complexity must be one table or scalar struct.');
+end
+end
+
+function write_semantics_local(path_now, semantics, stable_hash)
+required = {'processing_order','Zel_formula','conditioned_output_formula', ...
+    'equivalent_weight_formula','B_out_formula','terminology_status'};
+if ~(isstruct(semantics) && isscalar(semantics) && ...
+        all(isfield(semantics, required)))
+    error('write_stage7_1_results_bundle:Semantics', ...
+        'The sequential semantics audit is incomplete.');
+end
+fid = fopen(path_now, 'wt');
+if fid < 0
+    error('write_stage7_1_results_bundle:Open', ...
+        'Unable to write sequential semantics.');
+end
+cleanup = onCleanup(@() fclose(fid));
+fprintf(fid, '# Sequential 3/5 Semantics\n\n');
+fprintf(fid, 'stage7_1_stable_code_identity_hash: `%s`\n\n', stable_hash);
+fprintf(fid, '- terminology: %s\n', semantics.terminology_status);
+fprintf(fid, '- processing order: `%s`\n', semantics.processing_order);
+fprintf(fid, '- first stage: `%s`\n', semantics.Zel_formula);
+fprintf(fid, '- second stage: `%s`\n', semantics.conditioned_output_formula);
+fprintf(fid, '- equivalent weight: `%s`\n', ...
+    semantics.equivalent_weight_formula);
+fprintf(fid, '- output count: `%s`\n', semantics.B_out_formula);
+clear cleanup
+end
+
+function write_report_local(path_now, report_text, stable_hash, runtime_head)
+report_text = string(report_text);
+if ~isscalar(report_text) || ismissing(report_text) || ...
+        contains(report_text, string(runtime_head))
+    error('write_stage7_1_results_bundle:Report', ...
+        'Stable closure report must be scalar text without runtime HEAD.');
+end
+fid = fopen(path_now, 'wt');
+if fid < 0
+    error('write_stage7_1_results_bundle:Open', ...
+        'Unable to write the closure report.');
+end
+cleanup = onCleanup(@() fclose(fid));
+fprintf(fid, '# Stage7.1 Closure Audit\n\n');
+fprintf(fid, 'stage7_1_stable_code_identity_hash: `%s`\n\n', stable_hash);
+fprintf(fid, '%s\n', report_text);
+clear cleanup
+end
+
+function runtime = runtime_table_local(bundle, runtime_head)
+if istable(bundle.runtime_diagnostics) && ...
+        ~isempty(bundle.runtime_diagnostics)
+    runtime = bundle.runtime_diagnostics;
+else
+    runtime = table("NO_RUNTIME_DIAGNOSTICS_RECORDED", ...
+        'VariableNames', {'runtime_status'});
+end
+runtime.runtime_head_commit = repmat(string(runtime_head), height(runtime), 1);
+runtime.runtime_metadata_role = repmat("EXCLUDED_FROM_DETERMINISTIC_BUNDLE", ...
+    height(runtime), 1);
+end
+
+function outputs = output_paths_local(step_dir, registry)
+outputs = struct();
+for index = 1:height(registry)
+    relative = strrep(char(registry.relative_path(index)), '/', filesep);
+    outputs.(char(registry.artifact_id(index))) = fullfile(step_dir, relative);
+end
+end
+
+function opts = normalize_options_local(opts)
+if ~(isstruct(opts) && isscalar(opts))
+    error('write_stage7_1_results_bundle:Options', ...
+        'opts must be a scalar struct.');
+end
+allowed = {'unit_test_mode','allow_overwrite'};
+unknown = setdiff(fieldnames(opts), allowed);
+if ~isempty(unknown)
+    error('write_stage7_1_results_bundle:UnknownOption', ...
+        'Unknown option: %s.', unknown{1});
+end
+if ~isfield(opts, 'unit_test_mode'), opts.unit_test_mode = false; end
+if ~isfield(opts, 'allow_overwrite'), opts.allow_overwrite = false; end
+if ~(islogical(opts.unit_test_mode) && isscalar(opts.unit_test_mode) && ...
+        islogical(opts.allow_overwrite) && isscalar(opts.allow_overwrite))
+    error('write_stage7_1_results_bundle:OptionValue', ...
+        'Writer options must be logical scalars.');
+end
+if opts.allow_overwrite && ~opts.unit_test_mode
+    error('write_stage7_1_results_bundle:OverwriteScope', ...
+        'Overwrite is restricted to explicit unit-test mode.');
+end
+end

@@ -239,43 +239,51 @@ bootstrap、false-resolved 控制、resolved/unresolved calibration 或任何阶
 代码。若未来重新提出阶段 8，必须由用户另行授权，并先处理阶段 7 没有超过
 固定矩形这一贡献边界；当前证据本身不能作为自动继续的许可。
 
-## Stage7.1A2 code-only 补充审计
+## Stage7.1A3 code-only 补充审计
 
-**A2 code-only 修订与短单测已通过；Stage7.1B 未执行，closure 未完成。**
+**A3 稳定工具与短单测已冻结；Stage7.1B 未执行，正式 closure 未完成。**
 
-Stage7 source-hashed README 已稳定化：不再保存运行或 rerun 状态，后续状态只
-由 Stage7.1 results 和本文记录，且 Stage7.1B 不得再次修改。该 README 的
-冻结 Git blob 为 `ad2e11de647e31a8c92de9fdc653e5d1f1040d18`。
+Stage7 README 在 A3 中零修改，仍是独立 source-hashed 稳定合同；运行状态只由
+Stage7.1 results 与本文记录，未来 Stage7.1B 不得修改该 README。
 
-edge diagnostic 仍是原六个 scenario ID、三个方法、`[0,5,10] dB`、
-`Nmc=200` 和 seed 基数 `20260719`，但随机设计改为 18 个
-scenario-by-SNR paired group：每组一个 seed、一个 `paired_group_id`，三个方法
-共享公共阵元域 trial，再分别应用物理子集。计划只被冻结和测试，本轮没有执行
-Monte Carlo。
+Stage7.1 stable identity 不再包含 runtime HEAD。source tree 按 Stage7.1 下全部
+tracked `.m` 与稳定 README 的 Git `mode/blob/path` 清单计算 SHA-256；stable
+identity 再绑定 source-scope 与 identity-contract 版本。runtime HEAD 仅写
+provenance/runtime metadata。正式入口固定历史 baseline
+`25e063730309dac2595390d46744040ba6fbe4b3`，并强制祖先关系、干净工作树和无
+未跟踪 `.m`/README。A3 source tree hash 为
+`4713a52ef81be61958a5dc79ec9a939b1795a764c8b7f50cf1d4f8a5e52c59b1`，stable
+code identity 为
+`0775f9ea32b26e6bef6cf326561d7a3772f5ef05ea0d60276c6cc2f054dbf8de`。
 
-角域合同保留 `historical_registered_domain_pass`，新增
-`tolerant_registered_domain_pass`、`boundary_numeric_disagreement_flag` 和
-`domain_tolerance_deg`。容差严格为
-`parameter_dimension*eps(domain_scale_deg)`，不含经验角度常数。D0286 固定为
-historical false、tolerant true、boundary disagreement true，后续 edge gate
-使用 tolerant pass。
+edge diagnostic 仍固定六个 scenario ID、三个方法、`[0,5,10] dB`、`Nmc=200`
+和 seed 基数 `20260719`。18 个 paired group 使用 `seed_block_stride=1000`，
+`trial_seed=group_seed_start+trial_index-1`；3600 个公共 trial seed 全部唯一且
+区间不重叠，三个方法共生成 10800 行。公共阵元域 trial 只生成一次，再应用
+`RECT_E14_A31`、`RECT_E28_A31`、`RECT_E31_A31`；方法顺序不改变 seed。
 
-既有方法 Pareto 敏感性在任何计算前检查所有比较方法拥有相同 scenario 集合，
-并检查各 scenario 的 `n_trials` 一致；full-parent conservative
-shared-reference interval 标签保留。正式 complexity accounting 必须显式传入
-frozen plan 的 `N_el/N_az/B_el/B_az`，内置默认值仅能在 unit-test mode 与
-default opt-in 同时为 true 时使用。
+角域合同继续保留 historical/tolerant/boundary-disagreement 字段，容差严格为
+`parameter_dimension*eps(domain_scale_deg)`。D0286 固定为 historical false、
+tolerant true、boundary disagreement true，正式 generator/evaluator 使用
+tolerant pass。
 
-Stage7.1 code identity 记录 source base commit
-`5ed1b5686b0cdfb74a835c7d298b8e3181961e28`、Git `mode/blob/path` tree hash
-`89c54fd78a60f3b9eb506446f638a757534ee02b1998f4c76c7867ead95055b8` 和
-identity hash
-`e78bb4b9eae45f2f4cb8d2ca252ad3065895bcdb5b957ee7327dc1d23f86303e`，供未来
-获授权的 Stage7.1B 输出绑定。
+正式 closure runner、公共 trial generator、三方法 evaluator、edge runner、
+Git-object 历史比较器、artifact registry、deterministic writer 和 evidence
+manifest 均已实现并冻结。历史比较器从 `85615e0` 读取 11 个 CSV，使用显式
+主键，精确比较核心 ID/status/flags/counts/961 子集/选中子集/有限样本成功计数，
+其他数值门为 absolute `1e-12` 或 relative `1e-10`；只允许明确的 runtime、
+file-size、source/provenance/plan identity 变化。
 
-A2 code-only 总入口共 523 条断言通过，Code Analyzer 与 scope violation 均为
-0；Stage7 core 与 results/figures 修改数为 0（Stage7 仅稳定化 README），
-Stage6 `21/21`、Stage5 `14/14`、Step11 `351/351` 冻结证据通过。本轮没有修改
-FIM、DML、961 子集枚举、eta、Pareto 门或任何 Stage8 内容。Stage7.1 closure
-仍未完成，本轮不授权或进入 Stage7.1B，也不改变阶段 8 的
-`NOT_AUTHORIZED_BY_STAGE7_RESULT` 状态。
+registry 共 16 个正式 artifact，13 个 deterministic artifact 进入 bundle；
+runtime provenance、runtime diagnostics 和 manifest 自身排除。writer 接受
+`.gitkeep` 占位，拒绝其他旧结果；runtime HEAD 不进入 deterministic artifacts。
+
+A3 code-only 总入口共 599 条断言通过，Code Analyzer 与 scope violation 均为
+0；Stage7 core 与 results/figures 修改数均为 0，Stage6 `21/21`、Stage5
+`14/14`、Step11 `351/351` 冻结证据通过。edge plan hash 冻结为
+`eecc3a75927ea9a5851f5c2f0da6223cce2e5e86038eaae55f9fa78963e403ea`。
+
+本轮未运行完整 Stage7、3600-trial edge Monte Carlo 或正式 closure，未生成
+Stage7.1 正式 CSV/PNG，也未修改 FIM、DML、961 子集枚举、eta、Pareto 门或
+任何 Stage8 内容。Stage7.1B 仍需未来单独授权；阶段 8 继续保持
+`NOT_AUTHORIZED_BY_STAGE7_RESULT`。
