@@ -21,6 +21,16 @@ Stage8 只能定位为：将已有非正则 K1/K2 bootstrap 与可分辨/不可�
 oracle-K 假设并形成工程风险接口。它不挽救 Stage7 波束选择贡献，不改变
 `RECT_E14_A31`，不创造新统计理论，也不声称一般多目标模型阶数保证。
 
+### Stage8.1A3 contract addendum (2026-07-20)
+
+Stage8.1A3 supersedes the execution details in this preimplementation audit
+without changing its statistical constants or registered starts. Best-start
+selection now considers only converged, full-rank, finite, identity-complete
+registered starts. Threshold evidence uses the lossless V3 decimal/hex
+contract, and formal calibration and validation evidence have separate
+registries, writers, manifests, and commits. No formal calibration or
+validation was executed by this addendum.
+
 ## B. Prior art
 
 以下均为已有方法或统计思想，不作为 Stage8 创新声明：K1/K2 LRT、集中似然、

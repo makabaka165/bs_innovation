@@ -6,6 +6,12 @@ if nargin < 3 || isempty(opts)
     opts = struct();
 end
 opts = normalize_options_local(opts);
+if opts.formal_run
+    error(['write_stage8_1_results_bundle:', ...
+        'FORMAL_MONOLITHIC_STAGE8_1_WRITER_FORBIDDEN'], ...
+        ['Formal Stage8.1 evidence must use separate calibration and ', ...
+        'validation writers.']);
+end
 registry = stage8_1_artifact_registry();
 if ~isfolder(artifact_root)
     mkdir(artifact_root);
@@ -57,7 +63,7 @@ if ~(isstruct(opts) && isscalar(opts))
     error('write_stage8_1_results_bundle:Options', ...
         'opts must be a scalar struct.');
 end
-allowed = {'overwrite','allow_incomplete'};
+allowed = {'overwrite','allow_incomplete','formal_run'};
 unknown = setdiff(fieldnames(opts), allowed);
 if ~isempty(unknown)
     error('write_stage8_1_results_bundle:UnknownOption', ...
@@ -65,6 +71,7 @@ if ~isempty(unknown)
 end
 if ~isfield(opts, 'overwrite'), opts.overwrite = false; end
 if ~isfield(opts, 'allow_incomplete'), opts.allow_incomplete = false; end
+if ~isfield(opts, 'formal_run'), opts.formal_run = false; end
 end
 
 function write_payload_local(path_now, payload, artifact_id, opts)

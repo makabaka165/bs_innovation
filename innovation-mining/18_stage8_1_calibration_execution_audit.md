@@ -14,6 +14,16 @@ Stage8.1A2 只冻结可执行代码、miniature/synthetic tests、checkpoint、w
 样本和 12,000 个 K1 validation method rows。Stage8.2 必须等待 Stage8.1B
 threshold evidence 锁定且 validation gate 通过，并再次单独授权。
 
+### Stage8.1A3 calibration-evidence addendum (2026-07-20)
+
+The code-only calibration boundary now ends at
+`run_stage8_1_freeze_threshold_evidence`. It collects and verifies the full
+checkpoint set, builds V3 threshold artifacts, and writes only the calibration
+registry. The committed-threshold loader recomputes the deterministic manifest
+and bundle, requires tracked artifacts in formal mode, restores doubles from
+hex, and rejects stale or tampered evidence. No formal cell, bootstrap sample,
+or threshold was generated here.
+
 ## B. Seed registry
 
 Calibration data seed 为 `2026072100 + c - 1`，`c=1,...,300`。Bootstrap

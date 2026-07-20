@@ -4,6 +4,7 @@ function result = test_threshold_lookup_has_no_scene_inputs()
 [artifact, contract] = build_stage8_1a_threshold_fixture( ...
     "PRIMARY_RECT_E14_A31");
 artifact.q_global = 7;
+artifact.q_global_hex = num2hex(7);
 artifact.threshold_artifact_hash = stage8_threshold_artifact_hash(artifact);
 threshold = lookup_locked_lrt_threshold( ...
     'PRIMARY_RECT_E14_A31', artifact, contract);

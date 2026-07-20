@@ -1,12 +1,12 @@
-# Stage8.1A2 Final Calibration And Primary-Validation Contracts
+# Stage8.1A3 Self-Contained Threshold And Validation Evidence
 
 ## Status
 
-`AUTHORIZED_STAGE8_1A2_CODE_ONLY`
+`PASS_STAGE8_1A3_CODE_ONLY`
 
 This directory freezes and unit-tests the K1/K2 fitting, nonregular LRT,
 element-domain parametric bootstrap, separation-confidence, resumable
-calibration, paired K1-validation, and six-state decision contracts. Stage8.1A
+calibration, paired K1-validation, and six-state decision contracts. Stage8.1A3
 is code-only: it contains no calibrated threshold, validation result, holdout
 result, Monte Carlo performance number, or Stage8.1B/8.2 completion marker.
 
@@ -68,6 +68,19 @@ other starts and does not create a fourth rescue start. Every valid start uses
 the same Stage5 full sequential joint refinement. Q and Kq are initialization
 structure only, never final oracle outputs.
 
+Best-start selection is
+`MAXIMUM_CONCENTRATED_LOG_LIKELIHOOD_AMONG_VALID_REGISTERED_STARTS`. A start
+is eligible only when its initialization is available, its estimate was
+returned and converged, its effective rank is at least K, RSS and variance are
+finite nonnegative reals, concentrated log likelihood is finite, all fixed
+measurement/domain/solver/observation identities are complete, and
+`phase_factor=1`. A nonconverged high-likelihood start remains in
+`all_start_results` but cannot replace a lower-likelihood valid start. Outputs
+record `valid_start_count`, `nonconverged_start_count`,
+`rank_deficient_start_count`, `numeric_invalid_start_count`, and
+`selected_from_valid_start_set_flag`; every registered start is still run and
+charged.
+
 Coefficient recovery uses an economy-SVD pseudoinverse. Effective rank below K
 returns `NUMERIC_RANK_DEFICIENT`; no inverse Gram matrix, absolute ridge, or
 fixed RSS floor is used.
@@ -103,6 +116,14 @@ effective rank at least K, finite nonnegative RSS and variance, finite
 concentrated log likelihood, and matching fixed identities. A failed formal
 calibration refit invalidates its complete cell; samples are never deleted
 before taking a quantile.
+
+Locked thresholds use `STAGE8_LOCKED_THRESHOLD_ARTIFACT_V3`. Its hash payload
+is a fixed whitelist of four plan/source registry identities, config ID,
+`q_global_hex=num2hex(q_global)`, `alpha_hex=num2hex(alpha)`, registered
+counts/policies, calibration hash, source identity, and status. Decimal values
+remain human-readable, while lookup restores exact doubles with `hex2num` and
+rejects decimal/hex disagreement. Runtime HEAD and added runtime metadata do
+not enter the artifact hash.
 
 `lookup_locked_lrt_threshold` accepts only a measurement configuration ID, a
 locked artifact, and an expected threshold contract. Before returning a value,
@@ -171,7 +192,7 @@ trial, only looks them up, and cannot recalibrate them.
 Formal Stage8.1B remains separately authorized and must use two evidence
 commits in this order:
 
-1. Start from the clean Stage8.1A2 code commit, run calibration shards with a
+1. Start from the clean Stage8.1A3 code commit, run calibration shards with a
    checkpoint root outside the Git repository, collect all 300 cells, freeze
    two thresholds, and create
    `docs(stage8.1): freeze k1 bootstrap thresholds`.
@@ -184,10 +205,25 @@ commits in this order:
 Validation is forbidden in a working tree containing uncommitted threshold
 evidence. Stage8.2 still requires a later, separate authorization.
 
-The artifact registry freezes calibration/results paths, deterministic SHA-256
-evidence manifests, and writers. Runtime, the evidence manifest itself, and
-checkpoint temporaries are excluded from the deterministic bundle identity.
-No Stage8.1 runner invokes Stage8.2.
+Calibration and validation have separate artifact registries, writers,
+manifests, and deterministic bundle identities. The calibration freezer
+collects all checkpoints, writes only calibration evidence, and never creates
+validation placeholders. `load_stage8_1_locked_thresholds` requires a clean
+tracked evidence commit in formal mode, recomputes every deterministic file
+hash and bundle identity, restores both V3 thresholds losslessly, and verifies
+the exact current plan. Formal validation can start only through
+`run_stage8_1_k1_validation_from_frozen_thresholds`.
+
+The validation-output validator independently compares raw trials with the
+current 12,000-row plan registry and recomputes the 14-row summary, paired
+sensitivity, and PRIMARY gate. The finalizer reloads committed calibration
+evidence, writes only the validation registry, and leaves every calibration
+byte unchanged. The final identity is the SHA-256 binding of the calibration
+evidence bundle and validation deterministic manifest. Runtime, each evidence
+manifest itself, and checkpoint temporaries are excluded. Formal use of the
+legacy monolithic writer fails with
+`FORMAL_MONOLITHIC_STAGE8_1_WRITER_FORBIDDEN`. No Stage8.1 runner invokes
+Stage8.2.
 
 Offline complexity must report cells, bootstrap samples, K1/K2 fits, score and
 SVD calls, runtime, memory, and artifact size. Online complexity must report
@@ -216,9 +252,12 @@ verifies all registered starts,
 nested RSS, `r_C*L`, full bootstrap refits, global-threshold aggregation,
 separation confidence, state logic, plan/seed isolation, stable identity,
 scope exclusions, and frozen Stage7.1/6/5/Step11 evidence. It writes no formal
-artifact. The Stage8.1A suite additionally checks all seed spaces, four-model
+artifact. The Stage8.1A3 suite additionally checks all seed spaces, four-model
 resolution, element-bootstrap mean/covariance, real initialization, unified
 fit validity, checkpoint mismatch behavior, 300-cell aggregation, 14-row
 primary/sensitivity summaries, exact threshold provenance, formal
 shard/checkpoint collection, RNG-role separation, the two-commit lifecycle,
-writer determinism, and the Stage8.2 stop boundary.
+writer determinism, valid-start selection, V3 hex round trips and tamper
+rejection, calibration-only freezing, committed threshold loading, raw-trial
+plan binding, finalizer recomputation, calibration byte immutability, the
+executable two-stage lifecycle, and the Stage8.2 stop boundary.

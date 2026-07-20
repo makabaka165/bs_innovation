@@ -1,0 +1,5 @@
+function result = test_calibration_freezer_writes_no_validation_placeholder()
+%TEST_CALIBRATION_FREEZER_WRITES_NO_VALIDATION_PLACEHOLDER Verify one Stage8.1A3 contract.
+
+result = stage8_1a3_contract_case('calibration_freezer_writes_no_validation_placeholder');
+end

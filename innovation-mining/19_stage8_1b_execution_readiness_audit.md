@@ -1,4 +1,4 @@
-# Stage8.1A2 / Stage8.1B Execution Readiness Audit
+# Stage8.1A3 / Stage8.1B Execution Readiness Audit
 
 > Date: 2026-07-19
 > Repository: `makabaka165/bs_innovation`
@@ -6,9 +6,9 @@
 > Runtime: MATLAB R2022b, `phase_factor=1`
 > Scope: code-only; no formal calibration, threshold, validation, holdout, or PNG
 
-## A. Stage8.1A2 Conclusion
+## A. Stage8.1A3 Conclusion
 
-Stage8.1A2 closes the remaining executable-contract defects in K1 validation,
+Stage8.1A3 closes the remaining executable-contract defects in K1 validation,
 threshold provenance, formal calibration shards/checkpoints, group-noise scale
 handling, and validation RNG roles. It does not change `alpha=0.05`,
 `beta=0.05`, `Bboot=199`, `Bsep=199`, minimum valid fraction `0.90`, the
@@ -89,27 +89,28 @@ The Git-index-frozen code-only identities are:
 
 | Identity | SHA-256 |
 |---|---|
-| `stage8_source_tree_hash` | `2198b72184dc4a3b51ec0c710534a9c85c23fc2a4db795fc7821dfbe2f514b15` |
-| `stage8_stable_code_identity` | `1c2ee7fd5d920951aef57b73c79f45211b392c80890cb1c9837832e18c358cf6` |
+| `stage8_source_tree_hash` | `68960fb22115b6d85a6141bfd22e01c29ceaf3f87c3069166585190b87d3553f` |
+| `stage8_stable_code_identity` | `78acde57bdc232fec5d93478b4ff155fb5e0fc5dd5a4c988883356885202aa11` |
+| `stage8_fit_contract_hash` | `d3638412d5e6dbcae142a96f34a26c55d80f7ced2cc313b8f0e3817db6a9e2c1` |
 | `stage8_calibration_plan_hash` | `3c8f71a65e67ed0db7a1551a1594761c737ad8606101d48fcf76fcf40d67c291` |
 | `stage8_validation_plan_hash` | `9bfa65e64dc97523e36c62e44217e5e4dc93d221de90b29de923a5b0d6a121e7` |
-| `stage8_plan_hash` | `f606be3db81575619ae9a8bbe85b321f031e94b9dffe6c54c45fb7dddbb4e247` |
+| `stage8_plan_hash` | `f846aa7bc11494feec14f6d8363312b103216a015cfa3cf65546f9b1255153a0` |
 | `measurement_registry_hash` | `f20773e1165b8519368b3a4dd3e74b250d84f3a7199f560036e5235988017688` |
 
-The calibration-plan hash is unchanged because its frozen 300 cells, seeds,
-`alpha`, `Bboot`, and quantile policy are unchanged. The validation and total
-plan hashes change because RNG roles, summary authority, and provenance
-contracts changed.
+The calibration and validation plan hashes are unchanged because their frozen
+cells, seeds, statistical constants, paired strata, and gates are unchanged.
+The source, fit-contract, and total-plan identities change because A3 repairs
+start eligibility and the self-contained evidence lifecycle.
 
 ## H. Tests And Scope
 
 - Stage8.0: 428 assertions passed; Code Analyzer/scope violations `0/0`.
-- Stage8.1A2: 447 assertions passed; Code Analyzer/scope/formal-artifact
+- Stage8.1A3: 479 assertions passed; Code Analyzer/scope/formal-artifact
   violations `0/0/0`.
-- The new suite covers all 21 requested A2 tests, including 14-row summary,
-  primary-only authorization, threshold mismatches, formal shard identity,
-  300-checkpoint collection, invalid group-noise handling, RNG separation, and
-  the two-commit lifecycle.
+- The suite retains all A2 coverage and adds 32 named A3 tests for valid-start
+  selection, V3 hex restoration/tamper rejection, split manifests, committed
+  threshold loading, validation plan/trial hashes, finalizer recomputation,
+  calibration byte immutability, and the executable two-commit lifecycle.
 - Frozen Stage7.1, Stage6, Stage5, and Step11 verification passed.
 - `calibration/`, `results/`, and `figures/` contain only `.gitkeep`.
 

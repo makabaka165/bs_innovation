@@ -1,0 +1,5 @@
+function result = test_all_nonconverged_starts_return_search_not_converged()
+%TEST_ALL_NONCONVERGED_STARTS_RETURN_SEARCH_NOT_CONVERGED Verify one Stage8.1A3 contract.
+
+result = stage8_1a3_contract_case('all_nonconverged_starts_return_search_not_converged');
+end
