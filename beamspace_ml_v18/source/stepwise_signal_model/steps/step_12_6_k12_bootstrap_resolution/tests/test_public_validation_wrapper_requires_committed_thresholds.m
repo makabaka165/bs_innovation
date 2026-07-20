@@ -1,0 +1,5 @@
+function result = test_public_validation_wrapper_requires_committed_thresholds()
+%TEST_PUBLIC_VALIDATION_WRAPPER_REQUIRES_COMMITTED_THRESHOLDS Verify one Stage8.1A4 contract.
+
+result = stage8_1a4_contract_case('public_validation_wrapper_requires_committed_thresholds');
+end

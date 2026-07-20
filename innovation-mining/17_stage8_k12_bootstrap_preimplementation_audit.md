@@ -31,6 +31,18 @@ contract, and formal calibration and validation evidence have separate
 registries, writers, manifests, and commits. No formal calibration or
 validation was executed by this addendum.
 
+### Stage8.1A4 formal-runtime safety addendum (2026-07-20)
+
+Stage8.1A4 fixes the production branch where a registered refinement returns
+no estimate. The start remains auditable and charged, is counted separately
+from initialization, convergence, rank, and numeric failures, and cannot enter
+best-start selection. Formal loading, validation, and finalization can no
+longer disable tracked calibration evidence; formal writers cannot overwrite;
+and the calibration/validation artifact root is the registered Stage8 step
+root, while checkpoint roots remain repository-external. Validation and
+finalization bind immutable calibration SHA-256 snapshots. No formal
+calibration or validation was executed by this addendum.
+
 ## B. Prior art
 
 以下均为已有方法或统计思想，不作为 Stage8 创新声明：K1/K2 LRT、集中似然、
@@ -201,7 +213,7 @@ Stage8.1A2 将 Stage8.1A 的可执行计划收紧为最终证据合同，但不�
   排除 runtime、manifest 自身和 checkpoint 临时文件；所有 Stage8.1 runner
   在 Stage8.2 边界停止。
 
-Stage8.1B 必须分成两个证据提交：先从干净 A2 code commit 完成 calibration 并
+Stage8.1B 必须分成两个证据提交：先从干净 A4 code commit 完成 calibration 并
 创建 `docs(stage8.1): freeze k1 bootstrap thresholds`；再从该干净 threshold
 evidence commit 完成 primary validation，并创建
 `docs(stage8.1): validate k1 false-split control`。

@@ -11,6 +11,9 @@ if opts.formal_run && ~strcmp(opts.execution_authorization, ...
         'Formal threshold freezing requires explicit authorization.');
 end
 if opts.formal_run
+    artifact_root = validate_stage8_formal_artifact_root( ...
+        repo_dir, artifact_root, 'CALIBRATION', struct( ...
+        'require_empty_lifecycle', true));
     checkpoint_root = validate_stage8_formal_checkpoint_root( ...
         repo_dir, checkpoint_root);
 end
@@ -59,6 +62,7 @@ evidence.bootstrap_sample_count = ...
 evidence.calibration_freeze_status = ...
     'PASS_STAGE8_1_THRESHOLD_EVIDENCE_FREEZE';
 evidence.validation_executed_flag = false;
+evidence.stage8_2_executed_flag = false;
 evidence.aggregation_debug = aggregation_debug;
 clear path_cleanup
 end
@@ -80,6 +84,11 @@ if ~isfield(opts, 'execution_authorization')
 end
 if ~isfield(opts, 'frozen_plan'), opts.frozen_plan = []; end
 if ~isfield(opts, 'overwrite'), opts.overwrite = false; end
+if opts.formal_run && opts.overwrite
+    error(['run_stage8_1_freeze_threshold_evidence:', ...
+        'FORMAL_EVIDENCE_OVERWRITE_FORBIDDEN'], ...
+        'Formal threshold evidence cannot overwrite existing artifacts.');
+end
 end
 
 function digest = checkpoint_manifest_hash_local(manifest)

@@ -1,0 +1,5 @@
+function result = test_existing_validation_artifact_blocks_formal_finalize()
+%TEST_EXISTING_VALIDATION_ARTIFACT_BLOCKS_FORMAL_FINALIZE Verify one Stage8.1A4 contract.
+
+result = stage8_1a4_contract_case('existing_validation_artifact_blocks_formal_finalize');
+end

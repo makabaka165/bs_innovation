@@ -1,0 +1,5 @@
+function result = test_unreturned_start_still_appears_in_all_start_results()
+%TEST_UNRETURNED_START_STILL_APPEARS_IN_ALL_START_RESULTS Verify one Stage8.1A4 contract.
+
+result = stage8_1a4_contract_case('unreturned_start_still_appears_in_all_start_results');
+end

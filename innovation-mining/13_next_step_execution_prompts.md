@@ -18,7 +18,7 @@
 >
 > 本文已经把 prior-art 审查要求写入每个关键阶段：俯仰分组秩条件、固定白化定理假设、零方向高阶退化、相关波束非可加 FIM、完整复杂度、threshold-risk、false-resolved 和等预算外部基线。
 >
-> 当前执行门（2026-07-20）：`PASS_STAGE8_1A3_CODE_ONLY`。valid-start、threshold V3、两阶段证据与 validation/finalizer 复核合同已由 miniature/synthetic fixture 验证；不得自动执行 Stage8.1B 正式 calibration/K1 validation、Stage8.2 holdout、推送或 PR。
+> 当前执行门（2026-07-20）：`PASS_STAGE8_1A4_CODE_ONLY`。未返回 start、tracked committed evidence、registered artifact root、no-overwrite writer 与 calibration SHA snapshot 合同已由 miniature/synthetic fixture 验证；不得自动执行 Stage8.1B 正式 calibration/K1 validation、Stage8.2 holdout、推送或 PR。
 
 ---
 
@@ -3738,23 +3738,26 @@ deterministic artifacts 逐路径、byte count、SHA-256 和 stable identity 全
 `af40f8a7e8a0edfc7077594ebf08257cd0c7385d10902bc8dd624c83434bc322`。
 
 Stage7 继续保持 `PASS_SYSTEM_ANALYSIS_ONLY`，不升级为波束选择算法贡献。
-Stage8.1A3 code-only 合同已通过；Stage8.1B/8.2 未授权且未执行。Stage8
+Stage8.1A4 code-only 合同已通过；Stage8.1B/8.2 未授权且未执行。Stage8
 只用于完成阶段 5 遗留的 K1/K2 false-split、false-resolved 与
 resolved/unresolved 统计闭环。
 
 # 阶段 8：K1/K2 bootstrap、`K2_UNRESOLVED` 与 false-resolved 控制
 
-> **当前状态：`PASS_STAGE8_1A3_CODE_ONLY`。** valid-start、threshold V3、两阶段 evidence 和 finalizer 复核合同已通过 miniature 测试；不执行正式 calibration、validation 或 holdout。阶段 7 没有通过有限样本 Pareto 门，Stage8.1A3 不会自动进入 Stage8.1B。
+> **当前状态：`PASS_STAGE8_1A4_CODE_ONLY`。** 未返回 start、tracked committed evidence、registered artifact root、no-overwrite writer 和 calibration SHA snapshot 合同已通过 miniature 测试；不执行正式 calibration、validation 或 holdout。阶段 7 没有通过有限样本 Pareto 门，Stage8.1A4 不会自动进入 Stage8.1B。
 
-## Stage8.1A3 冻结执行合同
+## Stage8.1A4 冻结执行合同
 
 - K1 validation summary 的唯一主键是 `measurement_config_id × summary_scope`，正式输出固定 14 行；PRIMARY overall/stratum 分别只用 6000/1000 个 common trials，FULL_PARENT 标记为 `SENSITIVITY_ONLY_NOT_USED_FOR_STAGE8_2_AUTHORIZATION`。
 - locked threshold 必须 exact 绑定 stable source、Stage8 plan、calibration plan 和 measurement registry；validation 在第一行 trial 前完成 preflight，禁止 truth、scene、separation 或 score-gap 输入。
 - formal calibration 只以 `FORMAL_SHARD` 物化 `cell_indices`；checkpoint root 必须显式给出并位于 Git 仓库外。300 个 cell checkpoint 恰好各一个且四类 identity 匹配后才允许 aggregate。
 - validation 每 stratum 使用互斥的 parameter、element-noise、separation-auxiliary 三个 1000-seed block；两个 measurement configs 共享 common-trial 三种角色，separation 使用 auxiliary seed 加固定 substreams。
 - Stage8.1B 必须采用两个证据提交：先创建 `docs(stage8.1): freeze k1 bootstrap thresholds`，再从该干净 threshold evidence commit 执行 validation 并创建 `docs(stage8.1): validate k1 false-split control`。
+- 未返回 estimate 的 registered start 必须保留 initialization/status/cost 审计，但不参与 best-start；六类 start 计数互斥并覆盖所有 registered starts。
+- formal loader、validation wrapper 和 finalizer 不能接受 `require_tracked_artifacts=false`；formal freezer/finalizer 不能覆盖已有 evidence；calibration/validation artifact root 固定为注册 Stage8 step root，checkpoint root 仍必须在仓库外。
+- validation 在第一条 trial 前记录 `COMMITTED_THRESHOLD_PREFLIGHT_PASS` 和 calibration SHA-256 snapshot；finalizer 从磁盘重载 committed threshold，并验证写入前后 calibration bytes 不变。
 
-下面的通用阶段 8 提示词保留为历史范围说明；执行时必须以上述 A3 合同和仓库内 Stage8 README 为准。
+下面的通用阶段 8 提示词保留为历史范围说明；执行时必须以上述 A4 合同和仓库内 Stage8 README 为准。
 
 ## 目标
 
@@ -4092,7 +4095,7 @@ cache 只写成软件实现贡献。完成后停止。
 阶段 10 K3/cache（可选）
 ```
 
-截至 2026-07-20，Stage7.1 已正式完成并封存；阶段 7 的技术实现通过但算法贡献门未通过，状态仍为 `PASS_SYSTEM_ANALYSIS_ONLY`。Stage8.1A3 仅冻结 self-contained 执行与证据合同且不含性能结果；只有用户未来单独授权 Stage8.1B 后，才可按两提交生命周期执行阶段 5 的 K1/K2 正式统计闭环。
+截至 2026-07-20，Stage7.1 已正式完成并封存；阶段 7 的技术实现通过但算法贡献门未通过，状态仍为 `PASS_SYSTEM_ANALYSIS_ONLY`。Stage8.1A4 仅冻结 non-bypassable formal-evidence 合同且不含性能结果；只有用户未来单独授权 Stage8.1B 后，才可按两提交生命周期执行阶段 5 的 K1/K2 正式统计闭环。
 
 核心停止点：
 

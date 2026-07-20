@@ -7,6 +7,11 @@ if nargin < 4 || isempty(opts), opts = struct(); end
 opts = normalize_options_local(opts);
 artifact_root = artifact_root_local(calibration_root);
 registry = stage8_1_calibration_artifact_registry();
+if opts.formal_run
+    verify_formal_repository_local(repo_dir, frozen_plan);
+    artifact_root = validate_stage8_formal_artifact_root( ...
+        repo_dir, artifact_root, 'CALIBRATION', struct());
+end
 if opts.require_tracked_artifacts
     verify_clean_tracked_local(repo_dir, artifact_root, registry);
 end
@@ -49,7 +54,9 @@ evidence = struct('repo_dir', repo_dir, 'artifact_root', artifact_root, ...
     contract.stage8_calibration_plan_hash, ...
     'measurement_registry_hash', contract.measurement_registry_hash, ...
     'calibration_freeze_status', ...
-    'PASS_STAGE8_1_THRESHOLD_EVIDENCE_FREEZE');
+    'PASS_STAGE8_1_THRESHOLD_EVIDENCE_FREEZE', ...
+    'committed_threshold_preflight_status', ...
+    'COMMITTED_THRESHOLD_PREFLIGHT_PASS');
 clear path_cleanup
 end
 
@@ -59,6 +66,7 @@ if ~(isstruct(opts) && isscalar(opts))
         'opts must be a scalar struct.');
 end
 allowed = {'formal_run','require_tracked_artifacts'};
+tracked_option_supplied = isfield(opts, 'require_tracked_artifacts');
 unknown = setdiff(fieldnames(opts), allowed);
 if ~isempty(unknown)
     error('load_stage8_1_locked_thresholds:UnknownOption', ...
@@ -68,6 +76,33 @@ if ~isfield(opts, 'formal_run'), opts.formal_run = true; end
 if ~isfield(opts, 'require_tracked_artifacts')
     opts.require_tracked_artifacts = opts.formal_run;
 end
+if opts.formal_run && tracked_option_supplied && ...
+        ~logical_scalar_true_local(opts.require_tracked_artifacts)
+    error(['load_stage8_1_locked_thresholds:', ...
+        'FORMAL_TRACKED_CALIBRATION_EVIDENCE_REQUIRED'], ...
+        'Formal loading cannot disable tracked calibration evidence.');
+end
+if opts.formal_run
+    opts.require_tracked_artifacts = true;
+end
+end
+
+function verify_formal_repository_local(repo_dir, plan)
+if ~isfield(plan, 'identity') || ...
+        ~isfield(plan.identity, 'repository_root') || ...
+        ~strcmpi(canonical_path_local(repo_dir), ...
+        canonical_path_local(plan.identity.repository_root))
+    error('load_stage8_1_locked_thresholds:FormalRepository', ...
+        'Formal calibration evidence must belong to the active repository.');
+end
+end
+
+function value = canonical_path_local(value)
+value = char(java.io.File(char(value)).getCanonicalPath());
+end
+
+function pass = logical_scalar_true_local(value)
+pass = islogical(value) && isscalar(value) && value;
 end
 
 function root = artifact_root_local(input_root)

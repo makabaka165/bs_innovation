@@ -14,7 +14,7 @@
 >
 > 目的：把修订后的主张拆成可执行、可复现、可否决的代码阶段与实验体系。所有新代码、结果和论文论述必须主动区分“已有数学基础”“系统特化”和“经实验才可能成立的候选贡献”。
 >
-> 当前门（2026-07-20）：`PASS_STAGE8_1A3_CODE_ONLY`。Stage8.1A3 已修订 valid-start、threshold V3、calibration/validation 分离证据和 finalizer 复核合同；Stage8.1B 的正式离线 calibration 与 K1 validation、Stage8.2 independent holdout 均未执行，也没有任何 Stage8 性能数字。
+> 当前门（2026-07-20）：`PASS_STAGE8_1A4_CODE_ONLY`。Stage8.1A4 已修复未返回 start 的正式运行分支，并把 tracked calibration、registered artifact root、no-overwrite writer 和 calibration SHA snapshot 设为 formal public runner 不可绕过的合同；Stage8.1B 的正式离线 calibration 与 K1 validation、Stage8.2 independent holdout 均未执行，也没有任何 Stage8 性能数字。
 
 ---
 
@@ -1057,13 +1057,13 @@ results/stage7_fim_beam_design_report.md
 
 # Step12.6：K1/K2 bootstrap、分辨状态与独立风险控制
 
-> **当前门状态：`PASS_STAGE8_1A3_CODE_ONLY`。** Stage8.1A3 的 self-contained threshold/validation evidence 合同已通过 miniature 验证，不改变 Step12.5 的 0/3 Pareto 结论，也不自动授权 Stage8.1B 或 Stage8.2。
+> **当前门状态：`PASS_STAGE8_1A4_CODE_ONLY`。** Stage8.1A4 的 non-bypassable formal-evidence 合同已通过 miniature 验证，不改变 Step12.5 的 0/3 Pareto 结论，也不自动授权 Stage8.1B 或 Stage8.2。
 
 ## 四层冻结路线
 
 1. **Stage8.0 / Step12.6A（已冻结）：** 建立独立代码目录；冻结 fixed measurement、共同局部域、K1 两起点、K2 三起点、`r_C*L` LRT、separation confidence、六状态输出和未来实验计划；只运行小型 fixture，无性能结果。
-2. **Stage8.1A3 / Step12.6B-pre（当前）：** best start 只从有效 registered starts 选择；threshold V3 以 hex 无损恢复；calibration/validation registry、writer、manifest 和 bundle 分离；committed loader 与 finalizer 独立重算 plan/trials/summary/paired/PRIMARY gate。仍只运行 fixture，不执行正式样本。
-3. **Stage8.1B（尚未授权、尚未执行）：** 仅在后续单独授权后，从干净 A3 code commit 在仓库外 checkpoint root 完成 300 cells 和两个 `q_global`，创建 `docs(stage8.1): freeze k1 bootstrap thresholds`；随后从干净 threshold evidence commit 重建计划、exact 验证 provenance，执行 6000 个公共 K1 trial/12,000 config rows，并创建 `docs(stage8.1): validate k1 false-split control`。FULL_PARENT 只作 paired sensitivity，不能抵消 PRIMARY 失败。
+2. **Stage8.1A4 / Step12.6B-pre（当前）：** best start 只从有效 registered starts 选择；未返回 estimate 的 start 保留审计与计费但不参与选择；formal loader/wrapper/finalizer 不能关闭 tracked-evidence 检查，formal writer 不能覆盖，artifact root 固定在注册 Stage8 目录，calibration bytes 在 validation 前后以 SHA-256 snapshot 复核。仍只运行 fixture，不执行正式样本。
+3. **Stage8.1B（尚未授权、尚未执行）：** 仅在后续单独授权后，从干净 A4 code commit 在仓库外 checkpoint root 完成 300 cells 和两个 `q_global`，创建 `docs(stage8.1): freeze k1 bootstrap thresholds`；随后从干净 threshold evidence commit 重建计划、exact 验证 provenance，执行 6000 个公共 K1 trial/12,000 config rows，并创建 `docs(stage8.1): validate k1 false-split control`。FULL_PARENT 只作 paired sensitivity，不能抵消 PRIMARY 失败。
 4. **Stage8.2（尚未执行）：** 仅在 Stage8.1B artifact 锁定、K1 validation gate 通过且再次单独授权后，执行 K1/K2 independent holdout、full-parent paired sensitivity、mismatch holdout 和 Stage5 coherent-weak boundary；holdout 不重新校准阈值，并按预注册 Wilson 门给出 PASS/PARTIAL/FAIL。
 
 四层的 seed、artifact 和 Git identity 独立。Stage8.1A 不生成正式 threshold table、calibration CSV、validation CSV、holdout CSV 或 PNG。

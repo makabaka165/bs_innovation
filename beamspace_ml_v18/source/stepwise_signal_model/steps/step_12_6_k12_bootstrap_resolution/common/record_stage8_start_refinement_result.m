@@ -1,0 +1,29 @@
+function [result, score_required_flag] = ...
+    record_stage8_start_refinement_result( ...
+    result, estimate, history, refinement_debug)
+%RECORD_STAGE8_START_REFINEMENT_RESULT Preserve one executed start outcome.
+
+required = {'angles_hat_deg','score','rss','estimate_returned_flag', ...
+    'joint_refinement_status','num_score_eval','num_svd','runtime'};
+if ~(isstruct(result) && isscalar(result) && ...
+        isstruct(estimate) && isscalar(estimate) && ...
+        all(isfield(estimate, required)))
+    error('record_stage8_start_refinement_result:Contract', ...
+        'The refinement result contract is incomplete.');
+end
+result.angles_hat_deg = estimate.angles_hat_deg;
+result.score = estimate.score;
+result.rss = estimate.rss;
+result.estimate_returned_flag = estimate.estimate_returned_flag;
+result.converged_flag = strcmp(estimate.joint_refinement_status, ...
+    'JOINT_REFINEMENT_CONVERGED');
+result.fit_status = estimate.joint_refinement_status;
+result.num_score_eval = estimate.num_score_eval;
+result.num_svd = estimate.num_svd;
+result.runtime = estimate.runtime;
+result.history = history;
+result.refinement_debug = refinement_debug;
+score_required_flag = islogical(estimate.estimate_returned_flag) && ...
+    isscalar(estimate.estimate_returned_flag) && ...
+    estimate.estimate_returned_flag;
+end

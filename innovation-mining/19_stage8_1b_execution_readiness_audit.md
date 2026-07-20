@@ -1,19 +1,25 @@
-# Stage8.1A3 / Stage8.1B Execution Readiness Audit
+# Stage8.1A4 / Stage8.1B Execution Readiness Audit
 
-> Date: 2026-07-19
+> Date: 2026-07-20
 > Repository: `makabaka165/bs_innovation`
-> Code baseline: `26b94b57e9d17699783109566468e59df86346e4`
+> A3 baseline: `354eea79572382be70f0bf2a5943fc2a73843a1e`
 > Runtime: MATLAB R2022b, `phase_factor=1`
 > Scope: code-only; no formal calibration, threshold, validation, holdout, or PNG
 
-## A. Stage8.1A3 Conclusion
+## A. Stage8.1A4 Conclusion
 
-Stage8.1A3 closes the remaining executable-contract defects in K1 validation,
+Stage8.1A4 closes the remaining executable-contract defects in K1 validation,
 threshold provenance, formal calibration shards/checkpoints, group-noise scale
 handling, and validation RNG roles. It does not change `alpha=0.05`,
 `beta=0.05`, `Bboot=199`, `Bsep=199`, minimum valid fraction `0.90`, the
 `0.21` degree engineering half-width, K1/K2 starts, the Stage5 domain,
 `RECT_E14_A31`, or frozen Stage7.1/6/5/Step11 evidence.
+
+The production fitter now preserves and charges a registered start whose
+refinement returns no estimate without selecting it or treating it as a rank
+failure. Formal public entry points force tracked calibration evidence, a
+registered repository artifact root, no-overwrite evidence creation, and
+calibration SHA-256 immutability across validation and finalization.
 
 ## B. Primary And Sensitivity Validation
 
@@ -89,26 +95,28 @@ The Git-index-frozen code-only identities are:
 
 | Identity | SHA-256 |
 |---|---|
-| `stage8_source_tree_hash` | `68960fb22115b6d85a6141bfd22e01c29ceaf3f87c3069166585190b87d3553f` |
-| `stage8_stable_code_identity` | `78acde57bdc232fec5d93478b4ff155fb5e0fc5dd5a4c988883356885202aa11` |
-| `stage8_fit_contract_hash` | `d3638412d5e6dbcae142a96f34a26c55d80f7ced2cc313b8f0e3817db6a9e2c1` |
+| `stage8_source_tree_hash` | `cb91ca4d3806f11edc8179a876e0515ab7ab6522042342ffec41b77fbbd045c3` |
+| `stage8_stable_code_identity` | `6bccb4f96ceb173742d8f62ebbb4b535ca8f71075c599d8399db496881037ad7` |
+| `stage8_fit_contract_hash` | `7c29661b2a4456c07a53513642e273373c228cf3e72cd2375524f756f155dadd` |
 | `stage8_calibration_plan_hash` | `3c8f71a65e67ed0db7a1551a1594761c737ad8606101d48fcf76fcf40d67c291` |
 | `stage8_validation_plan_hash` | `9bfa65e64dc97523e36c62e44217e5e4dc93d221de90b29de923a5b0d6a121e7` |
-| `stage8_plan_hash` | `f846aa7bc11494feec14f6d8363312b103216a015cfa3cf65546f9b1255153a0` |
+| `stage8_plan_hash` | `3a845addf96e10664ced9ef2d7a30eaccf23c08b160c196eaf1caf6dd71435be` |
 | `measurement_registry_hash` | `f20773e1165b8519368b3a4dd3e74b250d84f3a7199f560036e5235988017688` |
 
 The calibration and validation plan hashes are unchanged because their frozen
 cells, seeds, statistical constants, paired strata, and gates are unchanged.
-The source, fit-contract, and total-plan identities change because A3 repairs
-start eligibility and the self-contained evidence lifecycle.
+The source, fit-contract, and total-plan identities change because A4 adds the
+disjoint start-failure contract and non-bypassable evidence lifecycle.
 
 ## H. Tests And Scope
 
 - Stage8.0: 428 assertions passed; Code Analyzer/scope violations `0/0`.
-- Stage8.1A3: 479 assertions passed; Code Analyzer/scope/formal-artifact
+- Stage8.1A4: 501 assertions passed; Code Analyzer/scope/formal-artifact
   violations `0/0/0`.
-- The suite retains all A2 coverage and adds 32 named A3 tests for valid-start
-  selection, V3 hex restoration/tamper rejection, split manifests, committed
+- The suite retains all A3 coverage and adds 22 named A4 tests for unreturned
+  starts, formal bypass rejection, registered roots, overwrite rejection, and
+  calibration byte snapshots, in addition to valid-start selection, V3 hex
+  restoration/tamper rejection, split manifests, committed
   threshold loading, validation plan/trial hashes, finalizer recomputation,
   calibration byte immutability, and the executable two-commit lifecycle.
 - Frozen Stage7.1, Stage6, Stage5, and Step11 verification passed.
@@ -124,7 +132,7 @@ audit does not authorize or execute Stage8.1B or Stage8.2.
 
 If separately authorized later, Stage8.1B must use two commits:
 
-1. From the clean A2 code commit, run repository-external calibration shards,
+1. From the clean A4 code commit, run repository-external calibration shards,
    collect 300 cells, freeze two thresholds, and create
    `docs(stage8.1): freeze k1 bootstrap thresholds`.
 2. From that clean threshold-evidence commit, rebuild the frozen plan, verify

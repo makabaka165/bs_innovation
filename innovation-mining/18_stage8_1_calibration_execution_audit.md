@@ -24,6 +24,18 @@ and bundle, requires tracked artifacts in formal mode, restores doubles from
 hex, and rejects stale or tampered evidence. No formal cell, bootstrap sample,
 or threshold was generated here.
 
+### Stage8.1A4 evidence-lifecycle addendum (2026-07-20)
+
+Formal threshold freezing now requires the registered Stage8 artifact root to
+be empty except for `.gitkeep`, rejects `overwrite=true`, and continues to
+require repository-external checkpoints. The formal loader, public validation
+wrapper, and finalizer reject any explicit attempt to disable tracked
+calibration evidence. Validation records committed-threshold preflight and a
+deterministic calibration byte snapshot; finalization reloads thresholds from
+disk and verifies the snapshot before and after validation evidence writing.
+No formal cell, bootstrap, threshold, validation row, or Stage8.2 result was
+generated.
+
 ## B. Seed registry
 
 Calibration data seed 为 `2026072100 + c - 1`，`c=1,...,300`。Bootstrap
@@ -93,7 +105,7 @@ runtime、manifest 自身和 checkpoint 临时文件，并以逐文件 SHA-256 �
 
 ## I. Stage8.1B 执行顺序
 
-1. 从干净、已提交的 Stage8.1A2 code identity 启动 calibration。
+1. 从干净、已提交的 Stage8.1A4 code identity 启动 calibration。
 2. 在 Git 仓库外完成并审计 300 个 cell checkpoint。
 3. 聚合两个 config-level threshold 并创建
    `docs(stage8.1): freeze k1 bootstrap thresholds`。

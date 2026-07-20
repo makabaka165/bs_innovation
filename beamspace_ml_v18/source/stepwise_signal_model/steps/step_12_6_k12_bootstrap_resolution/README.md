@@ -1,12 +1,12 @@
-# Stage8.1A3 Self-Contained Threshold And Validation Evidence
+# Stage8.1A4 Non-Bypassable Formal Evidence Paths
 
 ## Status
 
-`PASS_STAGE8_1A3_CODE_ONLY`
+`PASS_STAGE8_1A4_CODE_ONLY`
 
 This directory freezes and unit-tests the K1/K2 fitting, nonregular LRT,
 element-domain parametric bootstrap, separation-confidence, resumable
-calibration, paired K1-validation, and six-state decision contracts. Stage8.1A3
+calibration, paired K1-validation, and six-state decision contracts. Stage8.1A4
 is code-only: it contains no calibrated threshold, validation result, holdout
 result, Monte Carlo performance number, or Stage8.1B/8.2 completion marker.
 
@@ -76,10 +76,13 @@ finite nonnegative reals, concentrated log likelihood is finite, all fixed
 measurement/domain/solver/observation identities are complete, and
 `phase_factor=1`. A nonconverged high-likelihood start remains in
 `all_start_results` but cannot replace a lower-likelihood valid start. Outputs
-record `valid_start_count`, `nonconverged_start_count`,
+record disjoint `initialization_failed_start_count`,
+`unreturned_start_count`, `nonconverged_start_count`,
 `rank_deficient_start_count`, `numeric_invalid_start_count`, and
-`selected_from_valid_start_set_flag`; every registered start is still run and
-charged.
+`valid_start_count` values. A refinement that returns no estimate retains its
+registered initialization ID, status, history, and measured score/SVD/runtime
+cost in `all_start_results`, but it is never selected or misclassified as rank
+deficient. Every registered start is still run and charged.
 
 Coefficient recovery uses an economy-SVD pseudoinverse. Effective rank below K
 returns `NUMERIC_RANK_DEFICIENT`; no inverse Gram matrix, absolute ridge, or
@@ -192,7 +195,7 @@ trial, only looks them up, and cannot recalibrate them.
 Formal Stage8.1B remains separately authorized and must use two evidence
 commits in this order:
 
-1. Start from the clean Stage8.1A3 code commit, run calibration shards with a
+1. Start from the clean Stage8.1A4 code commit, run calibration shards with a
    checkpoint root outside the Git repository, collect all 300 cells, freeze
    two thresholds, and create
    `docs(stage8.1): freeze k1 bootstrap thresholds`.
@@ -213,6 +216,19 @@ tracked evidence commit in formal mode, recomputes every deterministic file
 hash and bundle identity, restores both V3 thresholds losslessly, and verifies
 the exact current plan. Formal validation can start only through
 `run_stage8_1_k1_validation_from_frozen_thresholds`.
+
+Formal evidence paths are not caller-configurable escape hatches. The loader,
+public validation wrapper, and finalizer force tracked calibration evidence;
+an explicit `require_tracked_artifacts=false` fails before authorization or
+execution. Formal freezing and finalization force `overwrite=false`. Their
+artifact root is exactly this registered Stage8 step directory, with only
+`.gitkeep` allowed in the target lifecycle before writing. Calibration
+checkpoints remain subject to the separate rule that their root must be
+outside the repository. The validation wrapper records
+`COMMITTED_THRESHOLD_PREFLIGHT_PASS` and captures SHA-256 for every
+deterministic calibration artifact plus its manifest before trials. The
+finalizer reloads calibration from disk and requires the pre-validation,
+pre-write, and post-write snapshots to match.
 
 The validation-output validator independently compares raw trials with the
 current 12,000-row plan registry and recomputes the 14-row summary, paired
@@ -252,7 +268,7 @@ verifies all registered starts,
 nested RSS, `r_C*L`, full bootstrap refits, global-threshold aggregation,
 separation confidence, state logic, plan/seed isolation, stable identity,
 scope exclusions, and frozen Stage7.1/6/5/Step11 evidence. It writes no formal
-artifact. The Stage8.1A3 suite additionally checks all seed spaces, four-model
+artifact. The Stage8.1A4 suite additionally checks all seed spaces, four-model
 resolution, element-bootstrap mean/covariance, real initialization, unified
 fit validity, checkpoint mismatch behavior, 300-cell aggregation, 14-row
 primary/sensitivity summaries, exact threshold provenance, formal
@@ -261,3 +277,7 @@ writer determinism, valid-start selection, V3 hex round trips and tamper
 rejection, calibration-only freezing, committed threshold loading, raw-trial
 plan binding, finalizer recomputation, calibration byte immutability, the
 executable two-stage lifecycle, and the Stage8.2 stop boundary.
+It also exercises unreturned registered starts, disjoint start diagnostics,
+formal tracked-evidence bypass rejection, registered artifact roots,
+no-overwrite evidence creation, committed-threshold preflight, and calibration
+snapshot immutability.

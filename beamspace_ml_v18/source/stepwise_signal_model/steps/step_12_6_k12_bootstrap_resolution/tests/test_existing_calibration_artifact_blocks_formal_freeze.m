@@ -1,0 +1,5 @@
+function result = test_existing_calibration_artifact_blocks_formal_freeze()
+%TEST_EXISTING_CALIBRATION_ARTIFACT_BLOCKS_FORMAL_FREEZE Verify one Stage8.1A4 contract.
+
+result = stage8_1a4_contract_case('existing_calibration_artifact_blocks_formal_freeze');
+end
