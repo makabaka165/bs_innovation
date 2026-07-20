@@ -29,6 +29,8 @@ svd_calls = 0;
 factory_rebuild_count = 0;
 fit1_boot_debug = struct();
 fit2_boot_debug = struct();
+mean_contract = build_stage8_bootstrap_mean_identity_contract();
+mean_identity_summary = mean_identity_summary_local([], mean_contract);
 
 [context, init_debug] = build_context_local( ...
     cell_input.full_data, model, local_domain, stage5_locked, opts);
@@ -51,6 +53,18 @@ else
 end
 
 if valid1
+    mean_identity = evaluate_stage8_bootstrap_mean_identity(fit1, model);
+    mean_identity_summary = mean_identity_summary_local( ...
+        mean_identity, mean_contract);
+    if ~mean_identity.overall_pass
+        failure_count = 1;
+        failure_rows{1} = mean_contract_failure_row_local(1, ...
+            bootstrap_seeds(1), mean_identity, model, cell_input);
+        status = 'CALIBRATION_CELL_BOOTSTRAP_MEAN_CONTRACT_FAILURE';
+    end
+end
+
+if valid1 && mean_identity_summary.overall_pass
     for bootstrap_index = 1:Bboot
         seed = bootstrap_seeds(bootstrap_index);
         [boot_data, ~] = simulate_bootstrap_local( ...
@@ -132,6 +146,36 @@ hash_payload.score_call_count = score_calls;
 hash_payload.svd_call_count = svd_calls;
 hash_payload.initialization_factory_rebuild_count = factory_rebuild_count;
 hash_payload.failure_count = failure_count;
+hash_payload.bootstrap_mean_identity_contract_version = ...
+    mean_identity_summary.contract_version;
+hash_payload.bootstrap_mean_identity_contract_hash = ...
+    mean_identity_summary.contract_hash;
+hash_payload.bootstrap_mean_identity_status = ...
+    mean_identity_summary.failure_status;
+hash_payload.bootstrap_mean_identity_G_absolute_residual = ...
+    mean_identity_summary.G_absolute_residual;
+hash_payload.bootstrap_mean_identity_G_absolute_bound = ...
+    mean_identity_summary.G_absolute_bound;
+hash_payload.bootstrap_mean_identity_G_max_bound_ratio = ...
+    mean_identity_summary.G_max_bound_ratio;
+hash_payload.bootstrap_mean_identity_mean_absolute_residual = ...
+    mean_identity_summary.mean_absolute_residual;
+hash_payload.bootstrap_mean_identity_mean_absolute_bound = ...
+    mean_identity_summary.mean_absolute_bound;
+hash_payload.bootstrap_mean_identity_mean_max_bound_ratio = ...
+    mean_identity_summary.mean_max_bound_ratio;
+hash_payload.bootstrap_mean_identity_old_relative_error = ...
+    mean_identity_summary.mean_old_relative_residual;
+hash_payload.bootstrap_mean_identity_fitted_mean_norm = ...
+    mean_identity_summary.fitted_mean_norm;
+hash_payload.bootstrap_mean_identity_W_alias_pass = ...
+    mean_identity_summary.W_alias_pass;
+hash_payload.bootstrap_mean_identity_T_alias_pass = ...
+    mean_identity_summary.T_alias_pass;
+hash_payload.bootstrap_mean_identity_fixed_measurement_pass = ...
+    mean_identity_summary.fixed_measurement_pass;
+hash_payload.bootstrap_mean_identity_overall_pass = ...
+    mean_identity_summary.overall_pass;
 cell_artifact_hash = stage8_calibration_artifact_hash(hash_payload);
 artifact = hash_payload;
 artifact.K1_fit_count = k1_fit_count;
@@ -146,6 +190,7 @@ artifact.phase_factor = 1;
 debug = struct('checkpoint_reused_flag', false, ...
     'fit1_debug', fit1_debug, 'last_fit1_boot_debug', ...
     fit1_boot_debug, 'last_fit2_boot_debug', fit2_boot_debug, ...
+    'bootstrap_mean_identity_preflight', mean_identity_summary, ...
     'runtime', runtime, 'phase_factor', 1);
 if ~isempty(opts.checkpoint_path)
     write_checkpoint_local(opts.checkpoint_path, artifact);
@@ -264,16 +309,59 @@ end
 
 function row = failure_row_local(index, seed, K, status)
 row = struct('bootstrap_index', index, 'bootstrap_seed', seed, ...
-    'model_K', K, 'failure_status', string(status));
+    'model_K', K, 'failure_status', string(status), ...
+    'G_absolute_residual', NaN, 'G_backward_bound', NaN, ...
+    'G_max_bound_ratio', NaN, 'mean_absolute_residual', NaN, ...
+    'mean_backward_bound', NaN, 'mean_max_bound_ratio', NaN, ...
+    'old_relative_mean_error', NaN, 'fitted_mean_norm', NaN, ...
+    'model_hash', "", 'cell_input_hash', "", ...
+    'mean_contract_version', "", 'mean_contract_hash', "");
+end
+
+function row = mean_contract_failure_row_local( ...
+    index, seed, evaluation, model, cell_input)
+row = failure_row_local(index, seed, 1, evaluation.failure_status);
+row.G_absolute_residual = evaluation.G_absolute_residual;
+row.G_backward_bound = evaluation.G_absolute_bound;
+row.G_max_bound_ratio = evaluation.G_max_bound_ratio;
+row.mean_absolute_residual = evaluation.mean_absolute_residual;
+row.mean_backward_bound = evaluation.mean_absolute_bound;
+row.mean_max_bound_ratio = evaluation.mean_max_bound_ratio;
+row.old_relative_mean_error = evaluation.mean_old_relative_residual;
+row.fitted_mean_norm = evaluation.fitted_mean_norm;
+row.model_hash = string(model.fixed_measurement_hash);
+row.cell_input_hash = string(cell_input.cell_input_hash);
+row.mean_contract_version = string(evaluation.contract_version);
+row.mean_contract_hash = string(evaluation.contract_hash);
 end
 
 function table_out = failures_table_local(rows, count)
 if count == 0
-    table_out = table(zeros(0, 1), zeros(0, 1), zeros(0, 1), ...
-        strings(0, 1), 'VariableNames', {'bootstrap_index', ...
-        'bootstrap_seed','model_K','failure_status'});
+    table_out = struct2table(failure_row_local(NaN, NaN, NaN, ""));
+    table_out(1, :) = [];
 else
     table_out = struct2table(vertcat(rows{1:count}));
+end
+end
+
+function summary = mean_identity_summary_local(evaluation, contract)
+summary = struct('contract_version', contract.contract_version, ...
+    'contract_hash', contract.contract_hash, ...
+    'failure_status', 'MEAN_IDENTITY_NOT_EVALUATED', ...
+    'G_absolute_residual', NaN, 'G_absolute_bound', NaN, ...
+    'G_max_bound_ratio', NaN, 'mean_absolute_residual', NaN, ...
+    'mean_absolute_bound', NaN, 'mean_max_bound_ratio', NaN, ...
+    'mean_old_relative_residual', NaN, 'fitted_mean_norm', NaN, ...
+    'W_alias_pass', false, 'T_alias_pass', false, ...
+    'fixed_measurement_pass', false, 'overall_pass', false);
+if isempty(evaluation)
+    return;
+end
+names = fieldnames(summary);
+for index = 1:numel(names)
+    if isfield(evaluation, names{index})
+        summary.(names{index}) = evaluation.(names{index});
+    end
 end
 end
 

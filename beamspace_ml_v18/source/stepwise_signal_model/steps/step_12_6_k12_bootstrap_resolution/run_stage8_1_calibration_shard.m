@@ -30,6 +30,11 @@ for output_index = 1:numel(opts.cell_indices)
         run_stage8_1_calibration_cell(cells(cell_index), local_domain, ...
         model_registry, stage5_locked, cell_opts);
     reused(output_index) = cell_debug.checkpoint_reused_flag;
+    if ~strcmp(artifacts{output_index}.status, 'CALIBRATION_CELL_PASS')
+        artifacts = artifacts(1:output_index);
+        reused = reused(1:output_index);
+        break;
+    end
 end
 artifacts = vertcat(artifacts{:});
 shard_identity = stage8_stable_hash('STAGE8_1_CALIBRATION_SHARD_V1', ...

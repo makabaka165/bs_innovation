@@ -191,6 +191,12 @@ tests.artifact_registry = test_stage8_1_artifact_registry();
 tests.manifest = test_stage8_1_manifest_no_self_reference();
 tests.writer = test_stage8_1_writer_determinism();
 tests.no_stage8_2 = test_stage8_1_no_stage8_2_execution(step_dir);
+a5_plan = build_stage8_locked_plan(repo_dir, cfg, struct());
+a5_tests = run_stage8_1a5_test_set(a5_plan);
+a5_names = fieldnames(a5_tests);
+for a5_index = 1:numel(a5_names)
+    tests.(['a5_', a5_names{a5_index}]) = a5_tests.(a5_names{a5_index});
+end
 tests.stage7_1_frozen = verify_stage7_1_frozen_evidence(package_dir);
 tests.stage6_frozen = verify_stage6_frozen_evidence(package_dir);
 tests.stage5_frozen = verify_stage5_frozen_results(package_dir);
