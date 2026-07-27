@@ -86,7 +86,7 @@ function Assert-NoStage8Matlab {
     })
     $calibrationLockRoot =
         'E:\bs_innovation_runtime\stage8_1b_a5r2_cellwise_7dc1e4c3\locks'
-    $activeLocks = @(Get-ChildItem -LiteralPath $calibrationLockRoot -File
+    $activeLocks = @(Get-ChildItem -LiteralPath $calibrationLockRoot -File `
         -ErrorAction SilentlyContinue)
     if ($coordinators.Count -ne 0 -or $activeLocks.Count -ne 0) {
         throw "Coordinator/active-lock preflight failed: $($coordinators.Count)/$($activeLocks.Count)."
@@ -211,7 +211,7 @@ function Wait-WorkerProcesses {
         }
         $pageSamples.Add($sample.PagesInputPerSec)
         if ($PauseAfterCheckpointCount -ge 0 -and -not $pauseCreated) {
-            $completed = @(Get-ChildItem -LiteralPath (Join-Path $Root 'checkpoints')
+            $completed = @(Get-ChildItem -LiteralPath (Join-Path $Root 'checkpoints') `
                 -Filter '*.mat' -File -ErrorAction SilentlyContinue).Count
             if ($completed -ge $PauseAfterCheckpointCount) {
                 $requestPath = Join-Path $Root 'control\pause.request'
@@ -256,13 +256,13 @@ function Archive-PauseRequest {
         New-Item -ItemType Directory -Path $archive -Force | Out-Null
     }
     $stamp = [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')
-    Move-Item -LiteralPath $path -Destination
+    Move-Item -LiteralPath $path -Destination `
         (Join-Path $archive "pause_${Label}_$stamp.request")
 }
 
 function Get-CheckpointIdentity {
     param([string]$Root)
-    return @(Get-ChildItem -LiteralPath (Join-Path $Root 'checkpoints')
+    return @(Get-ChildItem -LiteralPath (Join-Path $Root 'checkpoints') `
         -Filter '*.mat' -File | Sort-Object Name | ForEach-Object {
         [pscustomobject]@{
             Name = $_.Name
@@ -290,9 +290,9 @@ function Test-IdentityUnchanged {
 function Test-PilotSafePause {
     param([string]$Root, [int]$WorkerCount)
     if ((Get-MatchingWorkerProcesses -Root $Root).Count -ne 0) { return $false }
-    if (@(Get-ChildItem -LiteralPath (Join-Path $Root 'tmp') -Filter '*.tmp'
+    if (@(Get-ChildItem -LiteralPath (Join-Path $Root 'tmp') -Filter '*.tmp' `
             -File -ErrorAction SilentlyContinue).Count -ne 0) { return $false }
-    if (@(Get-ChildItem -LiteralPath (Join-Path $Root 'workers')
+    if (@(Get-ChildItem -LiteralPath (Join-Path $Root 'workers') `
             -Filter '*.current.lock' -File -ErrorAction SilentlyContinue).Count -ne 0) {
         return $false
     }
@@ -319,7 +319,11 @@ function Get-CheckpointActiveSeconds {
         $values = @(Import-Csv -LiteralPath $historyPath | ForEach-Object {
             [double]$_.runtime_sec
         })
-        $workerTotals += [double](($values | Measure-Object -Sum).Sum)
+        if ($values.Count -eq 0) {
+            $workerTotals += 0.0
+        } else {
+            $workerTotals += [double](($values | Measure-Object -Sum).Sum)
+        }
     }
     if ($workerTotals.Count -eq 0) { return 0.0 }
     return [double](($workerTotals | Measure-Object -Maximum).Maximum)
@@ -327,7 +331,7 @@ function Get-CheckpointActiveSeconds {
 
 function Write-PilotProgress {
     param([string]$PilotRoot, [string]$Stage, [string]$Detail)
-    Write-JsonAtomic -Path (Join-Path $PilotRoot 'pilot_progress.json') -Value
+    Write-JsonAtomic -Path (Join-Path $PilotRoot 'pilot_progress.json') -Value `
         ([ordered]@{
             protocol_version = $ProtocolVersion
             protocol_stage = $Stage
@@ -405,7 +409,7 @@ function Invoke-Pilot {
 
     $pauseProcess = Start-Worker $resumedRoot 1 'before_pause'
     $pauseMetrics = Wait-WorkerProcesses @($pauseProcess) $resumedRoot 10
-    $pauseCount = @(Get-ChildItem -LiteralPath (Join-Path $resumedRoot 'checkpoints')
+    $pauseCount = @(Get-ChildItem -LiteralPath (Join-Path $resumedRoot 'checkpoints') `
         -Filter '*.mat' -File).Count
     if (-not $pauseMetrics.PauseCreated -or $pauseCount -lt 10 -or $pauseCount -ge 60) {
         throw "Gate 2A did not reach a real safe pause boundary (count=$pauseCount)."
@@ -413,8 +417,8 @@ function Invoke-Pilot {
     if (-not (Test-PilotSafePause $resumedRoot 1)) {
         throw 'Gate 2A workers did not reach PAUSED_SAFE with zero tmp/lock/process state.'
     }
-    Write-JsonAtomic (Join-Path $pilotRoot 'gate2a_pause_audit.json') `
-        ([ordered]@{ safe_to_shutdown = $true; active_worker_count = 0;
+    Write-JsonAtomic -Path (Join-Path $pilotRoot 'gate2a_pause_audit.json') `
+        -Value ([ordered]@{ safe_to_shutdown = $true; active_worker_count = 0;
             tmp_checkpoint_count = 0; current_trial_lock_count = 0;
             valid_checkpoint_count = $pauseCount; recorded_utc = Get-UtcNowText })
     $resumeIdentity = Get-CheckpointIdentity $resumedRoot
@@ -455,8 +459,8 @@ function Invoke-Pilot {
     if (-not (Test-PilotSafePause $shardedRoot 2)) {
         throw 'Gate 2B workers did not reach PAUSED_SAFE with zero tmp/lock/process state.'
     }
-    Write-JsonAtomic (Join-Path $pilotRoot 'gate2b_pause_audit.json') `
-        ([ordered]@{ safe_to_shutdown = $true; active_worker_count = 0;
+    Write-JsonAtomic -Path (Join-Path $pilotRoot 'gate2b_pause_audit.json') `
+        -Value ([ordered]@{ safe_to_shutdown = $true; active_worker_count = 0;
             tmp_checkpoint_count = 0; current_trial_lock_count = 0;
             valid_checkpoint_count = $parallelPauseCount; recorded_utc = Get-UtcNowText })
     Archive-PauseRequest $shardedRoot 'gate2b'
@@ -480,7 +484,7 @@ function Invoke-Pilot {
             $fixtureLiteral = ConvertTo-MatlabLiteral $fixturePath
             $fixtureExpression = "addpath('$toolLiteral');" +
                 "stage8_1b_forced_separation_fixture('$repoLiteral','$fixtureLiteral');"
-            Invoke-MatlabBatch $fixtureExpression
+            Invoke-MatlabBatch $fixtureExpression `
                 (Join-Path $pilotRoot "forced_separation_$label.log")
             $fixtureHashes += Read-JsonFile "$fixturePath.json"
         }
@@ -490,8 +494,8 @@ function Invoke-Pilot {
                 ($_.lambda_hex -join '|') + ':' + ($_.state -join '|') + ':' +
                 ($_.separation_status -join '|')
             } | Select-Object -Unique).Count -eq 1)
-        Write-JsonAtomic (Join-Path $pilotRoot 'forced_separation_result.json')
-            ([ordered]@{ pass = $fixturePass; Bsep = 199; formal_substream_count = 199 })
+        Write-JsonAtomic -Path (Join-Path $pilotRoot 'forced_separation_result.json') `
+            -Value ([ordered]@{ pass = $fixturePass; Bsep = 199; formal_substream_count = 199 })
     }
 
     $singleWorkerActive = Get-CheckpointActiveSeconds $singleRoot 1
@@ -528,8 +532,8 @@ function Invoke-Pilot {
     $resourceFailureReason = if ($resourceReasons.Count -eq 0) {
         'NONE'
     } else { $resourceReasons -join '+' }
-    Write-JsonAtomic (Join-Path $pilotRoot 'pilot_resources.json')
-        ([ordered]@{
+    Write-JsonAtomic -Path (Join-Path $pilotRoot 'pilot_resources.json') `
+        -Value ([ordered]@{
             single_worker_wall_sec = $singleWorkerActive
             two_worker_active_wall_sec = $twoWorkerWall
             single_worker_process_wall_sec = $singleMetrics.WallSec
@@ -586,14 +590,14 @@ function Archive-StaleRuntimeWrites {
         New-Item -ItemType Directory -Path $incomplete -Force | Out-Null
     }
     $stamp = [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ')
-    foreach ($item in @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'tmp')
+    foreach ($item in @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'tmp') `
             -Filter '*.tmp' -File -ErrorAction SilentlyContinue)) {
-        Move-Item -LiteralPath $item.FullName -Destination
+        Move-Item -LiteralPath $item.FullName -Destination `
             (Join-Path $incomplete "$($item.Name).resume_$stamp")
     }
-    foreach ($item in @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'workers')
+    foreach ($item in @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'workers') `
             -Filter '*.current.lock' -File -ErrorAction SilentlyContinue)) {
-        Move-Item -LiteralPath $item.FullName -Destination
+        Move-Item -LiteralPath $item.FullName -Destination `
             (Join-Path $incomplete "$($item.Name).resume_$stamp")
     }
 }
@@ -639,7 +643,7 @@ function Get-Percentile {
 function Get-AttemptActiveWallSeconds {
     param([string]$Root)
     $intervals = @()
-    foreach ($attemptPath in @(Get-ChildItem -LiteralPath (Join-Path $Root 'workers')
+    foreach ($attemptPath in @(Get-ChildItem -LiteralPath (Join-Path $Root 'workers') `
             -Filter 'attempt_*.json' -File -ErrorAction SilentlyContinue)) {
         try {
             $attempt = Read-JsonFile $attemptPath.FullName
@@ -776,18 +780,18 @@ function Get-StatusSnapshot {
         }
     }
 
-    $checkpointFiles = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'checkpoints')
+    $checkpointFiles = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'checkpoints') `
         -Filter '*.mat' -File -ErrorAction SilentlyContinue)
     $completed = $checkpointFiles.Count
     $remaining = [int]$protocol.common_trial_count - $completed
-    $tmpCount = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'tmp')
+    $tmpCount = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'tmp') `
         -Filter '*.tmp' -File -ErrorAction SilentlyContinue).Count
-    $lockCount = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'workers')
+    $lockCount = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'workers') `
         -Filter '*.current.lock' -File -ErrorAction SilentlyContinue).Count
-    $invalidCount = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'checkpoints')
+    $invalidCount = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'checkpoints') `
         -Filter '*.invalid' -File -ErrorAction SilentlyContinue).Count
     $histories = @()
-    foreach ($historyPath in @(Get-ChildItem -LiteralPath $logsRoot
+    foreach ($historyPath in @(Get-ChildItem -LiteralPath $logsRoot `
             -Filter 'worker_*_checkpoint_history.csv' -File -ErrorAction SilentlyContinue)) {
         try { $histories += @(Import-Csv -LiteralPath $historyPath.FullName) } catch { }
     }
@@ -814,8 +818,11 @@ function Get-StatusSnapshot {
             if ($stateCounts.Contains($stateName)) { $stateCounts[$stateName]++ }
         }
     }
-    $separationRows = [int](($histories | Measure-Object `
-        -Property separation_trigger_rows -Sum).Sum)
+    $separationRows = 0
+    if ($histories.Count -gt 0) {
+        $separationRows = [int](($histories | Measure-Object `
+            -Property separation_trigger_rows -Sum).Sum)
+    }
     $allRuntimes = @($histories | ForEach-Object { [double]$_.runtime_sec })
     $lastCheckpointUtc = ''
     $minutesSinceLast = $null
@@ -886,7 +893,7 @@ function Get-StatusSnapshot {
     $pauseRequested = Test-Path -LiteralPath (Join-Path $RuntimeRoot 'control\pause.request')
     $repoStatus = @(& git -C $RepoDir status --porcelain=v1 --untracked-files=all)
     $gitClean = $LASTEXITCODE -eq 0 -and $repoStatus.Count -eq 0
-    $resultFiles = @(Get-ChildItem -LiteralPath (Join-Path $StepRoot 'results')
+    $resultFiles = @(Get-ChildItem -LiteralPath (Join-Path $StepRoot 'results') `
         -File -Force -ErrorAction SilentlyContinue)
     $resultsClean = $resultFiles.Count -eq 1 -and $resultFiles[0].Name -eq '.gitkeep'
     $calibrationMatch = $true
@@ -931,6 +938,11 @@ function Get-StatusSnapshot {
     $safeToShutdown = $pauseRequested -and $activeCount -eq 0 -and
         $tmpCount -eq 0 -and $lockCount -eq 0 -and $invalidCount -eq 0 -and
         $resultsClean
+    $summedSuccessfulTrialComputeSec = 0.0
+    if ($allRuntimes.Count -gt 0) {
+        $summedSuccessfulTrialComputeSec =
+            [double](($allRuntimes | Measure-Object -Sum).Sum)
+    }
     $status = [ordered]@{
         protocol_version = $protocol.protocol_version
         protocol_runner_commit = $protocol.protocol_runner_commit
@@ -961,7 +973,7 @@ function Get-StatusSnapshot {
         last_checkpoint_utc = $lastCheckpointUtc
         minutes_since_last_checkpoint = $minutesSinceLast
         active_wall_time_sec = Get-AttemptActiveWallSeconds $RuntimeRoot
-        summed_successful_trial_compute_sec = ($allRuntimes | Measure-Object -Sum).Sum
+        summed_successful_trial_compute_sec = $summedSuccessfulTrialComputeSec
         rolling_15_minute_throughput_trials_per_hour = $throughput15
         rolling_60_minute_throughput_trials_per_hour = $throughput60
         rolling_p50_trial_runtime_sec = $overallP50
