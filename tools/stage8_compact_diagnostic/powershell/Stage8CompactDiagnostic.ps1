@@ -82,7 +82,7 @@ function Get-ProcessAudit {
     })
     $lockRoot =
         'E:\bs_innovation_runtime\stage8_1b_a5r2_cellwise_7dc1e4c3\locks'
-    $locks = @(Get-ChildItem -LiteralPath $lockRoot -File -Recurse `
+    $locks = @(Get-ChildItem -LiteralPath $lockRoot -File `
         -ErrorAction SilentlyContinue)
     return [ordered]@{
         matlab_count = $matlab.Count
