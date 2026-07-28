@@ -356,9 +356,6 @@ function Invoke-Pilot {
         New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
     }
     $pilotRoot = Join-Path $RuntimeRoot 'pilot'
-    if (-not (Test-Path -LiteralPath $pilotRoot -PathType Container)) {
-        New-Item -ItemType Directory -Path $pilotRoot -Force | Out-Null
-    }
     $decisionPath = Join-Path $pilotRoot 'pilot_decision.json'
     if (Test-Path -LiteralPath $decisionPath -PathType Leaf) {
         $existingDecision = Read-JsonFile $decisionPath
@@ -366,6 +363,14 @@ function Invoke-Pilot {
             return $existingDecision
         }
         throw "An existing failed pilot decision is preserved at $decisionPath"
+    }
+    if (Test-Path -LiteralPath $pilotRoot -PathType Container) {
+        $existingPilotItems = @(Get-ChildItem -LiteralPath $pilotRoot -Force)
+        if ($existingPilotItems.Count -gt 0) {
+            throw "An incomplete pilot root is preserved and must be archived before retry: $pilotRoot"
+        }
+    } else {
+        New-Item -ItemType Directory -Path $pilotRoot -Force | Out-Null
     }
 
     Write-PilotProgress $pilotRoot 'GATE0_FORMAL_PREFLIGHT_RUNNING' 'formal frozen identity preflight'
