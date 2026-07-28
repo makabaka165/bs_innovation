@@ -307,7 +307,7 @@ function Archive-PauseRequest {
 
 function Archive-StaleRuntimeWrites {
     param([string]$Root)
-    if ((Get-MatchingWorkerProcesses $Root).Count -ne 0) {
+    if (@(Get-MatchingWorkerProcesses $Root).Count -ne 0) {
         throw 'Cannot archive stale writes while compact workers are active.'
     }
     $incomplete = Join-Path $Root 'incomplete'
@@ -329,7 +329,7 @@ function Archive-StaleRuntimeWrites {
 
 function Test-SafePause {
     param([string]$Root, [int]$WorkerCount)
-    if ((Get-MatchingWorkerProcesses $Root).Count -ne 0) { return $false }
+    if (@(Get-MatchingWorkerProcesses $Root).Count -ne 0) { return $false }
     if (@(Get-ChildItem -LiteralPath (Join-Path $Root 'tmp') -Filter '*.tmp' `
             -File -ErrorAction SilentlyContinue).Count -ne 0) { return $false }
     if (@(Get-ChildItem -LiteralPath (Join-Path $Root 'workers') `
@@ -1176,7 +1176,7 @@ function Invoke-Pause {
 
 function Invoke-Resume {
     Get-Protocol | Out-Null
-    if ((Get-MatchingWorkerProcesses $RuntimeRoot).Count -ne 0) {
+    if (@(Get-MatchingWorkerProcesses $RuntimeRoot).Count -ne 0) {
         throw 'Resume requires all prior compact workers to be stopped.'
     }
     Assert-NoMatlabCoordinatorOrLock | Out-Null
