@@ -45,7 +45,7 @@ left_table = sortrows(vertcat(left_rows{:}), ...
 right_table = sortrows(vertcat(right_rows{:}), ...
     {'global_trial_index','method_id'});
 checkpoint_equal = isequal(left_hashes, right_hashes);
-row_equal = isequal(left_table, right_table);
+row_equal = isequaln(left_table, right_table);
 left_hash = stage8_stable_hash('STAGE8_R1_ROW_SET_V1', left_table);
 right_hash = stage8_stable_hash('STAGE8_R1_ROW_SET_V1', right_table);
 pass = checkpoint_equal && row_equal && strcmp(left_hash, right_hash);
