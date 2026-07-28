@@ -1,0 +1,4 @@
+method_id,K1_fit_pair_valid_count,K2_fit_pair_valid_count,empirical_auc,best_K2_TPR_at_K1_FPR_le_0_125,best_K1_FPR,diagnostic_operating_threshold,offgrid_pseudogap_closure_median,offgrid_pseudogap_closure_count,offgrid_pseudogap_closure_ge_0_50_count,K2_median_known_K_joint_rmse_deg,K1_median_lambda_12,K1_offgrid_median_lambda_12,K2_median_lambda_12,mean_score_call_count,mean_svd_call_count,median_runtime_sec
+M0_FIXED_GRID_REGISTERED_STAGE8,16,8,0.8515625,0.75,0.125,102.571151557793,0,8,0,0.148962028581636,23.3367068074628,79.9875334840571,184.855591222445,173.291666666667,399.375,0.14897475
+M1_CONVENTIONAL_CONTINUOUS_FULL_SEQUENTIAL_DML,3,0,NaN,NaN,NaN,NaN,0.896590155226293,2,2,NaN,20.1281579638286,13.3388406378682,NaN,1719.625,3478.41666666667,1.37983785
+M2_GROUPED_CONDITIONAL_CONTINUOUS_FULL_SEQUENTIAL_DML,2,0,NaN,NaN,NaN,NaN,NaN,0,0,NaN,10.3463689382902,NaN,NaN,1533.08333333333,3085.5,1.2276331
