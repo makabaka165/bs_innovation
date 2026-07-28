@@ -24,13 +24,23 @@ state_counts = struct('K1', 0, 'K2_RESOLVED', 0, ...
     'K2_UNRESOLVED', 0, 'SEARCH_NOT_CONVERGED', 0, ...
     'NUMERIC_RANK_DEFICIENT', 0, 'OUT_OF_LOCAL_CELL', 0);
 last_error = '';
+checkpoint_files = dir(fullfile(runtime_root, 'checkpoints', '*.mat'));
+expected_names = pair_ids + ".mat";
+unexpected_names = setdiff(string({checkpoint_files.name}), expected_names);
+if ~isempty(unexpected_names)
+    invalid = invalid + numel(unexpected_names);
+    last_error = sprintf('Unexpected checkpoint file: %s', unexpected_names(1));
+end
 for index = 1:numel(pair_ids)
     path_now = fullfile(runtime_root, 'checkpoints', ...
         [char(pair_ids(index)), '.mat']);
     if ~isfile(path_now), continue; end
     expected = registry(registry.common_trial_id == pair_ids(index), :);
     try
-        stage8_1b_validate_checkpoint(path_now, protocol, expected);
+        checkpoint_audit = stage8_1b_validate_checkpoint( ...
+            path_now, protocol, expected);
+        stage8_1b_write_checkpoint_audit( ...
+            path_now, protocol, checkpoint_audit);
         loaded = load(path_now, 'checkpoint', '-mat');
         valid = valid + 1;
         runtime_seconds(end + 1, 1) = ...

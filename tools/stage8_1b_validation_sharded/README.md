@@ -8,6 +8,11 @@ common trial remains one atomic pair containing PRIMARY and FULL_PARENT rows.
 Formal workers use MATLAB R2022b with `-singleCompThread`, fixed `Bsep=199`, no
 parallel pool, no `parfor`, and no fit, seed, threshold, or solver override.
 
+Every validated `.mat` checkpoint has a `.mat.audit.json` sidecar that binds
+the immutable protocol identity, scientific content hash, byte count, and file
+SHA-256. The PowerShell-only status task verifies those sidecars and never
+counts an unaudited or byte-modified file as a completed common trial.
+
 ## Lifecycle
 
 Run the control script from PowerShell:
@@ -42,7 +47,9 @@ pauses, stops, or finalizes computation.
 Normal shutdown requires `PAUSED_SAFE_TO_SHUTDOWN` and
 `safe_to_shutdown=true` in `status/latest_status.txt`. `ForceStop` is only for
 an immediate shutdown and targets protocol-registered worker PIDs whose command
-line matches the runtime root.
+line matches the runtime root. It leaves a pause request in place so status can
+report a safe shutdown only after all matching processes, temporary writes, and
+current-trial locks are gone.
 
 `Finalize` is blocked until all 6000 immutable checkpoints validate, workers
 are stopped, and no temporary write exists. It invokes the existing validator

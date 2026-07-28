@@ -39,7 +39,11 @@ elseif ~gate2b_pass
     pilot_decision = 'PILOT_PASS_ONE_WORKER_PARALLEL_FALLBACK';
     selected = 1;
     mode = 'ONE_WORKER_RESUMABLE';
-    fallback = 'PARALLEL_NUMERIC_OR_STATE_MISMATCH';
+    if logical(resources.worker_crash_or_oom)
+        fallback = 'TWO_WORKER_CRASH_OR_OOM';
+    else
+        fallback = 'PARALLEL_NUMERIC_OR_STATE_MISMATCH';
+    end
 elseif ~resource_pass
     pilot_decision = 'PILOT_PASS_ONE_WORKER_RESOURCE_FALLBACK';
     selected = 1;

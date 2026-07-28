@@ -13,7 +13,8 @@ final = fullfile(root, 'checkpoints', 'K1V_TEST_T0001.mat');
 save(temporary, 'checkpoint', '-mat');
 stage8_1b_validate_checkpoint(temporary, protocol, expected_rows);
 assert(movefile(temporary, final));
-stage8_1b_validate_checkpoint(final, protocol, expected_rows);
+audit = stage8_1b_validate_checkpoint(final, protocol, expected_rows);
+stage8_1b_write_checkpoint_audit(final, protocol, audit);
 pause_path = fullfile(root, 'control', 'pause.request');
 fid = fopen(pause_path, 'w');
 assert(fid >= 0);
@@ -21,6 +22,7 @@ fprintf(fid, 'UNIT_PAUSE\n');
 fclose(fid);
 assert(isfile(pause_path));
 assert(isfile(final));
+assert(isfile([final, '.audit.json']));
 assert(~isfile(temporary));
 result = struct('pass', true, 'safe_boundary_checkpoint_count', 1, ...
     'tmp_checkpoint_count', 0);

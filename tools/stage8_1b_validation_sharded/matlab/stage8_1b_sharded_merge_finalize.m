@@ -125,7 +125,7 @@ output = struct('trials', trials, 'summary', summary, 'gate', gate, ...
     'execution_scope', ...
     'FORMAL_STAGE8_1_K1_VALIDATION_SHARDED_RESUMABLE_V2', ...
     'phase_factor', 1, ...
-    'runtime', active_wall_seconds_local(runtime_root));
+    'runtime', stage8_1b_active_wall_seconds(runtime_root));
 output.validation_trial_set_hash = stage8_stable_hash( ...
     'STAGE8_1_VALIDATION_TRIAL_SET_V1', trials);
 output.validation_summary_hash = stage8_stable_hash( ...
@@ -193,46 +193,6 @@ result = struct('protocol_stage', 'FINALIZED_RESULTS_WRITTEN', ...
 stage8_1b_write_json_atomic( ...
     fullfile(merged_root, 'finalization_audit.json'), result);
 clear path_cleanup
-end
-
-function total_sec = active_wall_seconds_local(root)
-files = dir(fullfile(root, 'workers', 'attempt_*.json'));
-starts = zeros(0, 1);
-ends = zeros(0, 1);
-for index = 1:numel(files)
-    value = jsondecode(fileread(fullfile(files(index).folder, files(index).name)));
-    if isempty(value.started_utc) || isempty(value.ended_utc) || ...
-            strcmp(string(value.completion_status), "ERROR_STOPPED")
-        continue;
-    end
-    starts(end + 1, 1) = parse_utc_local(value.started_utc); %#ok<AGROW>
-    ends(end + 1, 1) = parse_utc_local(value.ended_utc); %#ok<AGROW>
-end
-if isempty(starts)
-    error('stage8_1b_sharded_merge_finalize:Runtime', ...
-        'No completed worker attempt intervals are available.');
-end
-[starts, order] = sort(starts);
-ends = ends(order);
-current_start = starts(1);
-current_end = ends(1);
-total_sec = 0;
-for index = 2:numel(starts)
-    if starts(index) <= current_end
-        if ends(index) > current_end, current_end = ends(index); end
-    else
-        total_sec = total_sec + seconds(current_end - current_start);
-        current_start = starts(index);
-        current_end = ends(index);
-    end
-end
-total_sec = total_sec + seconds(current_end - current_start);
-end
-
-function value = parse_utc_local(text_value)
-parsed = datetime(char(string(text_value)), 'TimeZone', 'UTC', ...
-    'InputFormat', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''');
-value = posixtime(parsed);
 end
 
 function value = canonical_local(value)

@@ -3,14 +3,40 @@ function [protocol, checkpoint, expected_rows] = build_checkpoint_fixture()
 
 constants = stage8_1b_constants();
 evaluation_row_index = [1; 2];
+stratum_index = [1; 1];
+stratum_id = ["K1V_TEST"; "K1V_TEST"];
 common_trial_id = ["K1V_TEST_T0001"; "K1V_TEST_T0001"];
+pairing_key = common_trial_id;
+trial_index_within_stratum = [1; 1];
 measurement_config_id = ["PRIMARY_RECT_E14_A31"; ...
     "SENSITIVITY_FULL_PARENT_5X5"];
-expected_rows = table(evaluation_row_index, common_trial_id, ...
-    measurement_config_id);
+noise_profile_id = ["WHITE"; "WHITE"];
+L = [1; 1];
+parameter_seed = [101; 101];
+element_noise_seed = [102; 102];
+separation_auxiliary_seed = [103; 104];
+expected_rows = table(evaluation_row_index, stratum_index, stratum_id, ...
+    common_trial_id, pairing_key, trial_index_within_stratum, ...
+    measurement_config_id, noise_profile_id, L, parameter_seed, ...
+    element_noise_seed, separation_auxiliary_seed);
 rows = expected_rows;
+rows.center_az_deg = [0.1; 0.1];
+rows.center_el_deg = [0.2; 0.2];
+rows.snr_db = [10; 10];
+rows.element_trial_hash = ["ELEMENT_HASH"; "ELEMENT_HASH"];
+rows.threshold_calibration_hash = ["CALIBRATION_A"; "CALIBRATION_B"];
+rows.threshold_artifact_hash = ["ARTIFACT_A"; "ARTIFACT_B"];
+rows.q_global = [38.430562169212443; 38.484033510562568];
 rows.lambda_12 = [1.25; 1.50];
 rows.state = ["K1"; "K1"];
+rows.false_split_flag = [false; false];
+rows.false_resolved_flag = [false; false];
+rows.K2_UNRESOLVED_flag = [false; false];
+rows.SEARCH_NOT_CONVERGED_flag = [false; false];
+rows.NUMERIC_RANK_DEFICIENT_flag = [false; false];
+rows.decision_available_flag = [true; true];
+rows.fit1_validity_status = ["VALID"; "VALID"];
+rows.fit2_validity_status = ["VALID"; "VALID"];
 rows.separation_status = [ ...
     "NOT_RUN_LRT_DID_NOT_EXCEED_THRESHOLD"; ...
     "NOT_RUN_LRT_DID_NOT_EXCEED_THRESHOLD"];
@@ -18,6 +44,7 @@ protocol = struct( ...
     'protocol_version', constants.protocol_version, ...
     'checkpoint_contract_version', ...
     constants.checkpoint_contract_version, ...
+    'protocol_runner_commit', 'UNIT_PROTOCOL_COMMIT', ...
     'stage8_stable_code_identity_hash', ...
     constants.stage8_stable_code_identity_hash, ...
     'stage8_plan_hash', constants.stage8_plan_hash, ...

@@ -83,8 +83,10 @@ try
         checkpoint_path = fullfile(runtime_root, 'checkpoints', ...
             [char(common_id), '.mat']);
         if isfile(checkpoint_path)
-            stage8_1b_validate_checkpoint( ...
+            checkpoint_audit = stage8_1b_validate_checkpoint( ...
                 checkpoint_path, protocol, expected_rows);
+            stage8_1b_write_checkpoint_audit( ...
+                checkpoint_path, protocol, checkpoint_audit);
             continue;
         end
         if isfile(fullfile(runtime_root, 'control', 'pause.request'))
@@ -125,7 +127,10 @@ try
             error('stage8_1b_sharded_worker:AtomicMove', '%s', message);
         end
         current_tmp = '';
-        stage8_1b_validate_checkpoint(checkpoint_path, protocol, expected_rows);
+        checkpoint_audit = stage8_1b_validate_checkpoint( ...
+            checkpoint_path, protocol, expected_rows);
+        stage8_1b_write_checkpoint_audit( ...
+            checkpoint_path, protocol, checkpoint_audit);
         if isfile(lock_path), delete(lock_path); end
 
         existing(assigned_row) = true;
@@ -302,6 +307,7 @@ for index = 1:numel(assigned_ids)
             'Assigned checkpoint index is invalid.');
     end
     loaded = load(path_now, 'checkpoint', '-mat');
+    stage8_1b_write_checkpoint_audit(path_now, protocol, audit);
     checkpoint = loaded.checkpoint;
     existing(index) = true;
     metrics = add_checkpoint_metrics_local(metrics, checkpoint);
