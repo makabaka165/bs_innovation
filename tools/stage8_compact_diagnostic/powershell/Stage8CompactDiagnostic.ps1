@@ -164,7 +164,9 @@ function Start-Worker {
 function Get-MatchingWorkerProcesses {
     param([string]$Root)
     return @(Get-CimInstance Win32_Process | Where-Object {
-        $_.Name -match '^MATLAB.*' -and $_.CommandLine -like "*$Root*" -and
+        $_.Name -match '^MATLAB.*' -and
+        $_.ExecutablePath -like '*\bin\win64\MATLAB.exe' -and
+        $_.CommandLine -like "*$Root*" -and
         $_.CommandLine -match 'stage8_compact_worker'
     })
 }
