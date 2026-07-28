@@ -267,6 +267,8 @@ switch ($Action) {
     'Init' {
         Assert-CleanCommittedTree
         $audit = Assert-NoMatlabCoordinatorOrLock
+        $prompt = Join-Path $RepoDir 'innovation-mining\stage8_execution_prompts\004_stage8_r1_continuous_refinement_decisive_v1.md'
+        $audit['prompt_sha256'] = (Get-FileHash -LiteralPath $prompt -Algorithm SHA256).Hash
         if (-not (Test-Path -LiteralPath $RuntimeRoot -PathType Container)) {
             New-Item -ItemType Directory -Path $RuntimeRoot -Force | Out-Null
         }
@@ -292,6 +294,8 @@ switch ($Action) {
     'Gates' {
         Assert-CleanCommittedTree
         $audit = Assert-NoMatlabCoordinatorOrLock
+        $prompt = Join-Path $RepoDir 'innovation-mining\stage8_execution_prompts\004_stage8_r1_continuous_refinement_decisive_v1.md'
+        $audit['prompt_sha256'] = (Get-FileHash -LiteralPath $prompt -Algorithm SHA256).Hash
         $gateRoot = Join-Path $RuntimeRoot 'gates'
         if (-not (Test-Path -LiteralPath $gateRoot -PathType Container)) {
             New-Item -ItemType Directory -Path $gateRoot -Force | Out-Null

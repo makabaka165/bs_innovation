@@ -22,7 +22,7 @@ try
     end
     audit = jsondecode(fileread(char(string(process_audit_path))));
     required_audit = {'matlab_count','mwpython_count', ...
-        'coordinator_count','active_lock_count'};
+        'coordinator_count','active_lock_count','prompt_sha256'};
     if ~all(isfield(audit, required_audit)) || ...
             any([audit.matlab_count,audit.mwpython_count, ...
             audit.coordinator_count,audit.active_lock_count] ~= 0)
@@ -66,10 +66,7 @@ try
     result_files = dir(fullfile(step, 'results'));
     result_names = string({result_files(~[result_files.isdir]).name});
     stage8_r1_context(repo_dir, true);
-    prompt_path = fullfile(repo_dir, 'innovation-mining', ...
-        'stage8_execution_prompts', ...
-        '004_stage8_r1_continuous_refinement_decisive_v1.md');
-    prompt_hash = sha256_file_local(prompt_path);
+    prompt_hash = char(string(audit.prompt_sha256));
     if head_status ~= 0 || branch_status ~= 0 || worktree_status ~= 0 || ...
             ancestor_status ~= 0 || allowed_status ~= 0 || ...
             strtrim(string(branch)) ~= string(constants.experiment_branch) || ...
@@ -113,21 +110,6 @@ relative = strrep(fullfile(strrep(step, [repo_dir, filesep], ''), ...
 if status ~= 0, error('stage8_r1_gate_r0:Git', 'Unable to list calibration.'); end
 lines = splitlines(strtrim(string(output)));
 if isscalar(lines) && strlength(lines) == 0, count = 0; else, count = numel(lines); end
-end
-
-function digest = sha256_file_local(path_now)
-stream = java.io.FileInputStream(java.io.File(path_now));
-cleanup = onCleanup(@() stream.close());
-digest_object = java.security.MessageDigest.getInstance('SHA-256');
-buffer = zeros(1, 8192, 'int8');
-while true
-    count = stream.read(buffer, 0, numel(buffer));
-    if count < 0, break; end
-    digest_object.update(buffer(1:count));
-end
-bytes = typecast(digest_object.digest(), 'uint8');
-digest = lower(reshape(dec2hex(bytes, 2).', 1, []));
-clear cleanup
 end
 
 function value = utc_now_local()
