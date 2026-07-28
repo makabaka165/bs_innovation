@@ -119,7 +119,8 @@ function Invoke-MatlabBatch {
     if (-not (Test-Path -LiteralPath $parent -PathType Container)) {
         New-Item -ItemType Directory -Path $parent -Force | Out-Null
     }
-    & $MatlabExe -singleCompThread -logfile $LogPath -batch $Expression
+    & $MatlabExe -singleCompThread -logfile $LogPath -batch $Expression |
+        Out-Null
     if ($LASTEXITCODE -ne 0) {
         throw "MATLAB batch failed with exit code $LASTEXITCODE. Log: $LogPath"
     }
