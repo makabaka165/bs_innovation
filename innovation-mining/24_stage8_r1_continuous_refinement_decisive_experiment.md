@@ -47,9 +47,9 @@ created, modified, or used as a model-order decision.
 
 | Method | K1 valid pairs | K2 valid pairs | On-grid median Lambda | Off-grid median Lambda | AUC | Best K2 TPR at K1 FPR<=0.125 | Off-grid closure median | K2 median RMSE (deg) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| M0 fixed grid | 16/16 | 8/8 | 7.004831 | 70.347525 | 0.851562 | 0.750000 | 0.000000 | 0.148962 |
-| M1 conventional continuous | 3/16 | 0/8 | 20.128158 | 1.179472 | NaN | NaN | 0.896590 (2 eligible) | NaN |
-| M2 grouped continuous | 2/16 | 0/8 | 0.564580 | NaN | NaN | NaN | NaN (0 eligible) | NaN |
+| M0 fixed grid | 16/16 | 8/8 | 13.093499 | 79.987533 | 0.851562 | 0.750000 | 0.000000 | 0.148962 |
+| M1 conventional continuous | 3/16 | 0/8 | 20.128158 | 13.338841 | NaN | NaN | 0.896590 (2 eligible) | NaN |
+| M2 grouped continuous | 2/16 | 0/8 | 10.346369 | NaN | NaN | NaN | NaN (0 eligible) | NaN |
 
 M0 diagnostic operating threshold at its selected FPR point: 102.571152.
 It is not a formal threshold artifact.
