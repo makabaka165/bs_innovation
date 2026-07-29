@@ -4,7 +4,7 @@ Branch:
 experiment/stage8-core-v2
 
 Status:
-EXPLORATION_NOT_YET_AUTHORIZED
+CORE_V2_1_SAFE_HYBRID_CLOSURE_COMPLETED
 
 Inherited evidence:
 - compact diagnostic CLEAR_FAILURE
