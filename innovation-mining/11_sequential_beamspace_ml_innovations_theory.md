@@ -289,7 +289,11 @@ PASS_SYSTEM_ANALYSIS_ONLY
 
 本文算法位于第 3 层：
 
-> **常规顺序 DBF 之后、给定局部角单元和已知目标数 \(K\) 的波束域精细二维测角模块。**
+> **常规顺序 DBF 之后、给定局部角单元和外部条件量 \(K\in\{1,2\}\) 的波束域精细二维测角模块。**
+
+本文不使用航迹、跨 CPI 预测或跨帧基数信息。研究对象是单个 CPI 内，经距离–多普勒处理后选定的单个处理单元。该单元包含一个或两个主导角向回波分量；它们在当前距离和多普勒分辨率下不可区分，但可在阵列角维进行局部超分辨估计。局部角域由常规波束峰给出，\(K\in\{1,2\}\) 是研究场景或外部模块提供的条件量，本文不估计 \(K\)。
+
+Heidenreich 与 Zoubir（*Signal Processing*, 2013，DOI: `10.1016/j.sigpro.2013.03.009`）以及 Vincent、Besson 与 Chaumette（*Signal Processing*, 2014，DOI: `10.1016/j.sigpro.2013.10.017`）同样在距离/频率预处理后的单个 processing cell/bin 中研究一目标或两近邻目标的 ML DOA。目标数检测可作为独立问题，或明确排除在角度估计器范围之外；因此本文把 \(K\) 固定为场景条件或外部输入，不主张在本模块内完成目标数检测。
 
 ### 1.2 当前输入与输出
 
@@ -1422,21 +1426,22 @@ optional engineering enhancement
 1. Ziskind, I.; Wax, M. “Maximum likelihood localization of multiple sources by alternating projection.” *IEEE TASSP*, 1988. DOI: `10.1109/29.7543`.
 2. Stoica, P.; Sharman, K. C. “Maximum likelihood methods for direction-of-arrival estimation.” *IEEE TASSP*, 1990. DOI: `10.1109/29.57542`.
 3. Stoica, P.; Nehorai, A. “MUSIC, maximum likelihood, and Cramer-Rao bound.” *IEEE TASSP*, 1989. DOI: `10.1109/29.17564`.
-4. Vincent, F.; Besson, O.; Chaumette, E. “Approximate maximum likelihood estimation of two closely spaced sources.” *Signal Processing*, 2014. DOI: `10.1016/j.sigpro.2013.10.017`.
-5. Trinh-Hoang, M.; Viberg, M.; Pesavento, M. “Partial Relaxation Approach: An Eigenvalue-Based DOA Estimator Framework.” arXiv: `1711.01982`.
-6. Pote, R.; Rao, B. D. “Maximum Likelihood-Based Gridless DoA Estimation Using Structured Covariance Matrix Recovery and SBL With Grid Refinement.” *IEEE TSP*, 2023. DOI: `10.1109/TSP.2023.3254919`.
+4. Heidenreich, P.; Zoubir, A. M. “Fast maximum likelihood DOA estimation in the two-target case with applications to automotive radar.” *Signal Processing*, 2013. DOI: `10.1016/j.sigpro.2013.03.009`.
+5. Vincent, F.; Besson, O.; Chaumette, E. “Approximate maximum likelihood estimation of two closely spaced sources.” *Signal Processing*, 2014. DOI: `10.1016/j.sigpro.2013.10.017`.
+6. Trinh-Hoang, M.; Viberg, M.; Pesavento, M. “Partial Relaxation Approach: An Eigenvalue-Based DOA Estimator Framework.” arXiv: `1711.01982`.
+7. Pote, R.; Rao, B. D. “Maximum Likelihood-Based Gridless DoA Estimation Using Structured Covariance Matrix Recovery and SBL With Grid Refinement.” *IEEE TSP*, 2023. DOI: `10.1109/TSP.2023.3254919`.
 
 ## 16.3 Beamspace ML 与近双目标
 
-7. Zoltowski, M. D.; Lee, T.-S. “Maximum likelihood based sensor array signal processing in the beamspace domain for low angle radar tracking.” 1991. DOI: `10.1109/78.80885`.
-8. Kim, H.; Yang, J.; Kwak, N. “Low-angle tracking of two objects in a three-dimensional beamspace domain.” 2012. DOI: `10.1049/IET-RSN.2010.0163`.
-9. 刘旗等. “低仰角目标高精度波束空间 DOA 估计方法.” 2026. DOI: `10.12000/JR25173`.
+8. Zoltowski, M. D.; Lee, T.-S. “Maximum likelihood based sensor array signal processing in the beamspace domain for low angle radar tracking.” 1991. DOI: `10.1109/78.80885`.
+9. Kim, H.; Yang, J.; Kwak, N. “Low-angle tracking of two objects in a three-dimensional beamspace domain.” 2012. DOI: `10.1049/IET-RSN.2010.0163`.
+10. 刘旗等. “低仰角目标高精度波束空间 DOA 估计方法.” 2026. DOI: `10.12000/JR25173`.
 
 ## 16.4 FIM、压缩与测量选择
 
-10. Chepuri, S. P.; Leus, G. “Sparsity-Promoting Sensor Selection for Non-linear Measurement Models.” arXiv: `1310.5251`.
-11. Pakrooh, P. et al. “Analysis of Fisher Information and the Cramer-Rao Bound for Nonlinear Parameter Estimation after Compressed Sensing.” *IEEE TSP*, 2015. DOI: `10.1109/TSP.2015.2464183`.
-12. Pakrooh, P.; Scharf, L. L.; Pezeshki, A. “Threshold Effects in Parameter Estimation from Compressed Data.” *IEEE TSP*, 2016. DOI: `10.1109/TSP.2016.2521617`.
+11. Chepuri, S. P.; Leus, G. “Sparsity-Promoting Sensor Selection for Non-linear Measurement Models.” arXiv: `1310.5251`.
+12. Pakrooh, P. et al. “Analysis of Fisher Information and the Cramer-Rao Bound for Nonlinear Parameter Estimation after Compressed Sensing.” *IEEE TSP*, 2015. DOI: `10.1109/TSP.2015.2464183`.
+13. Pakrooh, P.; Scharf, L. L.; Pezeshki, A. “Threshold Effects in Parameter Estimation from Compressed Data.” *IEEE TSP*, 2016. DOI: `10.1109/TSP.2016.2521617`.
 
 ## 16.5 最终开发边界
 
