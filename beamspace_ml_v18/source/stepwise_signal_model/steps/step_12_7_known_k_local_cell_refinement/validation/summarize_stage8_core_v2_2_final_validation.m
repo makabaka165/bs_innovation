@@ -39,6 +39,9 @@ estimate = match_targets_local(result.angles_hat_deg, truth);
 error_now = estimate - truth;
 joint_rmse = sqrt(mean(sum(error_now .^ 2, 2)));
 fixed = result.fixed_grid_candidate;
+fixed_estimate = match_targets_local(fixed.angles_hat_deg, truth);
+fixed_error = fixed_estimate - truth;
+fixed_grid_joint_rmse_deg = sqrt(mean(sum(fixed_error .^ 2, 2)));
 continuous = result.continuous_candidate;
 [q, condition] = geometry_local(spec, checkpoint.trial.model, fixed);
 continuous_rss = NaN;
@@ -73,6 +76,7 @@ row = struct('global_trial_index', double(spec.global_trial_index), ...
     'svd_call_count', double(result.svd_call_count), ...
     'runtime_sec', double(result.runtime_sec), ...
     'fixed_grid_angles_deg', string(mat2str(fixed.angles_hat_deg, 17)), ...
+    'fixed_grid_joint_rmse_deg', double(fixed_grid_joint_rmse_deg), ...
     'fixed_grid_rss', double(fixed.rss), ...
     'fixed_grid_loglik', double(fixed.loglik_concentrated), ...
     'fixed_grid_valid', logical(fixed.fit_valid), ...
@@ -163,23 +167,7 @@ summary = table( ...
 end
 
 function rmse = fixed_grid_rmse_local(rows)
-rmse = NaN(height(rows), 1);
-% K1 B0 RMSE is unavailable in a summary-only row without truth endpoints.
-% Reconstruct it from the fixed-grid angle strings and profile centers.
-for index = 1:height(rows)
-    truth = profile_truth_local(rows(index, :));
-    values = sscanf(char(rows.fixed_grid_angles_deg(index)), '%f');
-    estimate = reshape(values, 2, rows.K(index)).';
-    estimate = match_targets_local(estimate, truth);
-    rmse(index) = sqrt(mean(sum((estimate - truth) .^ 2, 2)));
-end
-end
-
-function truth = profile_truth_local(row)
-centers = containers.Map( ...
-    {'C1_ON_GRID','C2_OFF_GRID_NE','C3_OFF_GRID_SW','C4_NEAR_CELL_EDGE'}, ...
-    {[8.00,10.00],[8.10,10.10],[7.90,9.90],[8.45,10.15]});
-truth = centers(char(row.profile_id));
+rmse = rows.fixed_grid_joint_rmse_deg;
 end
 
 function [wins, ties, losses] = paired_outcomes_local(left, right)
