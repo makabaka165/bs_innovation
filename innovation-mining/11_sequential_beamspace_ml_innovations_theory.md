@@ -4,9 +4,9 @@
 > 默认仓库：`makabaka165/bs_innovation`  
 > 文档修订日期：2026-07-29（UTC）  
 > 当前探索分支：`experiment/stage8-core-v2`  
-> 当前证据提交：`fe5dd07fd67e1d3f701dabbc3a61b5dd10d09968`  
+> 当前生产接口提交：`5f042b75ba6733ffdd531229f81cec7660418ca1`
 > 稳定主线：`main@247fad2208e77b04f7062e22b0fd3fd8a81bfc1f`，科学父提交为 `64cd2d6eae0813f8fd9266ec9ffe6bab4f616267`。  
-> 当前总体状态：`STAGE8_CORE_V2_1_SAFE_KNOWN_K_CLOSURE_PASS`。已知 \(K\) 的安全估计核心在注册的 24-trial 诊断集上完成闭环；自动目标数判定、bootstrap threshold、resolved/unresolved、完整 6000-trial validation 与 Stage8.2 均保持 `DEFERRED_NOT_FAILED / NOT_EXECUTED`。  
+> 当前总体状态：`STAGE8_CORE_V2_2_EXPERIMENT_INVALID / F1_FAIL_STOPPED`。V2.2 单 CPI、单距离–多普勒单元、known-K 生产接口已完成，但最终协议要求同一 K1 路径同时位级匹配两个不相同的历史 H1/H2 目标，故未运行 144-trial 独立验证。最后一个正向科学结论仍是 `STAGE8_CORE_V2_1_OPERATIONAL_GROUPED_OPTIONAL`；自动目标数判定、bootstrap threshold、resolved/unresolved、完整 6000-trial validation 与 Stage8.2 均保持 `DEFERRED_NOT_FAILED / NOT_EXECUTED`。
 > 本文取代 2026-07-17 版本的候选路线组织，但不删除旧理论、失败路线和执行证据；旧版本应归档为 superseded 文档。
 
 > 必须联合阅读的当前证据：
@@ -20,6 +20,7 @@
 > - `innovation-mining/24_stage8_r1_continuous_refinement_decisive_experiment.md`
 > - `innovation-mining/26_stage8_core_v2_known_k_pruning_experiment.md`
 > - `innovation-mining/27_stage8_core_v2_1_safe_hybrid_closure.md`
+> - `innovation-mining/28_stage8_core_v2_2_final_single_cpi_known_k_validation.md`
 > - `innovation-mining/archive/failed/FAILED_likelihood_discriminative_adaptive_wb.md`
 >
 > 新颖性永久边界：接收圆柱阵流形、DML、SVD/QR 投影、白化、坐标上升、投影 Jacobian Fisher 信息、压缩前后归一化 FIM、FIM 约束最少选择、中心–差分参数化、bootstrap、source enumeration 和 unresolved 均有明确 prior art。本文允许保留的贡献，只能是：
@@ -1420,6 +1421,8 @@ optional engineering enhancement
 | Core-V2 known-K K2 诊断 | `innovation-mining/26_stage8_core_v2_known_k_pruning_experiment.md` |
 | safe hybrid closure | `innovation-mining/27_stage8_core_v2_1_safe_hybrid_closure.md` |
 | Core-V2 工具 | `tools/stage8_core_v2_known_k/` |
+| Core-V2.2 单一生产接口 | `beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_7_known_k_local_cell_refinement/` |
+| Core-V2.2 最终冻结门控 | `innovation-mining/28_stage8_core_v2_2_final_single_cpi_known_k_validation.md` |
 
 ## 16.2 DML 与多源优化
 
@@ -1445,16 +1448,25 @@ optional engineering enhancement
 
 ## 16.5 最终开发边界
 
-当前算法开发在以下状态停止：
+当前算法开发在以下状态永久停止：
 
 ```text
 CORE_LITE:
 K1 continuous safe hybrid
 K2 fixed-grid known-K
+production interface integrated
+final 144-trial status = NOT_EVALUATED_F1_FAIL_STOPPED
 
 CORE_PLUS:
 K2 grouped continuous optional upgrade
 fixed-grid fallback
+production interface integrated
+final 144-trial status = NOT_EVALUATED_F1_FAIL_STOPPED
+
+FINAL FREEZE:
+STAGE8_CORE_V2_2_EXPERIMENT_INVALID
+F1_FAIL_STOPPED
+independent trials = 0/144
 
 MODEL_ORDER:
 DEFERRED
@@ -1466,11 +1478,20 @@ STAGE8.2:
 NOT_EXECUTED
 ```
 
-下一项允许的工作仅应是：
+V2.2 的失败是冻结协议内部的历史回归目标不相容：最终 K1 合同要求
+`CORE_LITE / CORE_PLUS` 使用同一个 conventional singleton 路径并禁止 grouped
+start，但一个历史 K1 trial 的 H1 与 H2 在 angles、RSS 和 loglik 上不同。该门控
+失败不推翻 V2.1 的正向诊断证据，也不授权修改历史 CSV 或算法以追求通过。
+
+后续只允许：
 
 ```text
-把 Core-Lite / Core-Plus 整理为单一生产接口
-并用既有 24 trials 做逐行回归
+论文正文整理
+图表制作
+公式—代码映射
+参考文献与 baseline 讨论
+在用户单独授权后审查是否把 Step12.7 集成到 main
 ```
 
-不得自动重新启动 unknown-K、bootstrap、第三版 K2 solver、自适应 W/B 或新的大规模验证。
+不得自动重新启动 Core-V3、unknown-K、bootstrap threshold、resolved/unresolved、
+第三版 K2 solver、自适应 W/B、K=3、6000-trial 或 Stage8.2。
