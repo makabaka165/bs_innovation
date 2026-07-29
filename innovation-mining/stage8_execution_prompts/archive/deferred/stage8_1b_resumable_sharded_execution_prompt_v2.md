@@ -1,6 +1,6 @@
 # Stage8.1B Phase B：可恢复、条件双单线程进程分片 K1 validation 执行提示词（V2）
 
-> 将本文件完整交给负责本地仓库与 MATLAB 执行的 Codex。  
+> 将本文件完整交给负责本地仓库与 MATLAB 执行的 Codex。
 > 本提示词建立一个新的、明确版本化的执行协议：
 >
 > `STAGE8_1B_K1_VALIDATION_SHARDED_RESUMABLE_V2`
@@ -1497,4 +1497,3 @@ results 只有 .gitkeep
 ```
 
 不得用删除文件、放宽 tolerance、降低 Bsep、减少 trial、改 seed、提高 threshold 或重复运行到 PASS 的方式绕过失败。
-
