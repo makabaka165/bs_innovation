@@ -4,23 +4,28 @@ Branch:
 `experiment/stage8-core-v2`
 
 Status:
-`NO_ACTIVE_STAGE8_EXECUTION`
+`F1_CANONICAL_ORACLE_CORRECTION_AUTHORIZED`
 
-Completion:
-`STAGE8_CORE_V2_2_FINAL_FREEZE_COMPLETED`
+Safety:
+`NO_ALGORITHM_CHANGE`
 
-Final state:
-`STAGE8_CORE_V2_2_EXPERIMENT_INVALID / F1_FAIL_STOPPED`
+Active protocol:
+`008_stage8_core_v2_2_f1_canonical_oracle_correction_v1.md`
 
-Last positive scientific closure:
-`STAGE8_CORE_V2_1_OPERATIONAL_GROUPED_OPTIONAL`
+Starting point:
+`4d37901fb24b6ac22ec126c4a275cfe4359d4c7f`
 
 Current authoritative theory and algorithm scope:
 `innovation-mining/11_sequential_beamspace_ml_innovations_theory.md`
 
-No algorithm execution is currently authorized. The V2.2 production interface
-was integrated, but F1 stopped because the same final K1 route cannot
-bit-match two different historical H1/H2 targets. No independent trial ran.
+The previous V2.2 invalid result and all `28_*` evidence remain immutable. This
+protocol corrects only the impossible F1 K1 oracle: the final conventional K1
+path is compared with historical H1, while historical grouped H2 K1 remains a
+recorded noncanonical development route.
+
+Execution order is F0, F1A, and the real 24-trial production-interface F1B.
+Only an exact F1B pass authorizes the unchanged 144-trial independent known-K
+validation and corrected `29_*` final evidence.
 
 Core-V3, automatic K, unknown-K LRT, bootstrap thresholds,
 resolved/unresolved, the 6000-trial run, a third K2 solver, adaptive W/B, K=3,
