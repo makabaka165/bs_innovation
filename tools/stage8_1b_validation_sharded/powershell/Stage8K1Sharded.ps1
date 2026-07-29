@@ -57,10 +57,11 @@ function Read-JsonFile {
 }
 
 function Assert-Paths {
+    param([bool]$RequireMatlab)
     if (-not (Test-Path -LiteralPath $RepoDir -PathType Container)) {
         throw "Repository not found: $RepoDir"
     }
-    if (-not (Test-Path -LiteralPath $MatlabExe -PathType Leaf)) {
+    if ($RequireMatlab -and -not (Test-Path -LiteralPath $MatlabExe -PathType Leaf)) {
         throw "MATLAB R2022b executable not found: $MatlabExe"
     }
     if (-not (Test-Path -LiteralPath $MatlabToolDir -PathType Container)) {
@@ -179,6 +180,35 @@ function Get-SystemMemorySample {
     }
 }
 
+function Get-WorkerTreePrivateBytes {
+    param(
+        [int]$LauncherProcessId,
+        [object[]]$MatlabProcesses
+    )
+    $owned = @{}
+    $owned[$LauncherProcessId] = $true
+    $changed = $true
+    while ($changed) {
+        $changed = $false
+        foreach ($candidate in $MatlabProcesses) {
+            $candidateId = [int]$candidate.ProcessId
+            $parentId = [int]$candidate.ParentProcessId
+            if (-not $owned.ContainsKey($candidateId) -and
+                    $owned.ContainsKey($parentId)) {
+                $owned[$candidateId] = $true
+                $changed = $true
+            }
+        }
+    }
+    $total = 0.0
+    foreach ($candidate in $MatlabProcesses) {
+        if ($owned.ContainsKey([int]$candidate.ProcessId)) {
+            $total += [double]$candidate.PrivatePageCount
+        }
+    }
+    return $total
+}
+
 function Wait-WorkerProcesses {
     param(
         [System.Diagnostics.Process[]]$Processes,
@@ -187,19 +217,30 @@ function Wait-WorkerProcesses {
     )
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
     $peakPrivate = 0.0
+    $peakPrivateByWorker = @()
+    for ($processIndex = 0; $processIndex -lt $Processes.Count; $processIndex++) {
+        $peakPrivateByWorker += 0.0
+    }
     $peakUtilization = 0.0
     $minimumAvailable = [double]::PositiveInfinity
     $pageSamples = New-Object System.Collections.Generic.List[double]
     $pauseCreated = $false
     while ($true) {
         $active = 0
-        foreach ($process in $Processes) {
+        $matlabProcesses = @(Get-CimInstance Win32_Process | Where-Object {
+            $_.Name -match '^MATLAB.*'
+        })
+        for ($processIndex = 0; $processIndex -lt $Processes.Count; $processIndex++) {
+            $process = $Processes[$processIndex]
             $process.Refresh()
-            if (-not $process.HasExited) { $active++ }
-        }
-        foreach ($workerProcess in (Get-MatchingWorkerProcesses -Root $Root)) {
-            if ([double]$workerProcess.PrivatePageCount -gt $peakPrivate) {
-                $peakPrivate = [double]$workerProcess.PrivatePageCount
+            if (-not $process.HasExited) {
+                $active++
+                $privateNow = Get-WorkerTreePrivateBytes `
+                    -LauncherProcessId $process.Id -MatlabProcesses $matlabProcesses
+                if ($privateNow -gt $peakPrivateByWorker[$processIndex]) {
+                    $peakPrivateByWorker[$processIndex] = $privateNow
+                }
+                if ($privateNow -gt $peakPrivate) { $peakPrivate = $privateNow }
             }
         }
         $sample = Get-SystemMemorySample
@@ -239,6 +280,7 @@ function Wait-WorkerProcesses {
     return [pscustomobject]@{
         WallSec = $stopwatch.Elapsed.TotalSeconds
         PeakPrivateBytes = $peakPrivate
+        PeakPrivateBytesByWorker = $peakPrivateByWorker
         PeakTotalMemoryUtilization = $peakUtilization
         MinimumAvailablePhysicalBytes = $minimumAvailable
         SustainedPagefileThrashing = $sustainedThrashing
@@ -455,31 +497,71 @@ function Invoke-Pilot {
         (Start-Worker $shardedRoot 1 'before_pause'),
         (Start-Worker $shardedRoot 2 'before_pause'))
     $parallelMetrics1 = Wait-WorkerProcesses $parallelBefore $shardedRoot 10
-    $parallelPauseCount = @(Get-ChildItem -LiteralPath `
-        (Join-Path $shardedRoot 'checkpoints') -Filter '*.mat' -File).Count
-    if (-not $parallelMetrics1.PauseCreated -or $parallelPauseCount -lt 10 -or
-            $parallelPauseCount -ge 60) {
-        throw "Gate 2B did not reach a real safe pause boundary (count=$parallelPauseCount)."
-    }
-    if (-not (Test-PilotSafePause $shardedRoot 2)) {
-        throw 'Gate 2B workers did not reach PAUSED_SAFE with zero tmp/lock/process state.'
-    }
-    Write-JsonAtomic -Path (Join-Path $pilotRoot 'gate2b_pause_audit.json') `
-        -Value ([ordered]@{ safe_to_shutdown = $true; active_worker_count = 0;
-            tmp_checkpoint_count = 0; current_trial_lock_count = 0;
-            valid_checkpoint_count = $parallelPauseCount; recorded_utc = Get-UtcNowText })
-    Archive-PauseRequest $shardedRoot 'gate2b'
-    $parallelAfter = @(
-        (Start-Worker $shardedRoot 1 'after_resume'),
-        (Start-Worker $shardedRoot 2 'after_resume'))
-    $parallelMetrics2 = Wait-WorkerProcesses $parallelAfter $shardedRoot
     $gate2bResultPath = Join-Path $pilotRoot 'gate2b_result.json'
-    $shardedLiteral = ConvertTo-MatlabLiteral $shardedRoot
-    $gate2bLiteral = ConvertTo-MatlabLiteral $gate2bResultPath
-    $gate2bExpression = "addpath('$toolLiteral');" +
-        "stage8_1b_compare_runtime_roots('$repoLiteral','$singleLiteral'," +
-        "'$shardedLiteral','$gate2bLiteral','GATE2B');"
-    Invoke-MatlabBatch $gate2bExpression (Join-Path $pilotRoot 'gate2b_compare.log')
+    $parallelCrashed = @($parallelMetrics1.ExitCodes | Where-Object {
+        $_ -ne 0
+    }).Count -ne 0
+    $parallelMetrics2 = [pscustomobject]@{
+        WallSec = 0.0
+        PeakPrivateBytes = 0.0
+        PeakPrivateBytesByWorker = @(0.0, 0.0)
+        PeakTotalMemoryUtilization = 0.0
+        MinimumAvailablePhysicalBytes =
+            [double]$parallelMetrics1.MinimumAvailablePhysicalBytes
+        SustainedPagefileThrashing = $false
+        ExitCodes = @()
+        PauseCreated = $false
+    }
+    if (-not $parallelCrashed) {
+        $parallelPauseCount = @(Get-ChildItem -LiteralPath `
+            (Join-Path $shardedRoot 'checkpoints') -Filter '*.mat' -File).Count
+        if (-not $parallelMetrics1.PauseCreated -or $parallelPauseCount -lt 10 -or
+                $parallelPauseCount -ge 60) {
+            throw "Gate 2B did not reach a real safe pause boundary (count=$parallelPauseCount)."
+        }
+        if (-not (Test-PilotSafePause $shardedRoot 2)) {
+            throw 'Gate 2B workers did not reach PAUSED_SAFE with zero tmp/lock/process state.'
+        }
+        Write-JsonAtomic -Path (Join-Path $pilotRoot 'gate2b_pause_audit.json') `
+            -Value ([ordered]@{ safe_to_shutdown = $true; active_worker_count = 0;
+                tmp_checkpoint_count = 0; current_trial_lock_count = 0;
+                valid_checkpoint_count = $parallelPauseCount; recorded_utc = Get-UtcNowText })
+        Archive-PauseRequest $shardedRoot 'gate2b'
+        $parallelAfter = @(
+            (Start-Worker $shardedRoot 1 'after_resume'),
+            (Start-Worker $shardedRoot 2 'after_resume'))
+        $parallelMetrics2 = Wait-WorkerProcesses $parallelAfter $shardedRoot
+        $parallelCrashed = @($parallelMetrics2.ExitCodes | Where-Object {
+            $_ -ne 0
+        }).Count -ne 0
+    }
+    if ($parallelCrashed) {
+        Write-JsonAtomic -Path $gate2bResultPath -Value ([ordered]@{
+            gate_name = 'GATE2B'
+            pass = $false
+            checkpoint_hash_equality = $false
+            baseline_row_hash = [string]$gate2a.baseline_row_hash
+            candidate_row_hash = ''
+            row_equality = $false
+            lambda_num2hex_equality = $false
+            state_equality = $false
+            separation_status_equality = $false
+            element_trial_hash_equality = $false
+            summary_gate_paired_equality = $false
+            common_trial_count = @(Get-ChildItem -LiteralPath `
+                (Join-Path $shardedRoot 'checkpoints') -Filter '*.mat' -File).Count
+            row_count = 0
+            separation_trigger_count = 0
+            last_error = 'TWO_WORKER_PROCESS_CRASH_OR_OOM_RESOURCE_FALLBACK'
+        })
+    } else {
+        $shardedLiteral = ConvertTo-MatlabLiteral $shardedRoot
+        $gate2bLiteral = ConvertTo-MatlabLiteral $gate2bResultPath
+        $gate2bExpression = "addpath('$toolLiteral');" +
+            "stage8_1b_compare_runtime_roots('$repoLiteral','$singleLiteral'," +
+            "'$shardedLiteral','$gate2bLiteral','GATE2B');"
+        Invoke-MatlabBatch $gate2bExpression (Join-Path $pilotRoot 'gate2b_compare.log')
+    }
 
     if ([bool]$gate1.forced_separation_fixture_required) {
         Write-PilotProgress $pilotRoot 'GATE2B_PARALLEL_RUNNING' 'forced Bsep=199 coverage fixture'
@@ -512,6 +594,22 @@ function Invoke-Pilot {
         $pauseMetrics.PeakPrivateBytes, $resumeMetrics.PeakPrivateBytes,
         $parallelMetrics1.PeakPrivateBytes, $parallelMetrics2.PeakPrivateBytes) |
         Measure-Object -Maximum).Maximum
+    $parallelPeakByWorker = [ordered]@{}
+    for ($workerIndex = 0; $workerIndex -lt 2; $workerIndex++) {
+        $beforePeaks = @($parallelMetrics1.PeakPrivateBytesByWorker)
+        $afterPeaks = @($parallelMetrics2.PeakPrivateBytesByWorker)
+        $workerPeaks = @()
+        if ($workerIndex -lt $beforePeaks.Count) {
+            $workerPeaks += [double]$beforePeaks[$workerIndex]
+        }
+        if ($workerIndex -lt $afterPeaks.Count) {
+            $workerPeaks += [double]$afterPeaks[$workerIndex]
+        }
+        $parallelPeakByWorker["worker_$('{0:D2}' -f ($workerIndex + 1))"] =
+            if ($workerPeaks.Count -gt 0) {
+                [double](($workerPeaks | Measure-Object -Maximum).Maximum)
+            } else { 0.0 }
+    }
     $peakUtilization = (@($singleMetrics.PeakTotalMemoryUtilization,
         $pauseMetrics.PeakTotalMemoryUtilization,
         $resumeMetrics.PeakTotalMemoryUtilization,
@@ -545,6 +643,7 @@ function Invoke-Pilot {
             two_worker_process_wall_sec = $parallelMetrics1.WallSec + $parallelMetrics2.WallSec
             speedup = $speedup
             peak_private_memory_bytes = [double]$peakPrivate
+            peak_private_memory_bytes_by_worker = $parallelPeakByWorker
             peak_total_memory_utilization = [double]$peakUtilization
             minimum_available_physical_bytes = [double]$minimumAvailable
             sustained_pagefile_thrashing = $thrashing
@@ -600,6 +699,12 @@ function Archive-StaleRuntimeWrites {
         Move-Item -LiteralPath $item.FullName -Destination `
             (Join-Path $incomplete "$($item.Name).resume_$stamp")
     }
+    foreach ($item in @(Get-ChildItem -LiteralPath `
+            (Join-Path $RuntimeRoot 'checkpoints') -Filter '*.tmp' -File `
+            -ErrorAction SilentlyContinue)) {
+        Move-Item -LiteralPath $item.FullName -Destination `
+            (Join-Path $incomplete "$($item.Name).resume_$stamp")
+    }
     foreach ($item in @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'workers') `
             -Filter '*.current.lock' -File -ErrorAction SilentlyContinue)) {
         Move-Item -LiteralPath $item.FullName -Destination `
@@ -652,7 +757,6 @@ function Get-AttemptActiveWallSeconds {
             -Filter 'attempt_*.json' -File -ErrorAction SilentlyContinue)) {
         try {
             $attempt = Read-JsonFile $attemptPath.FullName
-            if ([string]$attempt.completion_status -eq 'ERROR_STOPPED') { continue }
             $endValue = $null
             if ([string]$attempt.ended_utc -ne '') {
                 $endValue = [DateTimeOffset]::Parse([string]$attempt.ended_utc)
@@ -688,6 +792,107 @@ function Get-AttemptActiveWallSeconds {
     }
     $total += ($currentEnd - $currentStart).TotalSeconds
     return $total
+}
+
+function Get-CheckpointAuditSnapshot {
+    param([object]$Protocol)
+    $checkpointRoot = Join-Path $RuntimeRoot 'checkpoints'
+    $valid = New-Object System.Collections.Generic.List[object]
+    $invalid = New-Object System.Collections.Generic.List[object]
+    $stratumIds = @($Protocol.stratum_ids | ForEach-Object { [string]$_ })
+    $matFiles = @(Get-ChildItem -LiteralPath $checkpointRoot -Filter '*.mat' `
+        -File -ErrorAction SilentlyContinue)
+    foreach ($file in $matFiles) {
+        $commonId = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
+        $reason = ''
+        $stratumId = ''
+        $trialIndex = 0
+        $globalIndex = 0
+        try {
+            $match = [regex]::Match($commonId, '^(?<stratum>.+)_T(?<trial>\d{4})$')
+            if (-not $match.Success) { throw 'checkpoint filename is not a common-trial ID' }
+            $stratumId = $match.Groups['stratum'].Value
+            $trialIndex = [int]$match.Groups['trial'].Value
+            $stratumIndex = -1
+            for ($index = 0; $index -lt $stratumIds.Count; $index++) {
+                if ($stratumIds[$index] -eq $stratumId) {
+                    $stratumIndex = $index
+                    break
+                }
+            }
+            if ($stratumIndex -lt 0 -or $trialIndex -lt 1 -or
+                    $trialIndex -gt [int]$Protocol.trials_per_stratum) {
+                throw 'checkpoint filename is outside the immutable registry'
+            }
+            $globalIndex = $stratumIndex * [int]$Protocol.trials_per_stratum +
+                $trialIndex
+            $auditPath = "$($file.FullName).audit.json"
+            $audit = Read-JsonFile $auditPath
+            $required = @('protocol_version', 'checkpoint_contract_version',
+                'protocol_runner_commit', 'common_trial_id',
+                'global_common_trial_index', 'content_hash',
+                'checkpoint_file_name', 'checkpoint_file_sha256',
+                'checkpoint_byte_count', 'validation_status')
+            foreach ($field in $required) {
+                if ($audit.PSObject.Properties.Name -notcontains $field) {
+                    throw "checkpoint audit is missing $field"
+                }
+            }
+            if ([string]$audit.protocol_version -ne [string]$Protocol.protocol_version -or
+                    [string]$audit.checkpoint_contract_version -ne
+                    [string]$Protocol.checkpoint_contract_version -or
+                    [string]$audit.protocol_runner_commit -ne
+                    [string]$Protocol.protocol_runner_commit -or
+                    [string]$audit.common_trial_id -ne $commonId -or
+                    [int]$audit.global_common_trial_index -ne $globalIndex -or
+                    [string]$audit.checkpoint_file_name -ne $file.Name -or
+                    [long]$audit.checkpoint_byte_count -ne [long]$file.Length -or
+                    [string]$audit.validation_status -ne 'VALIDATED_COMPLETE_PASS' -or
+                    [string]$audit.content_hash -notmatch '^[0-9a-fA-F]{64}$') {
+                throw 'checkpoint audit identity or size differs from the runtime protocol'
+            }
+            $actualSha = (Get-FileHash -Algorithm SHA256 `
+                -LiteralPath $file.FullName).Hash.ToLowerInvariant()
+            if ($actualSha -ne
+                    ([string]$audit.checkpoint_file_sha256).ToLowerInvariant()) {
+                throw 'checkpoint byte hash differs from its validation audit'
+            }
+            $valid.Add([pscustomobject]@{
+                Name = $file.Name
+                CommonTrialId = $commonId
+                StratumId = $stratumId
+                TrialIndex = $trialIndex
+                GlobalIndex = $globalIndex
+                FullName = $file.FullName
+                LastWriteTimeUtc = $file.LastWriteTimeUtc
+                ContentHash = [string]$audit.content_hash
+            })
+        } catch {
+            $reason = $_.Exception.Message
+            $invalid.Add([pscustomobject]@{
+                Name = $file.Name
+                CommonTrialId = $commonId
+                Reason = $reason
+            })
+        }
+    }
+    foreach ($auditFile in @(Get-ChildItem -LiteralPath $checkpointRoot `
+            -Filter '*.mat.audit.json' -File -ErrorAction SilentlyContinue)) {
+        $matPath = $auditFile.FullName.Substring(
+            0, $auditFile.FullName.Length - '.audit.json'.Length)
+        if (-not (Test-Path -LiteralPath $matPath -PathType Leaf)) {
+            $invalid.Add([pscustomobject]@{
+                Name = $auditFile.Name
+                CommonTrialId = ''
+                Reason = 'orphan checkpoint validation audit'
+            })
+        }
+    }
+    return [pscustomobject]@{
+        Valid = $valid.ToArray()
+        Invalid = $invalid.ToArray()
+        MatFileCount = $matFiles.Count
+    }
 }
 
 function Get-StatusSnapshot {
@@ -785,32 +990,77 @@ function Get-StatusSnapshot {
         }
     }
 
-    $checkpointFiles = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'checkpoints') `
-        -Filter '*.mat' -File -ErrorAction SilentlyContinue)
-    $completed = $checkpointFiles.Count
+    $checkpointAudit = Get-CheckpointAuditSnapshot -Protocol $protocol
+    $validCheckpoints = @($checkpointAudit.Valid)
+    $invalidCheckpoints = @($checkpointAudit.Invalid)
+    $completed = $validCheckpoints.Count
     $remaining = [int]$protocol.common_trial_count - $completed
     $tmpCount = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'tmp') `
+        -Filter '*.tmp' -File -ErrorAction SilentlyContinue).Count +
+        @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'checkpoints') `
         -Filter '*.tmp' -File -ErrorAction SilentlyContinue).Count
     $lockCount = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'workers') `
         -Filter '*.current.lock' -File -ErrorAction SilentlyContinue).Count
-    $invalidCount = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'checkpoints') `
-        -Filter '*.invalid' -File -ErrorAction SilentlyContinue).Count
+    $invalidCount = $invalidCheckpoints.Count
+    if ($invalidCount -gt 0 -and $lastError -eq '') {
+        $lastError = "CHECKPOINT_AUDIT_FAILED: $($invalidCheckpoints[0].Name): " +
+            [string]$invalidCheckpoints[0].Reason
+    }
     $histories = @()
     foreach ($historyPath in @(Get-ChildItem -LiteralPath $logsRoot `
             -Filter 'worker_*_checkpoint_history.csv' -File -ErrorAction SilentlyContinue)) {
         try { $histories += @(Import-Csv -LiteralPath $historyPath.FullName) } catch { }
     }
+    $validIdLookup = @{}
+    foreach ($checkpoint in $validCheckpoints) {
+        $validIdLookup[[string]$checkpoint.CommonTrialId] = $true
+    }
+    $histories = @($histories | Where-Object {
+        $validIdLookup.ContainsKey([string]$_.common_trial_id)
+    })
     $stratumIds = @($protocol.stratum_ids)
     $perStratumCompleted = [ordered]@{}
     $perStratumRemaining = [ordered]@{}
     $runtimeByStratum = @{}
+    $runtimeStatsByStratum = [ordered]@{}
+    $separationRateByStratum = [ordered]@{}
     foreach ($stratumId in $stratumIds) {
+        $selectedCheckpoints = @($validCheckpoints | Where-Object {
+            $_.StratumId -eq $stratumId
+        })
         $selected = @($histories | Where-Object { $_.stratum_id -eq $stratumId })
-        $perStratumCompleted[$stratumId] = $selected.Count
+        $perStratumCompleted[$stratumId] = $selectedCheckpoints.Count
         $perStratumRemaining[$stratumId] =
-            [int]$protocol.trials_per_stratum - $selected.Count
+            [int]$protocol.trials_per_stratum - $selectedCheckpoints.Count
         $runtimeByStratum[$stratumId] = @($selected | ForEach-Object {
             [double]$_.runtime_sec })
+        $stratumRuntimes = [double[]]$runtimeByStratum[$stratumId]
+        $stratumMean = if ($stratumRuntimes.Count -gt 0) {
+            [double](($stratumRuntimes | Measure-Object -Average).Average)
+        } else { $null }
+        $runtimeStatsByStratum[$stratumId] = [ordered]@{
+            checkpoint_count = $selected.Count
+            mean_sec = $stratumMean
+            p50_sec = Get-Percentile $stratumRuntimes 0.50
+            p75_sec = Get-Percentile $stratumRuntimes 0.75
+            p90_sec = Get-Percentile $stratumRuntimes 0.90
+        }
+        $triggerRows = if ($selected.Count -gt 0) {
+            [double](($selected | Measure-Object -Property separation_trigger_rows -Sum).Sum)
+        } else { 0.0 }
+        $separationRateByStratum[$stratumId] = if ($selected.Count -gt 0) {
+            $triggerRows / (2.0 * $selected.Count)
+        } else { $null }
+    }
+    if ([int]$protocol.selected_worker_count -eq 1) {
+        $completedPerWorker['worker_01'] = $completed
+    } else {
+        $completedPerWorker['worker_01'] = @($validCheckpoints | Where-Object {
+            ([int]$_.GlobalIndex % 2) -eq 1
+        }).Count
+        $completedPerWorker['worker_02'] = @($validCheckpoints | Where-Object {
+            ([int]$_.GlobalIndex % 2) -eq 0
+        }).Count
     }
     $stateCounts = [ordered]@{
         K1 = 0; K2_RESOLVED = 0; K2_UNRESOLVED = 0
@@ -831,8 +1081,8 @@ function Get-StatusSnapshot {
     $allRuntimes = @($histories | ForEach-Object { [double]$_.runtime_sec })
     $lastCheckpointUtc = ''
     $minutesSinceLast = $null
-    if ($checkpointFiles.Count -gt 0) {
-        $lastFile = $checkpointFiles | Sort-Object LastWriteTimeUtc -Descending |
+    if ($validCheckpoints.Count -gt 0) {
+        $lastFile = $validCheckpoints | Sort-Object LastWriteTimeUtc -Descending |
             Select-Object -First 1
         $lastCheckpointUtc = $lastFile.LastWriteTimeUtc.ToString('yyyy-MM-ddTHH:mm:ss.fffZ')
         $minutesSinceLast = ([DateTime]::UtcNow - $lastFile.LastWriteTimeUtc).TotalMinutes
@@ -864,8 +1114,9 @@ function Get-StatusSnapshot {
             $mean = ($allRuntimes | Measure-Object -Average).Average
         }
         if ($null -eq $p50) { continue }
-        $completedIds = @($histories | Where-Object { $_.stratum_id -eq $stratumId } |
-            Select-Object -ExpandProperty common_trial_id)
+        $completedIds = @($validCheckpoints | Where-Object {
+            $_.StratumId -eq $stratumId
+        } | Select-Object -ExpandProperty CommonTrialId)
         for ($trialIndex = 1; $trialIndex -le [int]$protocol.trials_per_stratum; $trialIndex++) {
             $trialId = '{0}_T{1:D4}' -f $stratumId, $trialIndex
             if ($completedIds -contains $trialId) { continue }
@@ -896,6 +1147,21 @@ function Get-StatusSnapshot {
     }
 
     $pauseRequested = Test-Path -LiteralPath (Join-Path $RuntimeRoot 'control\pause.request')
+    foreach ($worker in $workerViews) {
+        $terminalWorkerState = [string]$worker.worker_state -in @(
+            'COMPLETE', 'PAUSED_SAFE', 'ERROR_STOPPED')
+        if ([bool]$worker.responsive -and $terminalWorkerState -and $lastError -eq '') {
+            $lastError = "WORKER_STATE_PROCESS_CONTRADICTION: worker_$('{0:D2}' -f $worker.worker_id) " +
+                "is $($worker.worker_state) but PID $($worker.pid) is active"
+        }
+        if (-not [bool]$worker.responsive -and
+                [string]$worker.worker_state -in @('STARTING', 'RUNNING') -and
+                -not $pauseRequested -and $completed -lt [int]$protocol.common_trial_count -and
+                $lastError -eq '') {
+            $lastError = "UNEXPECTED_WORKER_EXIT: worker_$('{0:D2}' -f $worker.worker_id) " +
+                "is $($worker.worker_state) without an active protocol PID"
+        }
+    }
     $repoStatus = @(& git -C $RepoDir status --porcelain=v1 --untracked-files=all)
     $gitClean = $LASTEXITCODE -eq 0 -and $repoStatus.Count -eq 0
     $resultFiles = @(Get-ChildItem -LiteralPath (Join-Path $StepRoot 'results') `
@@ -915,24 +1181,41 @@ function Get-StatusSnapshot {
             }
         }
     } else { $calibrationMatch = $false }
+    $finalAudit = Join-Path $RuntimeRoot 'merged\finalization_audit.json'
+    $isFormalRuntime = $protocol.PSObject.Properties.Name -contains
+        'scientific_formal_run' -and [bool]$protocol.scientific_formal_run
+    if ($isFormalRuntime -and -not $gitClean -and $lastError -eq '') {
+        $lastError = 'REPOSITORY_STATE_CHANGED: formal runtime requires a clean worktree'
+    }
+    if ($isFormalRuntime -and -not $calibrationMatch -and $lastError -eq '') {
+        $lastError = 'CALIBRATION_SNAPSHOT_CHANGED: frozen artifact bytes no longer match'
+    }
+    if ($isFormalRuntime -and -not $resultsClean -and
+            -not (Test-Path -LiteralPath $finalAudit -PathType Leaf) -and
+            $lastError -eq '') {
+        $lastError = 'RESULTS_DIRECTORY_CHANGED_BEFORE_FINALIZE'
+    }
     $possibleStall = $false
     if ($activeCount -gt 0 -and $null -ne $minutesSinceLast -and
             $null -ne $overallP90) {
         $possibleStall = $minutesSinceLast -gt
             [Math]::Max(30.0, 3.0 * [double]$overallP90 / 60.0)
     }
-    $finalAudit = Join-Path $RuntimeRoot 'merged\finalization_audit.json'
+    $safeToShutdown = $pauseRequested -and $activeCount -eq 0 -and
+        $tmpCount -eq 0 -and $lockCount -eq 0 -and $invalidCount -eq 0 -and
+        $resultsClean -and $calibrationMatch -and $gitClean -and $lastError -eq ''
     if (Test-Path -LiteralPath $finalAudit -PathType Leaf) {
         $stage = 'FINALIZED_RESULTS_WRITTEN'
-    } elseif ($completed -eq [int]$protocol.common_trial_count -and $activeCount -eq 0) {
+    } elseif ($lastError -ne '') {
+        $stage = 'ERROR_STOPPED'
+    } elseif ($completed -eq [int]$protocol.common_trial_count -and
+            $activeCount -eq 0 -and $invalidCount -eq 0 -and
+            $tmpCount -eq 0 -and $lockCount -eq 0) {
         $stage = 'COMPLETE_CHECKPOINT_SET_6000'
-    } elseif ($pauseRequested -and $activeCount -eq 0 -and $tmpCount -eq 0 -and
-            $lockCount -eq 0 -and $invalidCount -eq 0 -and $resultsClean) {
+    } elseif ($safeToShutdown) {
         $stage = 'PAUSED_SAFE_TO_SHUTDOWN'
     } elseif ($pauseRequested) {
         $stage = 'PAUSE_REQUESTED'
-    } elseif ($lastError -ne '') {
-        $stage = 'ERROR_STOPPED'
     } elseif ($activeCount -gt 0 -and [int]$protocol.selected_worker_count -eq 2) {
         $stage = 'FORMAL_SHARDED_RUNNING'
     } elseif ($activeCount -gt 0) {
@@ -940,9 +1223,6 @@ function Get-StatusSnapshot {
     } else {
         $stage = 'PROTOCOL_COMMITTED'
     }
-    $safeToShutdown = $pauseRequested -and $activeCount -eq 0 -and
-        $tmpCount -eq 0 -and $lockCount -eq 0 -and $invalidCount -eq 0 -and
-        $resultsClean
     $summedSuccessfulTrialComputeSec = 0.0
     if ($allRuntimes.Count -gt 0) {
         $summedSuccessfulTrialComputeSec =
@@ -970,8 +1250,11 @@ function Get-StatusSnapshot {
         remaining_per_stratum = $perStratumRemaining
         completed_per_worker = $completedPerWorker
         valid_checkpoint_count = $completed
+        checkpoint_file_count = [int]$checkpointAudit.MatFileCount
         tmp_checkpoint_count = $tmpCount
         invalid_checkpoint_count = $invalidCount
+        checkpoint_audit_errors = @($invalidCheckpoints | Select-Object Name,
+            CommonTrialId, Reason)
         current_trial_lock_count = $lockCount
         separation_trigger_row_count = $separationRows
         state_counts = $stateCounts
@@ -984,6 +1267,8 @@ function Get-StatusSnapshot {
         rolling_p50_trial_runtime_sec = $overallP50
         rolling_p75_trial_runtime_sec = $overallP75
         rolling_p90_trial_runtime_sec = $overallP90
+        rolling_runtime_sec_per_stratum = $runtimeStatsByStratum
+        rolling_separation_trigger_row_rate_per_stratum = $separationRateByStratum
         eta_low_active_hours = $etaLowHours
         eta_point_active_hours = $etaPointHours
         eta_high_active_hours = $etaHighHours
@@ -1099,7 +1384,18 @@ function Invoke-Start {
     if (Test-Path -LiteralPath (Join-Path $RuntimeRoot 'control\pause.request')) {
         throw 'Start is blocked by pause.request; use Resume to archive it safely.'
     }
-    if ((Get-MatchingWorkerProcesses $RuntimeRoot).Count -eq 0) {
+    $protocol = Get-Protocol
+    $activeWorkers = (Get-MatchingWorkerProcesses $RuntimeRoot).Count
+    $priorAttempts = @(Get-ChildItem -LiteralPath (Join-Path $RuntimeRoot 'workers') `
+        -Filter 'attempt_*.json' -File -ErrorAction SilentlyContinue).Count
+    if ($activeWorkers -eq 0 -and $priorAttempts -gt 0) {
+        throw 'Start is initial-only after Init; use Resume for an existing attempt history.'
+    }
+    if ($activeWorkers -gt 0 -and
+            $activeWorkers -lt [int]$protocol.selected_worker_count) {
+        throw 'A selected worker is missing; request Pause, then use Resume after all workers exit.'
+    }
+    if ($activeWorkers -eq 0) {
         Invoke-MatlabRuntimeAudit 'start_preflight'
     }
     $started = @(Start-SelectedWorkers 'formal_start')
@@ -1135,6 +1431,12 @@ function Invoke-Resume {
 
 function Invoke-ForceStop {
     $protocol = Get-Protocol
+    $requestPath = Join-Path $RuntimeRoot 'control\pause.request'
+    if (-not (Test-Path -LiteralPath $requestPath -PathType Leaf)) {
+        [System.IO.File]::WriteAllText($requestPath,
+            "requested_utc=$(Get-UtcNowText)`nrequested_by=MANUAL_FORCE_STOP`n",
+            $script:Utf8NoBom)
+    }
     $stopped = @()
     for ($workerId = 1; $workerId -le [int]$protocol.selected_worker_count; $workerId++) {
         $pidPath = Join-Path $RuntimeRoot "workers\worker_$('{0:D2}' -f $workerId).pid"
@@ -1188,7 +1490,10 @@ function Invoke-Finalize {
     $protocol = Get-Protocol
     if ($status.completed_common_trials -ne [int]$protocol.common_trial_count -or
             $status.active_worker_count -ne 0 -or $status.tmp_checkpoint_count -ne 0 -or
-            $status.invalid_checkpoint_count -ne 0) {
+            $status.current_trial_lock_count -ne 0 -or
+            $status.invalid_checkpoint_count -ne 0 -or
+            -not $status.git_clean -or -not $status.calibration_snapshot_match -or
+            -not $status.results_directory_clean -or [string]$status.last_error -ne '') {
         throw 'Finalize requires a complete, inactive, valid checkpoint set.'
     }
     $repoLiteral = ConvertTo-MatlabLiteral $RepoDir
@@ -1200,7 +1505,8 @@ function Invoke-Finalize {
     return Get-StatusSnapshot
 }
 
-Assert-Paths
+$matlabActions = @('Pilot', 'Init', 'Start', 'Resume', 'Finalize')
+Assert-Paths -RequireMatlab ($Action -in $matlabActions)
 switch ($Action) {
     'Pilot' { Invoke-Pilot }
     'Init' { Invoke-Init }
