@@ -123,13 +123,21 @@ for index = 1:height(live_rows)
                 'fallback_flag'})
             same = logical(live.(field)) == logical(historical.(field));
         else
-            same = string(live.(field)) == string(historical.(field));
+            live_value = normalized_identity_text_local(live.(field));
+            historical_value = ...
+                normalized_identity_text_local(historical.(field));
+            same = live_value == historical_value;
         end
         assert_live_local(same, sprintf('%s_%s_%s_%s', label, ...
             char(live.trial_id), char(live.method_id), field));
     end
     match_count = match_count + 1;
 end
+end
+
+function value = normalized_identity_text_local(value)
+value = string(value);
+value(ismissing(value)) = "";
 end
 
 function assert_live_local(condition, field)
