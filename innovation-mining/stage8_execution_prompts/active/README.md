@@ -1,35 +1,26 @@
 # Active Stage8 Execution
 
 Branch:
-`experiment/stage8-core-v2`
+`experiment/stage8-k2-tangent-profile-v1`
 
 Status:
-`NO_ACTIVE_STAGE8_EXECUTION`
+`STAGE8_K2_TANGENT_PROFILE_V1_AUTHORIZED`
 
-Final freeze:
-`STAGE8_CORE_V2_2_CORRECTED_FINAL_FREEZE_COMPLETED`
+Protocol:
+`STAGE8_K2_TANGENT_PROFILE_DECISIVE_EXPERIMENT_V1`
 
-Final state:
-`STAGE8_CORE_V2_2_FINAL_FREEZE_PASS_CORE_PLUS_OPTIONAL`
+Base boundary:
+`BASE_CORE_V2_BRANCH_READ_ONLY`
 
-Final evidence:
-`innovation-mining/29_stage8_core_v2_2_corrected_final_single_cpi_known_k_validation.md`
+Active prompt:
+`013_stage8_k2_tangent_profile_decisive_v1.md`
 
-Completed protocols:
-`008_stage8_core_v2_2_f1_canonical_oracle_correction_v1.md`
-`009_stage8_core_v2_2_archive_f0_and_restart_final_freeze_v1.md`
-`010_stage8_core_v2_2_f0_real_entry_preflight_final_freeze_v1.md`
-`011_stage8_core_v2_2_structured_process_audit_final_freeze_v1.md`
-`012_stage8_core_v2_2_live_reference_f1b_final_run_v1.md`
+Immutable baseline:
+`experiment/stage8-core-v2@9bcb4f7e0d4ec314e5a822deb0ea02216c10c8f7`
 
-Permanent boundary:
-`NO_F0_F1_EXTENSION`
+Permanent exclusions:
 `NO_CORE_V3`
 `NO_AUTOMATIC_K`
 `NO_BOOTSTRAP_EXTENSION`
-`NO_THIRD_K2_SOLVER`
-`NO_6000_TRIAL_RUN`
+`NO_PRODUCTION_INTERFACE_CHANGE`
 `NO_STAGE8_2_AUTHORIZATION`
-
-Further work is limited to paper, figures, formula-to-code mapping, baselines,
-references, and a separate review of whether Step12.7 should be integrated.
