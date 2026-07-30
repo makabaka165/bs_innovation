@@ -2,11 +2,11 @@
 
 > 建议保存路径：`innovation-mining/11_sequential_beamspace_ml_innovations_theory.md`  
 > 默认仓库：`makabaka165/bs_innovation`  
-> 文档修订日期：2026-07-29（UTC）  
+> 文档修订日期：2026-07-30（UTC）
 > 当前探索分支：`experiment/stage8-core-v2`  
 > 当前生产接口提交：`5f042b75ba6733ffdd531229f81cec7660418ca1`
 > 稳定主线：`main@247fad2208e77b04f7062e22b0fd3fd8a81bfc1f`，科学父提交为 `64cd2d6eae0813f8fd9266ec9ffe6bab4f616267`。  
-> 当前总体状态：`STAGE8_CORE_V2_2_EXPERIMENT_INVALID / F1_FAIL_STOPPED`。V2.2 单 CPI、单距离–多普勒单元、known-K 生产接口已完成，但最终协议要求同一 K1 路径同时位级匹配两个不相同的历史 H1/H2 目标，故未运行 144-trial 独立验证。最后一个正向科学结论仍是 `STAGE8_CORE_V2_1_OPERATIONAL_GROUPED_OPTIONAL`；自动目标数判定、bootstrap threshold、resolved/unresolved、完整 6000-trial validation 与 Stage8.2 均保持 `DEFERRED_NOT_FAILED / NOT_EXECUTED`。
+> 当前总体状态：`STAGE8_CORE_V2_2_FINAL_FREEZE_PASS_CORE_PLUS_OPTIONAL`。同会话 live reference 生产回归 `24/24` PASS；独立验证 K1 `72/72`、K2 `72/72`，结果行 `288/288`，checkpoint `144/144`。automatic K、bootstrap threshold、完整 6000-trial validation 与 Stage8.2 仍不在当前范围。
 > 本文取代 2026-07-17 版本的候选路线组织，但不删除旧理论、失败路线和执行证据；旧版本应归档为 superseded 文档。
 
 > 必须联合阅读的当前证据：
@@ -21,6 +21,9 @@
 > - `innovation-mining/26_stage8_core_v2_known_k_pruning_experiment.md`
 > - `innovation-mining/27_stage8_core_v2_1_safe_hybrid_closure.md`
 > - `innovation-mining/28_stage8_core_v2_2_final_single_cpi_known_k_validation.md`
+>   - `HISTORICAL_INVALID_PROTOCOL_EVIDENCE`
+> - `innovation-mining/29_stage8_core_v2_2_corrected_final_single_cpi_known_k_validation.md`
+>   - `CURRENT_AUTHORITATIVE_FINAL_EVIDENCE`
 > - `innovation-mining/archive/failed/FAILED_likelihood_discriminative_adaptive_wb.md`
 >
 > 新颖性永久边界：接收圆柱阵流形、DML、SVD/QR 投影、白化、坐标上升、投影 Jacobian Fisher 信息、压缩前后归一化 FIM、FIM 约束最少选择、中心–差分参数化、bootstrap、source enumeration 和 unresolved 均有明确 prior art。本文允许保留的贡献，只能是：
@@ -128,14 +131,18 @@ THEORY_SUPPORTED_AS_SCENARIO_SPECIFIC_COROLLARY
 K\in\{1,2\}.
 \]
 
-最小算法由以下步骤组成：
+最终默认 Core-Lite 按 K 分为两条冻结路径：
 
 ```text
+K=1:
 固定 measurement 与白化
-→ 固定网格 concentrated DML 粗估计
-→ 在完整顺序二维流形上进行连续 refinement
-→ 连续候选有效且集中似然不低于固定网格时升级
-→ 否则返回固定网格结果
+→ fixed-grid K1
+→ conventional continuous full-sequential refinement
+→ validity/loglik safe selection
+
+K=2:
+固定 measurement 与白化
+→ fixed-grid known-K K2
 ```
 
 对 \(K=1\)，连续 refinement 在注册诊断集上得到：
@@ -174,10 +181,10 @@ H2 grouped hybrid: K2 8/8 valid, median RMSE 0.140071055°
 H2 vs H1: 4 wins / 4 ties / 0 losses
 ```
 
-grouped 模式在 easy K2 子集的中位 RMSE 为 `0.093647917°`，但在 moderate 子集没有形成稳定改善，且计算成本更高。因此最终定位是：
+上述 8-trial 结果是 V2.1 架构闭环诊断。grouped 模式在 easy K2 子集的中位 RMSE 为 `0.093647917°`，但在 moderate 子集没有形成稳定改善，且计算成本更高。最终独立 72-trial K2 证据为 `26/33/13` wins/ties/losses、`39/33` upgrades/fallbacks；因此最终定位是：
 
 ```text
-STAGE8_CORE_V2_1_OPERATIONAL_GROUPED_OPTIONAL
+OPTIONAL K2 RESCUE / HIGH-ACCURACY MODE
 ```
 
 即 grouped/conditional initialization 只作为 K2 的可选 rescue start 或高精度模式，不作为最小算法的必需组件。
@@ -237,7 +244,7 @@ PASS_SYSTEM_ANALYSIS_ONLY
 | 固定网格 unknown-K + bootstrap threshold | compact K1 false split `30/60=0.50` | 不再作为当前主线 |
 | 连续 K1/K2 model-order recovery | 连续 K2 solver 只部分返回 | `MODEL_ORDER_DEFERRED` |
 | resolved/unresolved 六状态闭环 | 依赖尚未成立的 unknown-K 层 | 长期 deferred |
-| 完整 6000-trial formal validation | 对已知失败闭环无信息增益 | `DEFERRED_NOT_FAILED` |
+| 完整 6000-trial formal validation | 超出已完成的 known-K 最终冻结范围，且未授权 | `DEFERRED_NOT_FAILED` |
 | K=3 扩展 | 未实现，非当前核心 | future work |
 | Stage8.2 | 未授权、未执行 | 不进入 |
 | 第三版连续 K2 solver | 协议明确停止继续迭代 | 不设计 |
@@ -556,6 +563,20 @@ T_bW_{\rm seq}^Ha(\phi,\theta).
 
 ## 5. 经验证的核心算法：Known-K Safe Hybrid DML
 
+Core-Lite 是最终默认 known-K 算法。其完整定义为：
+
+```text
+K=1:
+fixed-grid K1
+→ conventional continuous full-sequential refinement
+→ validity/loglik safe selection
+
+K=2:
+fixed-grid known-K K2
+```
+
+Core-Lite 是本项目在实际顺序 DBF、固定白化和局部 known-K 场景中的最终精简算法方案。DML、网格初始化、连续优化和 likelihood selection 均不是单独新颖点；允许保留的贡献来自系统特化后的完整组合、理论对应、算法剪枝和独立证据。
+
 ### 5.1 稳定 concentrated DML
 
 对候选角集合 \(\Theta_K\)，构造
@@ -669,16 +690,15 @@ Core-Lite 追求稳定与简洁，不强制连续 K2。
 
 ### 5.5 K2 Core-Plus
 
+Core-Plus 与 Core-Lite 的 K1 路径完全相同，不引入第二条 K1 算法。
+
 可选高精度路径：
 
 ```text
-B0 fixed-grid K2
-+
-grouped/conditional K2 start
-+
-center-difference continuous refinement
-+
-safe selection
+grouped/conditional initialization
+→ center-difference continuous refinement
+→ safe likelihood selection
+→ invalid 时 fixed-grid fallback
 ```
 
 当 continuous candidate 有效且集中似然不低于 B0 时升级，否则回退 B0。
@@ -687,7 +707,10 @@ Core-Plus 对应当前
 
 ```text
 H2_GROUPED_SAFE_HYBRID_KNOWN_K
+OPTIONAL K2 RESCUE / HIGH-ACCURACY MODE
 ```
+
+不得把 Core-Plus 表述为第二个独立核心创新、普遍优于 Core-Lite，或 continuous K2 自身 `72/72` 收敛。
 
 在注册集上：
 
@@ -753,6 +776,27 @@ difficulty label
 | H2 grouped safe hybrid | 16/16 | 8/8 | 0.011388568° | 0.140071055° | operational, grouped optional |
 
 注意：H1/H2 closure 重用了既有 24 trials 和 72 个 B0/B1/B2 rows，没有增加新的独立统计样本。它证明的是架构闭环和安全选择，不是新的泛化性能认证。
+
+最终独立证据 `29_*` 给出：
+
+```text
+K1 CORE_LITE:
+valid = 72/72
+overall median/p90 RMSE =
+0.011616187362665439 / 0.052506027053567626 deg
+off-grid median/p90 RMSE =
+0.010389316715065527 / 0.051751616263288336 deg
+paired wins/ties/losses = 54/0/0
+
+K2 CORE_PLUS:
+valid = 72/72
+median/p90 RMSE =
+0.14168130832543541 / 0.36164220317772783 deg
+paired wins/ties/losses = 26/33/13
+upgrades/fallbacks = 39/33
+```
+
+Core-Plus 的 `72/72` 有效率来自 safe fallback，不等于 continuous K2 自身 `72/72` 返回；这也是其只能定位为可选 rescue/high-accuracy 模式的直接证据边界。
 
 ---
 
@@ -975,6 +1019,122 @@ synthetic 六阶式：仅作边界说明
 - continuous solver 返回率。
 
 因此理论贡献与 safe known-K 算法证据必须分别陈述。
+
+### 7.7 K2 条件信息边界：几何可分性不等于有限样本可辨识性
+
+对白化双目标模型，记
+
+\[
+Z
+=
+g(\mathbf c-\mathbf d/2)\mathbf s_1^T
++
+g(\mathbf c+\mathbf d/2)\mathbf s_2^T
++
+N.
+\]
+
+定义和模、差模
+
+\[
+\mathbf a=\mathbf s_1+\mathbf s_2,
+\qquad
+\mathbf b=\mathbf s_2-\mathbf s_1.
+\]
+
+在中心 \(\mathbf c\) 处对称 Taylor 展开：
+
+\[
+Z
+=
+g(\mathbf c)\mathbf a^T
++
+\frac12J_g(\mathbf c)\mathbf d\,\mathbf b^T
++
+\frac18H_g(\mathbf c)[\mathbf d,\mathbf d]\mathbf a^T
++
+O(\|\mathbf d\|^3)
++
+N.
+\]
+
+投影掉中心单目标子空间后，残差的一阶项为
+
+\[
+R
+=
+\Pi_g^\perp Z
+\approx
+\frac12\Pi_g^\perp J_g\mathbf d\,\mathbf b^T
++
+N_\perp.
+\]
+
+继续定义
+
+\[
+T_{\rm seq}
+=
+\operatorname{Re}\{J_g^H\Pi_g^\perp J_g\},
+\qquad
+p_-
+=
+\frac{\|\mathbf s_2-\mathbf s_1\|_2^2}{L}.
+\]
+
+则分离向量的一阶局部条件信息结构满足
+
+\[
+F_{\mathbf d}^{(1)}
+\propto
+\frac{L p_-}{2\sigma^2}T_{\rm seq}.
+\]
+
+相应的分析指标为
+
+\[
+\boxed{
+\Gamma_{K2}
+=
+\frac{L p_-}{2\sigma^2}
+\mathbf d^T T_{\rm seq}\mathbf d
+}.
+\]
+
+其中
+
+\[
+q=\mathbf d^T T_{\rm seq}\mathbf d
+\]
+
+只描述几何可分性；\(\Gamma_{K2}\) 进一步包含快拍数、噪声、源差模功率、相关性和相位关系。当 \(\mathbf s_1\approx\mathbf s_2\) 时，\(p_-\approx0\)，一阶分离信息退化，只剩 \(O(\|\mathbf d\|^2)\) 的二阶流形项，其信息通常缩放为 \(O(\|\mathbf d\|^4)\)。因此，部分 K2 失败属于内在非正则性，不能只靠增加 solver sweeps 或 starts 解决。
+
+### 7.8 仅作 future work 的 K2 分离方向候选
+
+以下路线只记录为理论候选，不授权实现：
+
+1. 用 K1 continuous fit 得到中心 \(\mathbf c\)；
+2. 构造 \(B=\Pi_g^\perp J_g\)；
+3. 构造 \(R=\Pi_g^\perp Z\)；
+4. 构造 \(C_t=\operatorname{Re}\{B^H R R^H B\}\)；
+5. 求解
+   \[
+   \max_{\mathbf u\ne0}
+   \frac{\mathbf u^T C_t\mathbf u}
+   {\mathbf u^T T_{\rm seq}\mathbf u};
+   \]
+6. 以该广义特征向量估计分离方向；
+7. 只对分离大小 \(\rho\) 进行一维 profile-likelihood 搜索；
+8. 最后用完整流形进行局部修正。
+
+```text
+THEORY_ONLY_FUTURE_WORK
+NOT_IMPLEMENTED
+NOT_VALIDATED
+NO_NEW_ACTIVE_STAGE
+```
+
+不得把 \(\Gamma_{K2}\) 变成在线 threshold，也不得据此恢复 automatic K、第三版 K2 solver 或新的 Stage8 执行。
 
 ---
 
@@ -1422,7 +1582,8 @@ optional engineering enhancement
 | safe hybrid closure | `innovation-mining/27_stage8_core_v2_1_safe_hybrid_closure.md` |
 | Core-V2 工具 | `tools/stage8_core_v2_known_k/` |
 | Core-V2.2 单一生产接口 | `beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_7_known_k_local_cell_refinement/` |
-| Core-V2.2 最终冻结门控 | `innovation-mining/28_stage8_core_v2_2_final_single_cpi_known_k_validation.md` |
+| Core-V2.2 历史无效协议证据 | `innovation-mining/28_stage8_core_v2_2_final_single_cpi_known_k_validation.md`（`HISTORICAL_INVALID_PROTOCOL_EVIDENCE`） |
+| Core-V2.2 当前权威最终证据 | `innovation-mining/29_stage8_core_v2_2_corrected_final_single_cpi_known_k_validation.md`（`CURRENT_AUTHORITATIVE_FINAL_EVIDENCE`） |
 
 ## 16.2 DML 与多源优化
 
@@ -1446,7 +1607,19 @@ optional engineering enhancement
 12. Pakrooh, P. et al. “Analysis of Fisher Information and the Cramer-Rao Bound for Nonlinear Parameter Estimation after Compressed Sensing.” *IEEE TSP*, 2015. DOI: `10.1109/TSP.2015.2464183`.
 13. Pakrooh, P.; Scharf, L. L.; Pezeshki, A. “Threshold Effects in Parameter Estimation from Compressed Data.” *IEEE TSP*, 2016. DOI: `10.1109/TSP.2016.2521617`.
 
-## 16.5 最终开发边界
+## 16.5 最终执行环境备注
+
+长时 Start 会话在已经输出 `144/144` checkpoint 完成状态后的 MATLAB 退出阶段报告 heap corruption。之后使用全新的 Status 和 Finalize 会话重新读取并验证全部 checkpoint；F0/F1A/F1B、registry、144 checkpoints、288 rows、tmp 和 lock 全部通过。
+
+该事件定位为：
+
+```text
+POST-COMPUTATION_MATLAB_TEARDOWN_ANOMALY
+```
+
+它不改变最终科学状态，也不要求重跑。
+
+## 16.6 最终开发边界
 
 当前算法开发在以下状态永久停止：
 
@@ -1455,21 +1628,30 @@ CORE_LITE:
 K1 continuous safe hybrid
 K2 fixed-grid known-K
 production interface integrated
-final 144-trial status = NOT_EVALUATED_F1_FAIL_STOPPED
+default known-K algorithm
+independent K1 = 72/72
+independent K2 = 72/72
 
 CORE_PLUS:
+K1 identical to Core-Lite
 K2 grouped continuous optional upgrade
 fixed-grid fallback
 production interface integrated
-final 144-trial status = NOT_EVALUATED_F1_FAIL_STOPPED
+OPTIONAL K2 RESCUE / HIGH-ACCURACY MODE
+independent K2 = 72/72 valid via safe fallback
 
 FINAL FREEZE:
-STAGE8_CORE_V2_2_EXPERIMENT_INVALID
-F1_FAIL_STOPPED
-independent trials = 0/144
+STAGE8_CORE_V2_2_FINAL_FREEZE_PASS_CORE_PLUS_OPTIONAL
+F0 = PASS
+F1A = PASS
+F1B live in-memory regression = 24/24 PASS
+independent K1 = 72/72
+independent K2 = 72/72
+result rows = 288/288
+checkpoints = 144/144
 
 MODEL_ORDER:
-DEFERRED
+DEFERRED / OUT OF SCOPE
 
 FORMAL 6000-TRIAL:
 DEFERRED_NOT_FAILED
@@ -1478,10 +1660,7 @@ STAGE8.2:
 NOT_EXECUTED
 ```
 
-V2.2 的失败是冻结协议内部的历史回归目标不相容：最终 K1 合同要求
-`CORE_LITE / CORE_PLUS` 使用同一个 conventional singleton 路径并禁止 grouped
-start，但一个历史 K1 trial 的 H1 与 H2 在 angles、RSS 和 loglik 上不同。该门控
-失败不推翻 V2.1 的正向诊断证据，也不授权修改历史 CSV 或算法以追求通过。
+`28_*` 保留了历史无效协议及其 F1 hard stop，不删除、不覆盖。最终协议先固定 K1 canonical H1 映射，再移除有损 numeric CSV RSS/loglik 位级 oracle，改用同一 MATLAB 会话、同一 `Y_element` 和同一 measurement 下重建的 live B0/B1/B2 与 H1/H2 内存参考。最终 `24/24` exact production regression 与 `144/144` 独立 checkpoint 均通过，科学 production code、registry、seed 和判定规则未改变；`29_*` 是当前唯一权威最终证据。
 
 后续只允许：
 
