@@ -4,22 +4,29 @@ Branch:
 experiment/stage8-k2-vincent-anchored-aml-v1
 
 Status:
-STAGE8_K2_VINCENT_ANCHORED_PROJECTOR_AML_V1_ACTIVE
+NO_ACTIVE_STAGE8_EXECUTION
 
-Authorization:
-AUTHORIZE_STAGE8_K2_VINCENT_ANCHORED_PROJECTOR_AML_V1
+Completed:
+STAGE8_K2_VINCENT_ANCHORED_AML_V1_COMPLETED
+
+Final conclusion:
+STAGE8_K2_VINCENT_ANCHORED_AML_NOT_RETAINED
+
+Final evidence:
+innovation-mining/36_stage8_k2_vincent_anchored_aml_experiment.md
+
+Completed prompt:
+archive/completed/015_stage8_k2_vincent_anchored_aml_v1.md
 
 Exact base:
 experiment/stage8-k2-classical-baselines-v1@bdb2a5186b7ee0c889a3d7563b4e15a3bbc07c7b
-
-Active prompt:
-015_stage8_k2_vincent_anchored_aml_v1.md
 
 Design:
 35_stage8_k2_vincent_anchored_aml_theory_and_protocol.md
 
 Frozen upstreams:
 experiment/stage8-k2-classical-baselines-v1@bdb2a5186b7ee0c889a3d7563b4e15a3bbc07c7b
+experiment/stage8-k2-tangent-profile-v1@721c30aa96f1687c757004613c23e9fb6a814afd
 experiment/stage8-core-v2@9bcb4f7e0d4ec314e5a822deb0ea02216c10c8f7
 main@247fad2208e77b04f7062e22b0fd3fd8a81bfc1f
 
@@ -29,3 +36,4 @@ NO_TANGENT_ALGORITHM_CHANGE
 NO_AUTOMATIC_K
 NO_BOOTSTRAP
 NO_PRODUCTION_INTERFACE_CHANGE
+NO_V2
