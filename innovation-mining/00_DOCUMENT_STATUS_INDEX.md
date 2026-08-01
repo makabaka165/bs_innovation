@@ -68,7 +68,9 @@ No temporary comparison branch is created by the topology protocol.
 - `experiment/stage8-k2-tangent`: this primary K2 experiment branch.
 - `research/stage8-k2-vincent-anchored`: read-only Vincent research backup.
 
-Legacy experiment refs remain pending user review. No branch was deleted.
+The three legacy experiment refs were deleted locally and remotely after
+explicit user authorization. Their milestone commits remain recoverable from
+the annotated tags and the verified pre-reorganization Git bundle.
 
 ## Prompt archive
 

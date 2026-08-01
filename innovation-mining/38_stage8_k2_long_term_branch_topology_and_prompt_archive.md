@@ -43,8 +43,10 @@ Research backup:
 | `experiment/stage8-k2-tangent` | Primary Tangent and classical-baseline branch | `bdb2a5186b7ee0c889a3d7563b4e15a3bbc07c7b` plus this docs/archive commit |
 | `research/stage8-k2-vincent-anchored` | Read-only Vincent research backup | `89e47e1827aa8c2a36c49c369e60525713d20d38` plus its docs/archive commit |
 
-Legacy refs are retained pending user review. Branch deletion, main changes,
-cross-branch merges, and force pushes were not authorized.
+The three legacy refs were deleted locally and remotely after explicit user
+authorization. Their milestone commits remain protected by annotated tags and
+the verified pre-reorganization Git bundle. Main changes, cross-branch merges,
+and force pushes were not authorized.
 
 ## Future comparison workflow
 
