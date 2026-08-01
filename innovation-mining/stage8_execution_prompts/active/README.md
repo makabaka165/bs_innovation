@@ -4,35 +4,37 @@ Branch:
 experiment/stage8-k2-vincent-anchored-aml-v1
 
 Status:
-STAGE8_K2_VINCENT_ANCHORED_APPLICABILITY_ANALYSIS_ACTIVE
+NO_ACTIVE_STAGE8_EXECUTION
 
-Authorization:
-AUTHORIZE_STAGE8_K2_VINCENT_ANCHORED_APPLICABILITY_AND_CLOSURE_V1
+Completed:
+STAGE8_K2_VINCENT_ANCHORED_APPLICABILITY_CLOSED
 
-Mode:
+Final applicability state:
+STAGE8_K2_VINCENT_ANCHORED_APPLICABILITY_CLOSED_NO_ROBUST_REGIME
+
+Default K2:
+TANGENT_PROFILE_SAFE
+
+Vincent-Anchored:
+NOT_DEFAULT
+NOT_PRODUCTION
+NO_V2
+
+Further Stage8-K2 algorithm work:
+NOT_AUTHORIZED
+
+Analysis mode:
 ANALYSIS_ONLY
 NO_FITTING_RERUN
 NO_NEW_TRIALS
-
-Active prompt:
-016_stage8_k2_vincent_anchored_applicability_closure_v1.md
-
-Starting HEAD:
-33ce9238fa09d4ec5b4de865fb41a98710621b8b
-
-Frozen evidence:
-innovation-mining/31_*
-innovation-mining/32_*
-innovation-mining/33_*
-innovation-mining/34_*
-innovation-mining/35_*
-innovation-mining/36_*
-beamspace_ml_v18/**
-
-Boundaries:
-NO_FITTING_RERUN
-NO_NEW_TRIALS
 NO_NEW_SEEDS
-NO_SELECTOR
-NO_PRODUCTION_INTERFACE_CHANGE
-NO_V2
+
+Final evidence:
+innovation-mining/37_stage8_k2_vincent_anchored_applicability_and_route_closure.md
+
+Completed prompt:
+archive/completed/016_stage8_k2_vincent_anchored_applicability_closure_v1.md
+
+Historical evidence:
+31_32_33_34_35_36_UNCHANGED
+STEP12_7_UNCHANGED
