@@ -1,40 +1,19 @@
 # Active Stage8 Execution
 
-Branch:
-experiment/stage8-k2-vincent-anchored-aml-v1
-
 Status:
 NO_ACTIVE_STAGE8_EXECUTION
 
-Completed:
-STAGE8_K2_VINCENT_ANCHORED_APPLICABILITY_CLOSED
+BRANCH_ROLE:
+READ_ONLY_VINCENT_RESEARCH_BACKUP
 
-Final applicability state:
-STAGE8_K2_VINCENT_ANCHORED_APPLICABILITY_CLOSED_NO_ROBUST_REGIME
-
-Default K2:
+DEFAULT_K2:
 TANGENT_PROFILE_SAFE
 
-Vincent-Anchored:
+VINCENT:
+CLOSED_NO_ROBUST_REGIME
 NOT_DEFAULT
 NOT_PRODUCTION
 NO_V2
 
-Further Stage8-K2 algorithm work:
+FURTHER_EXECUTION:
 NOT_AUTHORIZED
-
-Analysis mode:
-ANALYSIS_ONLY
-NO_FITTING_RERUN
-NO_NEW_TRIALS
-NO_NEW_SEEDS
-
-Final evidence:
-innovation-mining/37_stage8_k2_vincent_anchored_applicability_and_route_closure.md
-
-Completed prompt:
-archive/completed/016_stage8_k2_vincent_anchored_applicability_closure_v1.md
-
-Historical evidence:
-31_32_33_34_35_36_UNCHANGED
-STEP12_7_UNCHANGED
