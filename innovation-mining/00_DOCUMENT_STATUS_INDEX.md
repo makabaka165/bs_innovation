@@ -7,7 +7,7 @@ Role:
 `PRIMARY_TANGENT_AND_CLASSICAL_BASELINES`
 
 Status:
-`STAGE8_K2_TANGENT_RETAIN_WITH_CLASSICAL_BASELINES`
+`STAGE8_K2_TANGENT_RETAIN_WITH_CLASSICAL_AND_SUBSPACE_BASELINES`
 
 This is the long-term Stage8 K2 branch for the frozen Tangent method and fair
 classical or external baseline comparisons.
@@ -17,6 +17,7 @@ classical or external baseline comparisons.
 - `innovation-mining/31_*`: `TANGENT DECISIVE EVIDENCE`.
 - `innovation-mining/32_*`: `TANGENT DIAGNOSTIC CORRECTION`.
 - `innovation-mining/33_*` and `innovation-mining/34_*`: `CLASSICAL CML/MUSIC COMPARISON`.
+- `innovation-mining/39_*` and `innovation-mining/40_*`: `STRUCTURED SUBSPACE BASELINE COMPARISON`.
 
 Default K2:
 `TANGENT_PROFILE_SAFE`
@@ -32,6 +33,9 @@ Full4D CML:
 
 MUSIC:
 `STANDARD_UNSMOOTHED_REFERENCE`
+
+Vertical FBSS-MUSIC / Root-MUSIC / ESPRIT:
+`MORE_INFORMATIVE_ELEMENT_DOMAIN_CLASSICAL_REFERENCES`
 
 Vincent-Anchored:
 
@@ -60,7 +64,8 @@ this branch is allowed only by a separately authorized `git merge --ff-only`.
 Tangent algorithm modification:
 `NOT_AUTHORIZED`
 
-No temporary comparison branch is created by the topology protocol.
+The completed `work/stage8-k2-subspace-baselines-v1` branch is retained for
+audit after authorized fast-forward integration.
 
 ## Long-term branch topology
 
