@@ -27,6 +27,13 @@ out = stage8_k2_mc_run( ...
 disp(out.status);
 ```
 
+When the trial pass reports `TRIALS_COMPLETE_READY_TO_FINALIZE`, run the
+same command once more in a fresh MATLAB process. The second invocation
+loads the frozen runtime registry and validated test evidence, verifies all
+1680 checkpoints, and publishes the summaries and five figures. Interrupted
+trial passes use the same resume path and never rebuild the registry.
+The two single-process invocations are serial and never overlap.
+
 The runner requires MATLAB R2022b with `-singleCompThread`, a clean pushed
 Tangent branch, and no parallel pool. It validates and skips immutable
 checkpoints on resume. A stale `.tmp` is ignored and replaced only when its

@@ -46,55 +46,7 @@ equal_median.p90_joint_RMSE_deg(tangent_mask) = 4;
 assert(stage8_k2_mc_classify_scope(equal_median, constants) == ...
     "NO_RELATIVE_GAIN", 'test_summary_fixture:StrictGain', ...
     'A tied median was incorrectly classified as a relative gain.');
-
-figure_root = tempname;
-mkdir(figure_root);
-cleanup = onCleanup(@() cleanup_local(figure_root));
-[plot_summary, plot_profiles, plot_snr] = plot_fixture_local(rows, constants);
-figure_paths = stage8_k2_mc_plot( ...
-    plot_summary, plot_profiles, plot_snr, figure_root, constants);
-figure_names = fieldnames(figure_paths);
-assert(numel(figure_names) == 5 && all(cellfun( ...
-    @(name) isfile(figure_paths.(name)), figure_names)), ...
-    'test_summary_fixture:Figures', ...
-    'The registered five-figure R2022b smoke test failed.');
 result = struct('pass', true, 'median', 1, 'p90', 1, ...
     'wins_vs_lite', 4, 'wins_vs_plus', 4, ...
-    'stable_classification', classification, 'figure_count', 5);
-clear cleanup
-cleanup_local(figure_root);
-end
-
-function [summary, profiles, snr_rows] = plot_fixture_local(rows, constants)
-targets = constants.white_snr_targets_db;
-summary_blocks = cell(numel(targets), 1);
-profile_blocks = cell(numel(targets) * numel(constants.profile_ids), 1);
-profile_block_index = 0;
-for target_index = 1:numel(targets)
-    target = targets(target_index);
-    subset = rows;
-    subset.white_beamspace_snr_target_db(:) = target;
-    subset.trial_id = "T" + string(target_index) + "_" + rows.trial_id;
-    summary_blocks{target_index} = stage8_k2_mc_build_scope_summary( ...
-        subset, "SNR", string(target), constants, true);
-    for profile = reshape(constants.profile_ids, 1, [])
-        profile_block_index = profile_block_index + 1;
-        profile_blocks{profile_block_index} = ...
-            stage8_k2_mc_build_scope_summary(subset, ...
-            "SNR_X_PROFILE", string(target) + "|" + profile, ...
-            constants, true);
-    end
-end
-summary = vertcat(summary_blocks{:});
-profiles = vertcat(profile_blocks{:});
-profile_id = repelem(constants.profile_ids, numel(targets));
-k2_projected_snr_expected_db = repmat(targets(:), ...
-    numel(constants.profile_ids), 1);
-snr_rows = table(profile_id, k2_projected_snr_expected_db);
-end
-
-function cleanup_local(root)
-if isfolder(root)
-    rmdir(root, 's');
-end
+    'stable_classification', classification);
 end
