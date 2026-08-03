@@ -18,6 +18,28 @@ classical or external baseline comparisons.
 - `innovation-mining/32_*`: `TANGENT DIAGNOSTIC CORRECTION`.
 - `innovation-mining/33_*` and `innovation-mining/34_*`: `CLASSICAL CML/MUSIC COMPARISON`.
 - `innovation-mining/39_*` and `innovation-mining/40_*`: `STRUCTURED SUBSPACE BASELINE COMPARISON`.
+- `innovation-mining/41_*`: `ORIGINAL SNR DOMAIN THEORY AND V1 PROTOCOL`.
+- `innovation-mining/41A_*`: `V1 T4 NUMERIC-QUALITY GATE CORRECTION`.
+- `innovation-mining/42_*`: `CORRECTED SNR DOMAIN VALIDATION V2 COMPLETE`.
+
+## SNR domain validation
+
+V1 stopped at its too-strict `1e-10` frozen-whitener numerical-quality gate;
+Phase B was not executed under V1. V2 used the registered `1e-8` numerical
+quality tolerance without changing the whitener or any SNR formula.
+
+V2 completion evidence records:
+
+- original element hashes: `72/72 exact`;
+- white-control registry and SNR rows: `72/72` each;
+- method rows: `216/216`;
+- truth leakage: `0`;
+- Monte Carlo: `NOT_EXECUTED`.
+
+SNR reporting distinguishes element-input, raw sequential-beamspace,
+whitened sequential-beamspace, and the K2 projected truth-only diagnostic.
+The original Tangent retain decision and `TANGENT_PROFILE_SAFE` default remain
+unchanged.
 
 Default K2:
 `TANGENT_PROFILE_SAFE`
