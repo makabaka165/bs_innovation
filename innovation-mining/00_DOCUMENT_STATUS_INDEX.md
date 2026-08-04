@@ -7,7 +7,7 @@ Role:
 `PRIMARY_TANGENT_AND_CLASSICAL_BASELINES`
 
 Status:
-`STAGE8_K2_TANGENT_RETAIN_WITH_CLASSICAL_AND_SUBSPACE_BASELINES`
+`STAGE8_K2_TANGENT_WHITE_SNR_MONTE_CARLO_COMPLETE`
 
 This is the long-term Stage8 K2 branch for the frozen Tangent method and fair
 classical or external baseline comparisons.
@@ -21,6 +21,35 @@ classical or external baseline comparisons.
 - `innovation-mining/41_*`: `ORIGINAL SNR DOMAIN THEORY AND V1 PROTOCOL`.
 - `innovation-mining/41A_*`: `V1 T4 NUMERIC-QUALITY GATE CORRECTION`.
 - `innovation-mining/42_*`: `CORRECTED SNR DOMAIN VALIDATION V2 COMPLETE`.
+- `innovation-mining/43_*`: `WHITE-SNR MONTE CARLO THEORY AND PROTOCOL`.
+- `innovation-mining/44_*`: `WHITE-SNR MONTE CARLO AND K2 ROUTE CLOSURE`.
+
+## White-SNR Monte Carlo route closure
+
+The registered white-SNR Monte Carlo completed with:
+
+- registry, checkpoints, and SNR rows: `1680/1680` each;
+- method rows: `5040/5040`;
+- unique trial hashes: `1680/1680`;
+- base realizations: `240`, with ten replicates per exact factor cell;
+- truth leakage: `0`;
+- maximum white-SNR target error: `2.1765e-12 dB`;
+- independent read-only reconstruction and artifact hash audit: `PASS`.
+
+Final working-region state:
+`IDENTIFIED`
+
+The first overall `STABLE_RELATIVE_GAIN` point is `+10 dB` white SNR and
+the overall classification remains stable through `+22 dB`. Profile-level
+first stable points are `P1: +14 dB`, `P2: +22 dB`, `P3: +10 dB`, and
+`P4: +14 dB`; P1 is explicitly `NON_MONOTONIC_EMPIRICAL_REGION` after its
+first stable point. These are descriptive experimental regions, not an
+online selector or production threshold.
+
+The MATLAB trial session recorded a post-computation shutdown anomaly only
+after all 1680 checkpoints and the ready-to-finalize state were written.
+Finalization then completed in a fresh single-thread session with exit code
+zero, and the independent read-only audit passed in another fresh session.
 
 ## SNR domain validation
 
@@ -78,16 +107,18 @@ The frozen Step12.7 known-K interface, Tangent implementation, and `31_*` and
 
 ## Future permitted work
 
-Only classical or external algorithm comparison is permitted, and only after
-separate user authorization. Such work must begin on a temporary branch named
-`work/stage8-k2-<baseline-name>` created from this branch. Integration into
-this branch is allowed only by a separately authorized `git merge --ff-only`.
+Stage8-K2 algorithm development is closed. Only thesis or paper work is
+permitted: formula presentation, experimental figures, and writing the
+applicability range and limitations.
 
 Tangent algorithm modification:
 `NOT_AUTHORIZED`
 
-The completed `work/stage8-k2-subspace-baselines-v1` branch is retained for
-audit after authorized fast-forward integration.
+Further Stage8-K2 algorithm work:
+`NOT_AUTHORIZED`
+
+Next:
+`THESIS_DOCUMENTATION_ONLY`
 
 ## Long-term branch topology
 
@@ -103,4 +134,5 @@ the annotated tags and the verified pre-reorganization Git bundle.
 
 All prompts under `innovation-mining/stage8_execution_prompts/archive/` are
 historical records without execution authority. No active Stage8 prompt
-exists.
+exists. Prompt `020` is archived as completed with byte-identical SHA-256
+evidence in the prompt archive manifest.
