@@ -1,13 +1,13 @@
 # Innovation-Mining Document Status Index
 
 Branch:
-`experiment/stage8-k2-tangent`
+`work/stage8-k2-white-snr-classical-baselines-v1`
 
 Role:
-`PRIMARY_TANGENT_AND_CLASSICAL_BASELINES`
+`CLASSICAL_BASELINE_COMPARISON`
 
 Status:
-`STAGE8_K2_TANGENT_WHITE_SNR_MONTE_CARLO_COMPLETE`
+`STAGE8_K2_WHITE_SNR_CLASSICAL_BASELINE_COMPARISON_COMPLETE`
 
 This is the long-term Stage8 K2 branch for the frozen Tangent method and fair
 classical or external baseline comparisons.
@@ -50,6 +50,27 @@ The MATLAB trial session recorded a post-computation shutdown anomaly only
 after all 1680 checkpoints and the ready-to-finalize state were written.
 Finalization then completed in a fresh single-thread session with exit code
 zero, and the independent read-only audit passed in another fresh session.
+
+## White-SNR classical baseline comparison
+
+The registered classical baseline comparison completed on
+`work/stage8-k2-white-snr-classical-baselines-v1` with:
+
+- trial identity reconstruction: `1680/1680`;
+- validated checkpoints: `1680/1680`;
+- baseline rows: `5040/5040`;
+- MUSIC applicable rows: `1120`;
+- Element CML applicable rows: `160`;
+- truth leakage: `0`;
+- independent audit: `PASS`;
+- independent artifact hashes: `15/15`;
+- baseline reruns during independent audit: `0`.
+
+The Tangent and production implementations were not modified. The comparison
+is complete and awaits user review.
+
+Next:
+`USER_REVIEW`
 
 ## SNR domain validation
 
@@ -135,4 +156,5 @@ the annotated tags and the verified pre-reorganization Git bundle.
 All prompts under `innovation-mining/stage8_execution_prompts/archive/` are
 historical records without execution authority. No active Stage8 prompt
 exists. Prompt `020` is archived as completed with byte-identical SHA-256
-evidence in the prompt archive manifest.
+evidence in the prompt archive manifest. Prompt `021` is archived as completed
+with independent-audit PASS and byte-identical SHA-256 evidence.
