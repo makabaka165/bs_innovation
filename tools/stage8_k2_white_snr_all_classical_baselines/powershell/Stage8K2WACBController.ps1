@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [ValidateSet('InstallAndStart', 'Tick', 'Status', 'Uninstall',
-        'RecoverFalseDuplicateHardStop')]
+        'RecoverFalseDuplicateHardStop', 'RecoverFormalIdentityHardStop')]
     [string]$Action = 'Status',
     [string]$RepoDir = 'E:\bs_innovation',
     [string]$RuntimeRoot = 'E:\bs_innovation_runtime\stage8_k2_white_snr_all_classical_baselines_v2',
@@ -16,6 +16,7 @@ $ErrorActionPreference = 'Stop'
 $script:Protocol = 'STAGE8_K2_WHITE_SNR_ALL_CLASSICAL_BASELINE_COMPARISON_V2'
 $script:Branch = 'work/stage8-k2-white-snr-all-classical-baselines-v1'
 $script:FalseDuplicateReason = 'Multiple exact protocol MATLAB processes detected.'
+$script:FormalIdentityFailure = 'stage8_k2_wacb_registry_prepare:Identity'
 $script:Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $script:ControllerDir = Join-Path $RuntimeRoot 'controller'
 $script:StatePath = Join-Path $script:ControllerDir 'controller_state.json'
@@ -734,6 +735,89 @@ function Invoke-RecoverFalseDuplicateHardStop {
     }
 }
 
+function Invoke-RecoverFormalIdentityHardStop {
+    Ensure-ControllerDirectory
+    $preflight = Assert-FormalPreflight
+    $state = Read-JsonFile $script:StatePath
+    $failurePath = Join-Path $RuntimeRoot 'status\hard_stop.json'
+    if (-not (Test-Path -LiteralPath $failurePath -PathType Leaf)) {
+        throw 'The formal identity hard-stop marker is missing.'
+    }
+    $failure = Read-JsonFile $failurePath
+    if ($state.protocol -ne $script:Protocol -or $state.branch -ne $script:Branch -or
+            $state.state -ne 'HARD_STOPPED' -or
+            $failure.protocol -ne $script:Protocol -or
+            $failure.role -ne 'RUNNER' -or
+            $failure.identifier -ne $script:FormalIdentityFailure) {
+        throw 'Controller state is not the recoverable formal identity mismatch.'
+    }
+
+    $snapshot = Get-BoundedSnapshot $state
+    $blocked = @($snapshot.all_processes | Where-Object {
+        $command = [string]$_.CommandLine
+        $_.Name -match '^MATLAB\.exe$|^mwpython.*\.exe$' -or
+            $command -match 'stage8.*coordinator|coordinator.*stage8'
+    })
+    $locks = @(Get-ChildItem -LiteralPath $RuntimeRoot -Filter '*.lock' `
+        -File -Recurse -ErrorAction SilentlyContinue)
+    $complete = Test-Path -LiteralPath (Join-Path $RuntimeRoot `
+        'complete_run.mat') -PathType Leaf
+    if ($snapshot.matching_processes.Count -ne 0 -or $blocked.Count -ne 0 -or
+            [int]$snapshot.completed -ne 1680 -or
+            [int]$snapshot.tmp_count -ne 0 -or $locks.Count -ne 0 -or
+            -not [bool]$snapshot.ready -or $complete) {
+        throw 'Formal identity recovery preconditions failed.'
+    }
+
+    $archivePath = Join-Path $RuntimeRoot `
+        'status\hard_stop.formal_identity_mismatch.json'
+    if (Test-Path -LiteralPath $archivePath) {
+        throw 'The formal identity hard-stop marker was already archived.'
+    }
+    Register-ProtocolTask
+    Move-Item -LiteralPath $failurePath -Destination $archivePath
+    try {
+        Update-StateFromSnapshot $state $snapshot
+        $state.formal_head = [string]$preflight.head
+        $state.code_identity = [string]$preflight.code_identity
+        $state.last_error = ''
+        $state.hard_stop_reason = ''
+        Start-ProtocolMatlab $state 'FINALIZATION'
+        $state.finalization_launch_count = 1 +
+            [int]$state.finalization_launch_count
+        Set-Transition $state 'FINALIZATION_RUNNING' `
+            'WAIT_FOR_FRESH_FINALIZATION'
+        $recovery = [ordered]@{
+            protocol = $script:Protocol
+            recovery = 'EXECUTION_CONTROL_ONLY_IDENTITY_MIGRATION'
+            archived_hard_stop = $archivePath
+            current_head = [string]$preflight.head
+            code_identity = [string]$preflight.code_identity
+            checkpoint_count = [int]$snapshot.completed
+            tmp_count = [int]$snapshot.tmp_count
+            active_matlab_pid = [int]$state.active_matlab_pid
+            recovered_utc = Get-UtcNowText
+        }
+        Write-JsonAtomic (Join-Path $script:ControllerDir `
+            'formal_identity_recovery.json') $recovery
+        Write-TickOutputs $state $snapshot
+    } catch {
+        if (-not (Test-Path -LiteralPath $failurePath) -and
+                (Test-Path -LiteralPath $archivePath)) {
+            Move-Item -LiteralPath $archivePath -Destination $failurePath
+        }
+        Remove-ProtocolTask | Out-Null
+        throw
+    }
+    return [pscustomobject]@{
+        status = 'FORMAL_IDENTITY_HARD_STOP_RECOVERED'
+        state = $state.state
+        completed = $state.completed_checkpoints
+        active_matlab_pid = $state.active_matlab_pid
+        task_name = $TaskName
+    }
+}
+
 function Invoke-InstallAndStart {
     Ensure-ControllerDirectory
     $preflight = Assert-FormalPreflight
@@ -799,6 +883,7 @@ function Invoke-Status {
 switch ($Action) {
     'InstallAndStart' { Invoke-InstallAndStart }
     'RecoverFalseDuplicateHardStop' { Invoke-RecoverFalseDuplicateHardStop }
+    'RecoverFormalIdentityHardStop' { Invoke-RecoverFormalIdentityHardStop }
     'Tick' { Invoke-Tick }
     'Status' { Invoke-Status }
     'Uninstall' {
