@@ -155,6 +155,17 @@ try {
     if ($state.state -ne 'TRIALS_RUNNING' -or [int]$state.trial_launch_count -ne 1) {
         throw 'PREPARED to TRIALS_RUNNING transition failed.'
     }
+    $parentChildSession = @(
+        [pscustomobject]@{ ProcessId = 9100; ParentProcessId = 1; Role = 'RUN' },
+        [pscustomobject]@{ ProcessId = 9101; ParentProcessId = 9100; Role = 'RUN' })
+    Write-Snapshot -Completed 5 -Processes $parentChildSession
+    Invoke-TestTick | Out-Null
+    $state = Read-State
+    if ($state.state -ne 'TRIALS_RUNNING' -or
+            [int]$state.active_matlab_pid -ne 9100 -or
+            [int]$state.resume_launch_count -ne 0) {
+        throw 'MATLAB launcher and child were not collapsed to one logical runner.'
+    }
     Write-Snapshot -Completed 10
     Invoke-TestTick | Out-Null
     $state = Read-State
@@ -212,17 +223,33 @@ try {
     if ($before -ne $after) { throw 'Repeated COMPLETE Tick is not idempotent.' }
 
     $state = Read-State
-    $state.state = 'HARD_STOPPED'
-    $state.next_automatic_action = 'USER_INSPECTION'
+    $state.state = 'TRIALS_RUNNING'
+    $state.last_error = ''
+    $state.hard_stop_reason = ''
+    $state.next_automatic_action = 'OBSERVE_OR_RESUME_TRIALS'
     $launches = [int]$state.trial_launch_count + [int]$state.resume_launch_count +
         [int]$state.finalization_launch_count + [int]$state.audit_launch_count
     Write-Json (Join-Path $controllerDir 'controller_state.json') $state
+    $independentSessions = @(
+        [pscustomobject]@{ ProcessId = 9200; ParentProcessId = 1; Role = 'RUN' },
+        [pscustomobject]@{ ProcessId = 9300; ParentProcessId = 1; Role = 'RUN' })
+    Write-Snapshot -Completed 100 -Processes $independentSessions
     Invoke-TestTick | Out-Null
     $state = Read-State
     $launchesAfter = [int]$state.trial_launch_count + [int]$state.resume_launch_count +
         [int]$state.finalization_launch_count + [int]$state.audit_launch_count
-    if ($launches -ne $launchesAfter -or $state.state -ne 'HARD_STOPPED') {
-        throw 'HARD_STOPPED Tick launched work or changed state.'
+    if ($launches -ne $launchesAfter -or $state.state -ne 'HARD_STOPPED' -or
+            $state.hard_stop_reason -ne
+            'Multiple exact protocol MATLAB processes detected.') {
+        throw 'Independent MATLAB sessions did not trigger the duplicate hard stop.'
+    }
+    Invoke-TestTick | Out-Null
+    $launchesRepeated = [int](Read-State).trial_launch_count +
+        [int](Read-State).resume_launch_count +
+        [int](Read-State).finalization_launch_count +
+        [int](Read-State).audit_launch_count
+    if ($launchesAfter -ne $launchesRepeated) {
+        throw 'HARD_STOPPED Tick launched work.'
     }
 
     $allowed = @(
@@ -246,6 +273,8 @@ try {
         multiple_instances = 'IgnoreNew'
         start_when_available = $true
         mutex_reentry_blocked = $true
+        matlab_parent_child_collapsed = $true
+        independent_runner_duplicate_rejected = $true
         state_machine = 'PASS'
         allowed_path_audit = 'PASS'
         repeated_tick_idempotent = $true

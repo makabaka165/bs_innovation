@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('InstallAndStart', 'Tick', 'Status', 'Uninstall')]
+    [ValidateSet('InstallAndStart', 'Tick', 'Status', 'Uninstall',
+        'RecoverFalseDuplicateHardStop')]
     [string]$Action = 'Status',
     [string]$RepoDir = 'E:\bs_innovation',
     [string]$RuntimeRoot = 'E:\bs_innovation_runtime\stage8_k2_white_snr_all_classical_baselines_v2',
@@ -14,6 +15,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $script:Protocol = 'STAGE8_K2_WHITE_SNR_ALL_CLASSICAL_BASELINE_COMPARISON_V2'
 $script:Branch = 'work/stage8-k2-white-snr-all-classical-baselines-v1'
+$script:FalseDuplicateReason = 'Multiple exact protocol MATLAB processes detected.'
 $script:Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $script:ControllerDir = Join-Path $RuntimeRoot 'controller'
 $script:StatePath = Join-Path $script:ControllerDir 'controller_state.json'
@@ -220,12 +222,32 @@ function Get-TestSnapshot {
     return Read-JsonFile $SnapshotPath
 }
 
+function Select-LogicalProtocolProcesses {
+    param([object[]]$Processes)
+    $candidates = @($Processes)
+    if ($candidates.Count -le 1) { return $candidates }
+
+    $byId = @{}
+    foreach ($candidate in $candidates) {
+        $byId[[int]$candidate.ProcessId] = $candidate
+    }
+    $logical = @($candidates | Where-Object {
+        $parentId = if ($_.PSObject.Properties.Name -contains 'ParentProcessId') {
+            [int]$_.ParentProcessId
+        } else { 0 }
+        -not $byId.ContainsKey($parentId) -or
+            [string]$byId[$parentId].Role -ne [string]$_.Role
+    })
+    return $logical
+}
+
 function Get-BoundedSnapshot {
     param([object]$State)
     if ($TestMode) {
         $test = Get-TestSnapshot
+        $matching = @(Select-LogicalProtocolProcesses @($test.processes))
         return [pscustomobject]@{
-            matching_processes = @($test.processes)
+            matching_processes = $matching
             all_processes = @($test.processes)
             completed = [int]$test.completed_checkpoints
             tmp_count = [int]$test.tmp_count
@@ -239,7 +261,7 @@ function Get-BoundedSnapshot {
     $allProcesses = @(Get-CimInstance Win32_Process)
     $repoNeedle = [System.IO.Path]::GetFullPath($RepoDir)
     $runtimeNeedle = [System.IO.Path]::GetFullPath($RuntimeRoot)
-    $matching = @($allProcesses | Where-Object {
+    $matchingEntries = @($allProcesses | Where-Object {
         $command = [string]$_.CommandLine
         $_.Name -match '^MATLAB\.exe$' -and
         $command.Contains('-singleCompThread') -and
@@ -249,12 +271,14 @@ function Get-BoundedSnapshot {
     } | ForEach-Object {
         [pscustomobject]@{
             ProcessId = [int]$_.ProcessId
+            ParentProcessId = [int]$_.ParentProcessId
             CommandLine = [string]$_.CommandLine
             Role = if ([string]$_.CommandLine -match 'verify_guarded') {
                 'AUDIT'
             } else { 'RUN' }
         }
     })
+    $matching = @(Select-LogicalProtocolProcesses $matchingEntries)
     $checkpointDir = Join-Path $RuntimeRoot 'checkpoints'
     $completed = if (Test-Path -LiteralPath $checkpointDir -PathType Container) {
         @(Get-ChildItem -LiteralPath $checkpointDir -Filter '*.mat' -File).Count
@@ -515,7 +539,7 @@ function Invoke-Tick {
         $snapshot = Get-BoundedSnapshot $state
         Update-StateFromSnapshot $state $snapshot
         if ($snapshot.matching_processes.Count -gt 1) {
-            Set-HardStop $state 'Multiple exact protocol MATLAB processes detected.'
+            Set-HardStop $state $script:FalseDuplicateReason
         } elseif ($snapshot.hard_stop -and $state.state -ne 'HARD_STOPPED') {
             Set-HardStop $state 'MATLAB runner or independent audit wrote hard_stop.json.'
         } else {
@@ -667,6 +691,49 @@ function Register-ProtocolTask {
         -Description 'Stage8 K2 WACB V2 bounded controller tick every 15 minutes.' | Out-Null
 }
 
+function Invoke-RecoverFalseDuplicateHardStop {
+    Ensure-ControllerDirectory
+    $preflight = Assert-FormalPreflight
+    $state = Read-JsonFile $script:StatePath
+    if ($state.protocol -ne $script:Protocol -or $state.branch -ne $script:Branch -or
+            $state.state -ne 'HARD_STOPPED' -or
+            $state.hard_stop_reason -ne $script:FalseDuplicateReason) {
+        throw 'Controller state is not the recoverable MATLAB parent-child false positive.'
+    }
+
+    $snapshot = Get-BoundedSnapshot $state
+    $latest = $snapshot.latest_status
+    $latestError = if ($null -ne $latest -and
+            $latest.PSObject.Properties.Name -contains 'last_error') {
+        [string]$latest.last_error
+    } else { '' }
+    if ($snapshot.matching_processes.Count -ne 1 -or $snapshot.hard_stop -or
+            [int]$snapshot.tmp_count -ne 0 -or [int]$snapshot.completed -ge 1680 -or
+            $null -eq $latest -or [string]$latest.stage -ne 'TRIALS_RUNNING' -or
+            -not [string]::IsNullOrWhiteSpace($latestError)) {
+        throw 'False-duplicate recovery preconditions failed.'
+    }
+
+    Update-StateFromSnapshot $state $snapshot
+    $state.formal_head = [string]$preflight.head
+    $state.code_identity = [string]$preflight.code_identity
+    $state.registry_hash = [string]$preflight.registry_hash
+    $state.evidence44_identity = [string]$preflight.evidence44_identity
+    $state.evidence46_identity = [string]$preflight.evidence46_identity
+    $state.last_error = ''
+    $state.hard_stop_reason = ''
+    Set-Transition $state 'TRIALS_RUNNING' 'WAIT_FOR_CURRENT_TRIAL_SESSION'
+    Register-ProtocolTask
+    Write-TickOutputs $state $snapshot
+    return [pscustomobject]@{
+        status = 'FALSE_DUPLICATE_HARD_STOP_RECOVERED'
+        state = $state.state
+        completed = $state.completed_checkpoints
+        active_matlab_pid = $state.active_matlab_pid
+        task_name = $TaskName
+    }
+}
+
 function Invoke-InstallAndStart {
     Ensure-ControllerDirectory
     $preflight = Assert-FormalPreflight
@@ -731,6 +798,7 @@ function Invoke-Status {
 
 switch ($Action) {
     'InstallAndStart' { Invoke-InstallAndStart }
+    'RecoverFalseDuplicateHardStop' { Invoke-RecoverFalseDuplicateHardStop }
     'Tick' { Invoke-Tick }
     'Status' { Invoke-Status }
     'Uninstall' {
