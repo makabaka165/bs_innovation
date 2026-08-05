@@ -28,6 +28,8 @@ function Test-AllowedPath {
     return $normalized -like 'innovation-mining/48_*' -or
         $normalized -like 'innovation-mining/figures/48_*' -or
         $normalized -eq
+        'tools/stage8_k2_white_snr_all_classical_baselines/powershell/Stage8K2WACBCloseout.ps1' -or
+        $normalized -eq
         'innovation-mining/stage8_execution_prompts/active/022_stage8_k2_white_snr_all_classical_baselines_v2.md' -or
         $normalized -eq
         'innovation-mining/stage8_execution_prompts/archive/completed/022_stage8_k2_white_snr_all_classical_baselines_v2.md' -or
@@ -48,10 +50,20 @@ function Assert-AllowedPaths {
 }
 
 function Get-StatusPaths {
-    $status = Invoke-GitText status --porcelain=v1 --untracked-files=all
-    if ([string]::IsNullOrWhiteSpace($status)) { return @() }
+    # Preserve the two-column porcelain status prefix; trimming it shifts paths
+    # by one character (for example, innovation-mining -> nnovation-mining).
+    $status = @(& git -C $RepoDir status --porcelain=v1 --untracked-files=all 2>&1)
+    if ($LASTEXITCODE -ne 0) {
+        throw "Git status failed during closeout.`n$($status -join [Environment]::NewLine)"
+    }
+    if ($status.Count -eq 0) { return @() }
     $paths = @()
-    foreach ($line in ($status -split "`r?`n")) {
+    foreach ($line in $status) {
+        $line = [string]$line
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line.Length -lt 4) {
+            throw "Malformed porcelain status line during closeout: $line"
+        }
         $path = $line.Substring(3).Trim('"')
         if ($path.Contains(' -> ')) { $path = ($path -split ' -> ')[-1] }
         $paths += $path
@@ -271,6 +283,7 @@ function Invoke-Closeout {
     & git -C $RepoDir add -- `
         ':(glob)innovation-mining/48_*' `
         ':(glob)innovation-mining/figures/48_*' `
+        'tools/stage8_k2_white_snr_all_classical_baselines/powershell/Stage8K2WACBCloseout.ps1' `
         'innovation-mining/stage8_execution_prompts/active/022_stage8_k2_white_snr_all_classical_baselines_v2.md' `
         'innovation-mining/stage8_execution_prompts/archive/completed/022_stage8_k2_white_snr_all_classical_baselines_v2.md' `
         'innovation-mining/stage8_execution_prompts/active/README.md' `

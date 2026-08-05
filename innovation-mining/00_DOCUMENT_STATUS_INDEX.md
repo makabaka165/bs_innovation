@@ -158,3 +158,17 @@ historical records without execution authority. No active Stage8 prompt
 exists. Prompt `020` is archived as completed with byte-identical SHA-256
 evidence in the prompt archive manifest. Prompt `021` is archived as completed
 with independent-audit PASS and byte-identical SHA-256 evidence.
+## Unified white-SNR all-classical comparison
+
+The registered comparison completed on
+`work/stage8-k2-white-snr-all-classical-baselines-v1` with 1680 validated
+checkpoints, 6720 new-method rows, 6720 diagnostics, 16800 unified plot rows,
+56 representative spectra, zero truth leakage, zero existing-method reruns,
+and an independent artifact audit PASS. Execution used the bounded 15-minute
+Windows Scheduled Task controller, which unregistered itself after push.
+
+The comparison tiers remain scientifically distinct; structural N/A rows are
+not failures or Tangent wins. No production selector or threshold was added.
+
+Next:
+`USER_REVIEW`
