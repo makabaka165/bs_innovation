@@ -635,10 +635,11 @@ function Invoke-Tick {
 }
 
 function Get-TaskArguments {
-    return '-NoProfile -ExecutionPolicy Bypass -File "{0}" -Action Tick ' +
+    $format = '-NoProfile -ExecutionPolicy Bypass -File "{0}" -Action Tick ' +
         '-RepoDir "{1}" -RuntimeRoot "{2}" -MatlabExe "{3}" ' +
-        '-TaskName "{4}" -IntervalMinutes {5}' -f $script:ControllerScript,
-        $RepoDir, $RuntimeRoot, $MatlabExe, $TaskName, $IntervalMinutes
+        '-TaskName "{4}" -IntervalMinutes {5}'
+    return $format -f $script:ControllerScript, $RepoDir, $RuntimeRoot,
+        $MatlabExe, $TaskName, $IntervalMinutes
 }
 
 function Register-ProtocolTask {
