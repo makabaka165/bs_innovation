@@ -54,8 +54,9 @@ for el_index = 1:numel(el_grid)
         canonical_matrix = reshape_cyl_vector_to_matrix( ...
             a_legacy(:), model.array_meta);
         a_canonical_order = canonical_matrix(:);
-        G_grid(:, az_index, el_index) = model.Tseq * ...
-            (model.Wseq' * a_canonical_order);
+        pair_G = model.Tseq * (model.Wseq' * ...
+            [a_canonical_order, a_canonical_order]);
+        G_grid(:, az_index, el_index) = pair_G(:, 1);
     end
 end
 build_time = toc(clock);

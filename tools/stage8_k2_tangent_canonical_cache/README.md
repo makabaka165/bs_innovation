@@ -37,7 +37,8 @@ measurement center, grids, numeric class, and tolerance.
 
 The grid is keyed by canonical `delta_az`. During the one-time build, each
 stored column is numerically certified through the frozen actual-frame direct
-element ordering. This preserves exact-hit Tangent decisions at nearly
+element ordering and a fixed two-column GEMM accumulation. Pair fallback uses
+the same accumulation, preserving exact-hit Tangent decisions at nearly
 rank-deficient endpoint pairs while the separate rotation test verifies the
 factor-1 canonical formula.
 
