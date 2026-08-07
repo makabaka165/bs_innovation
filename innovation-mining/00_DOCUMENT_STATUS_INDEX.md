@@ -1,28 +1,33 @@
 # Innovation-Mining Document Status Index
 
 Branch:
-`work/stage8-k2-white-snr-classical-baselines-v1`
+`experiment/stage8-k2-tangent`
 
 Role:
-`CLASSICAL_BASELINE_COMPARISON`
+`TANGENT_WHITE_SNR_ALL_CLASSICAL_CANONICAL`
 
 Status:
-`STAGE8_K2_WHITE_SNR_CLASSICAL_BASELINE_COMPARISON_COMPLETE`
+`STAGE8_K2_WHITE_SNR_ALL_CLASSICAL_CANONICAL`
 
-This is the long-term Stage8 K2 branch for the frozen Tangent method and fair
-classical or external baseline comparisons.
+This is the canonical Stage8 K2 branch for the frozen Tangent method and the
+complete white-SNR classical comparison. Vincent remains on a separate
+read-only research branch.
 
 ## Current authoritative K2 evidence
 
-- `innovation-mining/31_*`: `TANGENT DECISIVE EVIDENCE`.
-- `innovation-mining/32_*`: `TANGENT DIAGNOSTIC CORRECTION`.
-- `innovation-mining/33_*` and `innovation-mining/34_*`: `CLASSICAL CML/MUSIC COMPARISON`.
-- `innovation-mining/39_*` and `innovation-mining/40_*`: `STRUCTURED SUBSPACE BASELINE COMPARISON`.
-- `innovation-mining/41_*`: `ORIGINAL SNR DOMAIN THEORY AND V1 PROTOCOL`.
-- `innovation-mining/41A_*`: `V1 T4 NUMERIC-QUALITY GATE CORRECTION`.
-- `innovation-mining/42_*`: `CORRECTED SNR DOMAIN VALIDATION V2 COMPLETE`.
-- `innovation-mining/43_*`: `WHITE-SNR MONTE CARLO THEORY AND PROTOCOL`.
-- `innovation-mining/44_*`: `WHITE-SNR MONTE CARLO AND K2 ROUTE CLOSURE`.
+- `innovation-mining/31_*` through `40_*`: historical element-input-SNR
+  experiments and baseline evidence, retained for provenance only.
+- `innovation-mining/41_*` and `41A_*`: SNR-domain definitions and the V1
+  numerical-quality correction.
+- `innovation-mining/42_*`: immutable SNR-domain foundation; it contains both
+  the original audit and the paired white-beamspace control.
+- `innovation-mining/43_*` and `44_*`: canonical Tangent white-SNR Monte Carlo
+  theory, results, and route closure.
+- `innovation-mining/45_*` and `46_*`: canonical white-SNR classical baseline
+  comparison.
+- `innovation-mining/47_*` and `48_*`: canonical white-SNR all-classical
+  comparison, including the structured subspace baselines.
+- `innovation-mining/49_*`: branch consolidation record.
 
 ## White-SNR Monte Carlo route closure
 
@@ -53,8 +58,8 @@ zero, and the independent read-only audit passed in another fresh session.
 
 ## White-SNR classical baseline comparison
 
-The registered classical baseline comparison completed on
-`work/stage8-k2-white-snr-classical-baselines-v1` with:
+The registered classical baseline comparison completed as part of the
+canonical branch with:
 
 - trial identity reconstruction: `1680/1680`;
 - validated checkpoints: `1680/1680`;
@@ -88,7 +93,10 @@ V2 completion evidence records:
 
 SNR reporting distinguishes element-input, raw sequential-beamspace,
 whitened sequential-beamspace, and the K2 projected truth-only diagnostic.
-The original Tangent retain decision and `TANGENT_PROFILE_SAFE` default remain
+The active comparison coordinate is expected total-energy SNR after the frozen
+sequential measurement and whitener. The original element-input SNR results
+remain audit/provenance material and are not an active comparison route. The
+original Tangent retain decision and `TANGENT_PROFILE_SAFE` default remain
 unchanged.
 
 Default K2:
@@ -144,24 +152,25 @@ Next:
 ## Long-term branch topology
 
 - `main@247fad2208e77b04f7062e22b0fd3fd8a81bfc1f`: stable and unchanged.
-- `experiment/stage8-k2-tangent`: this primary K2 experiment branch.
+- `experiment/stage8-k2-tangent`: canonical Tangent white-SNR all-classical
+  branch, promoted from `6db6d5a` by the consolidation record.
 - `research/stage8-k2-vincent-anchored`: read-only Vincent research backup.
 
-The three legacy experiment refs were deleted locally and remotely after
-explicit user authorization. Their milestone commits remain recoverable from
-the annotated tags and the verified pre-reorganization Git bundle.
+The temporary subspace and white-SNR work refs were retired locally and
+remotely after explicit user authorization. Their commits remain reachable as
+ancestors of the canonical Tangent branch. Vincent was retained as the only
+independent research ref.
 
 ## Prompt archive
 
 All prompts under `innovation-mining/stage8_execution_prompts/archive/` are
 historical records without execution authority. No active Stage8 prompt
 exists. Prompt `020` is archived as completed with byte-identical SHA-256
-evidence in the prompt archive manifest. Prompt `021` is archived as completed
-with independent-audit PASS and byte-identical SHA-256 evidence.
+evidence in the prompt archive manifest. Prompts `021` and `022` are archived
+as completed with independent-audit PASS and byte-identical SHA-256 evidence.
 ## Unified white-SNR all-classical comparison
 
-The registered comparison completed on
-`work/stage8-k2-white-snr-all-classical-baselines-v1` with 1680 validated
+The registered comparison completed on the canonical Tangent branch with 1680 validated
 checkpoints, 6720 new-method rows, 6720 diagnostics, 16800 unified plot rows,
 56 representative spectra, zero truth leakage, zero existing-method reruns,
 and an independent artifact audit PASS. Execution used the bounded 15-minute
