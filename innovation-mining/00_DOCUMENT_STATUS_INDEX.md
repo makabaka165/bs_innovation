@@ -77,6 +77,21 @@ is complete and awaits user review.
 Next:
 `USER_REVIEW`
 
+## Stage8 K2 Tangent canonical-cache Level-A v1
+
+`innovation-mining/50_stage8_k2_tangent_canonical_cache_fusion_architecture.md`
+is reanchored on
+`experiment/stage8-k2-tangent@3e7153ae11f8a49633a2edd2d2f710673e5d1bad`
+for an authorized result-preserving Level-A backend implementation on
+`experiment/stage8-k2-tangent-canonical-cache-v1`. The scope is limited to
+factor-1 canonical geometry, direct G-only construction, exact cache/direct
+providers, and the T4 pair-manifold integration. Tangent decisions, the
+fixed-grid fallback, completed comparison evidence, and all parent branches
+remain frozen. Level-B interpolation is not authorized.
+
+Canonical-cache Level-A status:
+`IN_PROGRESS`
+
 ## SNR domain validation
 
 V1 stopped at its too-strict `1e-10` frozen-whitener numerical-quality gate;
