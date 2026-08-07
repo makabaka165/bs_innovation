@@ -14,16 +14,16 @@ Architecture source:
 `8a398f4a86345520f29925f1ca7b41b700f22cb9`
 
 Document status:
-`LEVEL_A_IMPLEMENTATION_AUTHORIZED`
+`LEVEL_A_IMPLEMENTATION_COMPLETE`
 
 Execution authority:
 `AUTHORIZED_BY_CURRENT_PROMPT`
 
 Prompt status:
-`LEVEL_A_V1_ACTIVE`
+`LEVEL_A_V1_COMPLETE`
 
 Code status:
-`IN_PROGRESS`
+`COMPLETE`
 
 Level B authority:
 `NOT_AUTHORIZED`
@@ -779,22 +779,36 @@ G. 根据真实 hit rate 决定是否研究 Level B
 
 不得从本架构文档直接推断已经授权实现、实验、提交结果或合并父分支。
 
-## 20. 当前停止点
+## 20. Level-A 实施收口
 
-当前状态：
+Level-A 已在目标分支完成，并通过紧凑等价性与回归验证：
 
 ```text
 BRANCH_CREATED
 ARCHITECTURE_DEFINED
-NO_PROMPT
-NO_CODE
-NO_RUNTIME
-NO_TANGENT_MODIFICATION
+CODE_IMPLEMENTED
+RUNTIME_VALIDATED
+TANGENT_DECISION_PRESERVED
 NO_PARENT_BRANCH_CHANGE
+LEVEL_B_NOT_AUTHORIZED
 ```
 
-下一步必须由用户明确决定：
+验证摘要：
+
+- TCC 新测试：`8/8`；四个固定 trial 的 compact equivalence：`8/8`；
+- 原有 Tangent 回归测试：`5/5`；
+- direct G、cache G、RSS、loglik、rho 和最终角度的最大差异均为 `0`；
+- identity rejection：`10` 项，全部 fail-closed；truth leakage：`0`；
+- cache build：`0.7185583 sec`、`1.1354827880859375 MB`；
+- 真实连续 Tangent profile：exact hit `0`、miss `346`、direct fallback `346`；
+- end-to-end `DIRECT_ONLY` median `4.67653 sec`，hybrid median
+  `5.8454223 sec`，性能分类为
+  `LEVEL_A_CORRECT_EXACT_HIT_RATE_ZERO`。
+
+因此本阶段结论为：
 
 ```text
-REVIEW_ARCHITECTURE
+STAGE8_K2_TANGENT_CANONICAL_CACHE_LEVEL_A_COMPLETE
 ```
+
+Level-B 插值或近似筛选仍需单独授权，不由本收口结论自动展开。

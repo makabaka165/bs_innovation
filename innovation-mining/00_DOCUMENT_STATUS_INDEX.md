@@ -90,7 +90,27 @@ fixed-grid fallback, completed comparison evidence, and all parent branches
 remain frozen. Level-B interpolation is not authorized.
 
 Canonical-cache Level-A status:
-`IN_PROGRESS`
+`COMPLETE`
+
+Level-A completion evidence:
+
+- target branch: `experiment/stage8-k2-tangent-canonical-cache-v1`;
+- TCC tests: `8/8`; compact equivalence cases: `8/8`;
+- existing Tangent regression tests: `5/5`;
+- maximum direct/cache G, RSS, loglik, rho, and angle differences: `0`;
+- identity rejection: `10/10` fail-closed; truth leakage: `0`;
+- cache build: `0.7185583 sec`, `1.1354827880859375 MB`;
+- real continuous Tangent profile: exact hits `0`, misses `346`, direct
+  fallbacks `346` (exact hit rate `0`);
+- end-to-end median runtime: `DIRECT_ONLY 4.67653 sec`, hybrid
+  `5.8454223 sec`;
+- performance classification:
+  `LEVEL_A_CORRECT_EXACT_HIT_RATE_ZERO`.
+
+Conclusion:
+`STAGE8_K2_TANGENT_CANONICAL_CACHE_LEVEL_A_COMPLETE`
+
+Level-B interpolation remains unauthorized and is a separate future study.
 
 ## SNR domain validation
 
