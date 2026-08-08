@@ -16,9 +16,13 @@ start = context_start_local('B1_K1_CONVENTIONAL_SINGLETON_PEAK', ...
     context.initialization.conventional_singleton_peak_deg, ...
     context.initialization.conventional_singleton_status, ...
     context.local_domain, 1);
+continuous_clock = audit_stage_start_local('K1_CONTINUOUS');
 continuous = continuous_k1_candidate_local(context, start);
+audit_stage_stop_local('K1_CONTINUOUS', continuous_clock);
+selection_clock = audit_stage_start_local('K1_SELECTION');
 [selected, selection] = select_stage8_safe_known_k_candidate( ...
     fixed_grid, continuous);
+audit_stage_stop_local('K1_SELECTION', selection_clock);
 outcome = struct('fixed_grid', fixed_grid, 'continuous', continuous, ...
     'selected', selected, 'selected_source', selection.selected_source, ...
     'continuous_upgrade_flag', selection.continuous_upgrade_flag, ...
@@ -27,15 +31,25 @@ end
 
 function candidate = fixed_grid_candidate_local(context, K)
 if K == 1
+    previous_stage = audit_set_query_stage_local('K1_FIXED_REFINEMENT');
+    fit_clock = audit_stage_start_local('K1_FIXED_FIT');
     [fit, ~] = fit_local_model_k(context.full_data, 1, ...
         context.local_domain, context.model, context.initialization, struct());
+    audit_stage_stop_local('K1_FIXED_FIT', fit_clock);
+    audit_restore_query_stage_local(previous_stage);
 else
+    previous_stage = audit_set_query_stage_local('K2_HELPER_K1');
+    helper_clock = audit_stage_start_local('K2_HELPER_K1');
     [helper, ~] = fit_local_model_k(context.full_data, 1, ...
         context.local_domain, context.model, context.initialization, struct());
+    audit_stage_stop_local('K2_HELPER_K1', helper_clock);
+    audit_restore_query_stage_local(previous_stage);
     init2 = context.initialization;
     init2.k1_fit = helper;
+    previous_stage = audit_set_query_stage_local('K2_REGISTERED_REFINEMENT');
     [fit, ~] = fit_local_model_k(context.full_data, 2, ...
         context.local_domain, context.model, init2, struct());
+    audit_restore_query_stage_local(previous_stage);
 end
 [valid, validity] = validate_stage8_fit_for_lrt(fit, K, struct());
 fit.selected_initial_angles_deg = selected_initial_local(fit, K);
@@ -108,6 +122,7 @@ fit.num_svd = result.svd_call_count;
 fit.monotonicity_violation_count = result.monotonicity_violation_count;
 fit.runtime = toc(clock);
 if ~result.valid_for_selection_flag
+    audit_record_continuous_local(fit);
     debug = struct('selected_start_index', 0, 'selected_start_id', '', ...
         'valid_start_count', 0, 'selection_rule', ...
         'MAXIMUM_CONCENTRATED_LOG_LIKELIHOOD_AMONG_VALID_STARTS');
@@ -120,6 +135,7 @@ fit.converged_flag = true;
 fit.initialization_id = result.initialization_id;
 fit.selected_initial_angles_deg = result.initial_angles_deg;
 fit.runtime = toc(clock);
+audit_record_continuous_local(fit);
 debug = struct('selected_start_index', 1, ...
     'selected_start_id', result.initialization_id, ...
     'valid_start_count', 1, 'selection_tolerance', 0, ...
@@ -222,4 +238,44 @@ index = find(ids == string(fit.initialization_id), 1);
 if ~isempty(index)
     initial = fit.all_start_results(index).initial_angles_deg;
 end
+end
+
+function token = audit_stage_start_local(stage_id)
+token = [];
+if exist('stage8_k2_tcc_audit_state', 'file') == 2 && ...
+        stage8_k2_tcc_audit_state('STAGE_ENABLED')
+    token = stage8_k2_tcc_audit_state('STAGE_START', stage_id);
+end
+end
+
+function audit_stage_stop_local(stage_id, token)
+if exist('stage8_k2_tcc_audit_state', 'file') == 2 && ~isempty(token)
+    stage8_k2_tcc_audit_state('STAGE_STOP', stage_id, token);
+end
+end
+
+function previous = audit_set_query_stage_local(stage_id)
+previous = '';
+if exist('stage8_k2_tcc_audit_state', 'file') == 2
+    previous = stage8_k2_tcc_audit_state('SET_QUERY_STAGE', stage_id);
+end
+end
+
+function audit_restore_query_stage_local(previous)
+if exist('stage8_k2_tcc_audit_state', 'file') == 2
+    stage8_k2_tcc_audit_state('SET_QUERY_STAGE', previous);
+end
+end
+
+function audit_record_continuous_local(fit)
+if exist('stage8_k2_tcc_audit_state', 'file') ~= 2 || ...
+        ~stage8_k2_tcc_audit_state('QUERY_ENABLED')
+    return;
+end
+count = double(fit.num_score_eval);
+metrics = struct('manifold_build_count', count, ...
+    'requested_column_count', count, 'dml_score_count', count, ...
+    'single_count', count, 'off_grid_column_count', count, ...
+    'g_only_eligible_build_count', count);
+stage8_k2_tcc_audit_state('RECORD_AGGREGATE', 'K1_CONTINUOUS', metrics);
 end

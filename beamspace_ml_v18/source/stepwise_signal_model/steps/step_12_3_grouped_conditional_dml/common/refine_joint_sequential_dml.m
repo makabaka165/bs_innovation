@@ -23,7 +23,8 @@ if opts.require_upstream_group_gate && ...
 end
 
 [current_score, current_rss, current_rank, counts] = ...
-    score_angles_local(full_data, angles, model, opts);
+    score_angles_local(full_data, angles, model, opts, struct( ...
+    'candidate_group_flag', false, 'candidate_index', 0));
 debug.num_score_eval = counts.score;
 debug.num_svd = counts.svd;
 if ~isfinite(current_score) || current_rank < K
@@ -50,13 +51,18 @@ for iteration = 1:opts.max_iter
             best_angles = angles;
             best_score = current_score;
             best_rss = current_rss;
+            best_candidate_index = 0;
+            audit_begin_group_local(angles, current_score, current_rank, ...
+                numel(axis_values), target_idx, dimension);
             for candidate_idx = 1:numel(axis_values)
                 candidate_angles = angles;
                 candidate_angles(target_idx, dimension) = ...
                     axis_values(candidate_idx);
                 candidate_angles = canonicalize_local(candidate_angles);
                 [candidate_score, candidate_rss, candidate_rank, now] = ...
-                    score_angles_local(full_data, candidate_angles, model, opts);
+                    score_angles_local(full_data, candidate_angles, model, ...
+                    opts, struct('candidate_group_flag', true, ...
+                    'candidate_index', candidate_idx));
                 debug.num_score_eval = debug.num_score_eval + now.score;
                 debug.num_svd = debug.num_svd + now.svd;
                 debug.num_candidate_manifold_build = ...
@@ -65,8 +71,11 @@ for iteration = 1:opts.max_iter
                     best_score = candidate_score;
                     best_rss = candidate_rss;
                     best_angles = candidate_angles;
+                    best_candidate_index = candidate_idx;
                 end
             end
+            audit_end_group_local(best_candidate_index, ...
+                best_candidate_index > 0, best_angles);
             tau_numeric = numeric_tolerance_local(current_score, ...
                 numel(full_data.Zseq_white));
             if best_score < current_score - tau_numeric
@@ -120,7 +129,11 @@ debug.final_fixed_measurement_hash = model.fixed_measurement_hash;
 end
 
 function [score, rss, rank_G, counts] = ...
-    score_angles_local(data, angles, model, opts)
+    score_angles_local(data, angles, model, opts, audit_metadata)
+if nargin < 5 || isempty(audit_metadata)
+    audit_metadata = struct('candidate_group_flag', false, ...
+        'candidate_index', 0);
+end
 [G, ~, info] = build_full_sequential_local_manifold( ...
     angles, model, struct('rank_multiplier', opts.rank_multiplier));
 rank_G = info.rank_Gseq;
@@ -128,6 +141,8 @@ counts = struct('score', 0, 'svd', info.num_svd);
 if rank_G < size(angles, 1)
     score = -Inf;
     rss = Inf;
+    audit_record_query_local(angles, G, rank_G, score, false, opts, ...
+        audit_metadata);
     return;
 end
 [score, rss] = beamspace_dml_score_svd(data.Zseq_white, G, ...
@@ -136,6 +151,8 @@ end
     'compute_projector_checks', false));
 counts.score = 1;
 counts.svd = counts.svd + 1;
+audit_record_query_local(angles, G, rank_G, score, true, opts, ...
+    audit_metadata);
 end
 
 function opts = normalize_options_local(opts)
@@ -245,4 +262,44 @@ debug = struct('num_score_eval', 0, 'num_svd', 0, ...
     'update_order', 'target_then_azimuth_then_elevation', ...
     'numeric_monotonic_tolerance_source', 'machine_epsilon_and_score_scale', ...
     'max_iter', opts.max_iter, 'phase_factor', 1);
+end
+
+function audit_begin_group_local(angles, score, rank_now, count, target, dim)
+if exist('stage8_k2_tcc_audit_state', 'file') ~= 2 || ...
+        ~stage8_k2_tcc_audit_state('QUERY_ENABLED')
+    return;
+end
+stage_id = stage8_k2_tcc_audit_state('GET_QUERY_STAGE');
+info = struct('stage_id', stage_id, 'baseline_angles_deg', angles, ...
+    'baseline_score', score, 'baseline_rank', rank_now, ...
+    'axis_value_count', count, 'target_index', target, ...
+    'dimension_index', dim);
+stage8_k2_tcc_audit_state('BEGIN_CANDIDATE_GROUP', info);
+end
+
+function audit_end_group_local(best_index, accepted, angles_after)
+if exist('stage8_k2_tcc_audit_state', 'file') ~= 2 || ...
+        ~stage8_k2_tcc_audit_state('QUERY_ENABLED')
+    return;
+end
+production = struct('best_candidate_index', best_index, ...
+    'accepted_update', logical(accepted), 'angles_after', angles_after);
+stage8_k2_tcc_audit_state('END_CANDIDATE_GROUP', production);
+end
+
+function audit_record_query_local(angles, G, rank_now, score, scored, ...
+    opts, metadata)
+if exist('stage8_k2_tcc_audit_state', 'file') ~= 2 || ...
+        ~stage8_k2_tcc_audit_state('QUERY_ENABLED')
+    return;
+end
+stage_id = stage8_k2_tcc_audit_state('GET_QUERY_STAGE');
+event = struct('stage_id', stage_id, 'angles_deg', angles, 'G', G, ...
+    'direct_rank', rank_now, 'direct_score', score, ...
+    'score_evaluated', logical(scored), 'derivatives_required', false, ...
+    'query_class', 'G_ONLY_ELIGIBLE', 'expect_registered', true, ...
+    'candidate_group_flag', logical(metadata.candidate_group_flag), ...
+    'candidate_index', double(metadata.candidate_index), ...
+    'rank_multiplier', opts.rank_multiplier);
+stage8_k2_tcc_audit_state('RECORD_QUERY', event);
 end

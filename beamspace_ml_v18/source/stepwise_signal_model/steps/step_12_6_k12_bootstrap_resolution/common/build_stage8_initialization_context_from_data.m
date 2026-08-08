@@ -7,17 +7,39 @@ if nargin < 6 || isempty(opts)
 end
 opts = normalize_options_local(opts);
 validate_inputs_local(full_data, model, local_domain, stage5_locked, noise_model);
+audit_available = exist('stage8_k2_tcc_audit_state', 'file') == 2;
+audit_prefix = audit_public_prefix_local(audit_available);
 start_clock = tic;
+stage_clock = audit_stage_start_local(audit_available, ...
+    [audit_prefix, '_INIT_CONVENTIONAL']);
 [singleton, conventional_debug] = conventional_start_local( ...
     full_data, model, local_domain, opts);
+audit_stage_stop_local(audit_available, ...
+    [audit_prefix, '_INIT_CONVENTIONAL'], stage_clock);
+stage_clock = audit_stage_start_local(audit_available, ...
+    [audit_prefix, '_INIT_GROUP_PREPARE']);
 [stage4_data, group_model, shared] = prepare_group_data_local( ...
     full_data.Y_element, model, stage5_locked, noise_model, opts);
+audit_stage_stop_local(audit_available, ...
+    [audit_prefix, '_INIT_GROUP_PREPARE'], stage_clock);
+stage_clock = audit_stage_start_local(audit_available, ...
+    [audit_prefix, '_INIT_GROUP_Q1']);
 [q1, q1_debug] = run_group_stage_local( ...
     stage4_data, group_model, 1, local_domain, model, stage5_locked, ...
     noise_model, shared, [1, 2], opts);
+audit_stage_stop_local(audit_available, ...
+    [audit_prefix, '_INIT_GROUP_Q1'], stage_clock);
+audit_record_group_incompatible_local(audit_available, ...
+    [audit_prefix, '_INIT_GROUP_Q1_CURRENT_TCC_MODEL_INCOMPATIBLE'], q1);
+stage_clock = audit_stage_start_local(audit_available, ...
+    [audit_prefix, '_INIT_GROUP_Q2']);
 [q2, q2_debug] = run_group_stage_local( ...
     stage4_data, group_model, 2, local_domain, model, stage5_locked, ...
     noise_model, shared, [1, 1], opts);
+audit_stage_stop_local(audit_available, ...
+    [audit_prefix, '_INIT_GROUP_Q2'], stage_clock);
+audit_record_group_incompatible_local(audit_available, ...
+    [audit_prefix, '_INIT_GROUP_Q2_CURRENT_TCC_MODEL_INCOMPATIBLE'], q2);
 
 context = struct();
 context.grouped_q1_kq1_angles_deg = q1.partition_angles{1};
@@ -134,6 +156,8 @@ for candidate_index = 1:size(candidates, 1)
             'rank_multiplier', opts.rank_multiplier, ...
             'compute_projector_checks', false));
     end
+    audit_record_conventional_query_local(candidates(candidate_index, :), ...
+        G_now, info, score(candidate_index), model, opts.rank_multiplier);
 end
 valid = isfinite(score) & rank_now == 1;
 if any(valid)
@@ -310,4 +334,55 @@ if condition
 else
     value = no_value;
 end
+end
+
+function prefix = audit_public_prefix_local(available)
+prefix = 'K1';
+if ~available
+    return;
+end
+stage = upper(char(string(stage8_k2_tcc_audit_state( ...
+    'GET_QUERY_STAGE'))));
+if startsWith(stage, 'K2')
+    prefix = 'K2';
+end
+end
+
+function token = audit_stage_start_local(available, stage_id)
+token = [];
+if available && stage8_k2_tcc_audit_state('STAGE_ENABLED')
+    token = stage8_k2_tcc_audit_state('STAGE_START', stage_id);
+end
+end
+
+function audit_stage_stop_local(available, stage_id, token)
+if available && ~isempty(token)
+    stage8_k2_tcc_audit_state('STAGE_STOP', stage_id, token);
+end
+end
+
+function audit_record_group_incompatible_local(available, stage_id, group)
+if ~(available && stage8_k2_tcc_audit_state('QUERY_ENABLED'))
+    return;
+end
+count = double(group.num_score_eval);
+metrics = struct('manifold_build_count', count, ...
+    'requested_column_count', count, 'dml_score_count', count, ...
+    'off_grid_column_count', count);
+stage8_k2_tcc_audit_state('RECORD_AGGREGATE', stage_id, metrics);
+end
+
+function audit_record_conventional_query_local(angles, G, info, score, ...
+    model, rank_multiplier)
+if exist('stage8_k2_tcc_audit_state', 'file') ~= 2 || ...
+        ~stage8_k2_tcc_audit_state('QUERY_ENABLED')
+    return;
+end
+prefix = audit_public_prefix_local(true);
+event = struct('stage_id', [prefix, '_INIT_CONVENTIONAL'], ...
+    'angles_deg', angles, 'G', G, 'direct_rank', info.rank_Gseq, ...
+    'direct_score', score, 'score_evaluated', isfinite(score), ...
+    'derivatives_required', false, 'query_class', 'G_ONLY_ELIGIBLE', ...
+    'expect_registered', true, 'rank_multiplier', rank_multiplier);
+stage8_k2_tcc_audit_state('RECORD_QUERY', event);
 end

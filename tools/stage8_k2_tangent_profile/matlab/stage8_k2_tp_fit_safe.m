@@ -2,14 +2,25 @@ function [result, diagnostics] = stage8_k2_tp_fit_safe(Y_element, model, context
 %STAGE8_K2_TP_FIT_SAFE Fit one data-only tangent candidate with fallback.
 
 clock = tic;
+audit_available = exist('stage8_k2_tcc_audit_state', 'file') == 2;
+root_audit_clock = audit_stage_start_local(audit_available, ...
+    'ROOT_TANGENT_PROFILE_SAFE');
+if ~isempty(root_audit_clock)
+    root_audit_cleanup = onCleanup(@() stage8_k2_tcc_audit_state( ...
+        'STAGE_STOP', 'ROOT_TANGENT_PROFILE_SAFE', root_audit_clock)); %#ok<NASGU>
+end
 constants = context.constants;
 domain = context.plan.local_domain;
 noise_model = model.noise_factorization;
 base_opts = struct('mode', 'CORE_LITE', 'return_diagnostics', true);
+k1_clock = audit_stage_start_local(audit_available, 'K1_PUBLIC');
 k1 = estimate_stage8_known_k_local_cell(Y_element, model, domain, ...
     context.stage5_locked, noise_model, 1, base_opts);
+audit_stage_stop_local(audit_available, 'K1_PUBLIC', k1_clock);
+k2_clock = audit_stage_start_local(audit_available, 'K2_PUBLIC');
 fixed = estimate_stage8_known_k_local_cell(Y_element, model, domain, ...
     context.stage5_locked, noise_model, 2, base_opts);
+audit_stage_stop_local(audit_available, 'K2_PUBLIC', k2_clock);
 score_calls = double(k1.score_call_count) + double(fixed.score_call_count);
 svd_calls = double(k1.svd_call_count) + double(fixed.svd_call_count);
 diagnostics = diagnostic_template_local(k1, fixed);
@@ -38,16 +49,24 @@ if ~k1.fit_valid || any(~isfinite(k1.angles_hat_deg(:)))
     return;
 end
 
+tail_clock = audit_stage_start_local(audit_available, 'TAIL_FULL_DATA');
 full_data = build_stage8_full_data_from_element(Y_element, model, ...
     struct('data_role', 'SINGLE_CPI_SINGLE_RANGE_DOPPLER_CELL'));
+audit_stage_stop_local(audit_available, 'TAIL_FULL_DATA', tail_clock);
 center = reshape(k1.angles_hat_deg, 1, 2);
+center_clock = audit_stage_start_local(audit_available, ...
+    'CENTER_MANIFOLD_DERIVATIVES');
 [g, derivatives, manifold_info] = build_full_sequential_local_manifold( ...
     center, model, struct('rank_multiplier', constants.rank_multiplier));
+audit_record_center_query_local(audit_available, center, g, ...
+    manifold_info, model, constants.rank_multiplier);
 svd_calls = svd_calls + manifold_info.num_svd;
 g_energy = real(g' * g);
 if ~(isfinite(g_energy) && g_energy > 0)
     diagnostics.fallback_reason = 'K1_CENTER_MANIFOLD_INVALID';
     result.svd_call_count = svd_calls;
+    audit_stage_stop_local(audit_available, ...
+        'CENTER_MANIFOLD_DERIVATIVES', center_clock);
     result.runtime_sec = toc(clock);
     diagnostics.runtime_sec = result.runtime_sec;
     return;
@@ -61,7 +80,13 @@ T = 0.5 * (T + T.');
 S_R = (R * R') / size(R, 2);
 Ct = real(B' * S_R * B);
 Ct = 0.5 * (Ct + Ct.');
+audit_stage_stop_local(audit_available, ...
+    'CENTER_MANIFOLD_DERIVATIVES', center_clock);
+direction_clock = audit_stage_start_local(audit_available, ...
+    'PROJECTED_DIRECTION');
 direction = stage8_k2_tp_projected_direction(T, Ct);
+audit_stage_stop_local(audit_available, 'PROJECTED_DIRECTION', ...
+    direction_clock);
 diagnostics.metric_rank = direction.metric_rank;
 diagnostics.metric_condition = direction.metric_condition;
 diagnostics.metric_eigenvalues = direction.metric_eigenvalues;
@@ -75,6 +100,7 @@ if ~direction.valid
     return;
 end
 diagnostics.direction_hat = direction.direction_hat(:).';
+t4_clock = audit_stage_start_local(audit_available, 'T4_PROFILE');
 if isfield(context, 'manifold_provider') && ...
         ~isempty(context.manifold_provider)
     profile = stage8_k2_tcc_profile_adapter(full_data.Zseq_white, model, ...
@@ -84,6 +110,7 @@ else
     profile = stage8_k2_tp_profile_scale(full_data.Zseq_white, model, ...
         center, direction.direction_hat, domain, constants);
 end
+audit_stage_stop_local(audit_available, 'T4_PROFILE', t4_clock);
 score_calls = score_calls + profile.score_call_count;
 svd_calls = svd_calls + profile.svd_call_count;
 diagnostics.profile_status = profile.status;
@@ -106,6 +133,8 @@ diagnostics.manifold_runtime_sec = profile.manifold_runtime_sec;
 diagnostics.raw_tangent_candidate_valid = profile.valid;
 diagnostics.raw_tangent_loglik = profile.loglik_concentrated;
 diagnostics.raw_tangent_angles_deg = profile.angles_hat_deg;
+selector_clock = audit_stage_start_local(audit_available, ...
+    'FINAL_SAFE_SELECTOR');
 if profile.valid && profile.loglik_concentrated >= ...
         fixed.loglik_concentrated
     result.angles_hat_deg = profile.angles_hat_deg;
@@ -124,6 +153,9 @@ elseif ~profile.valid
 else
     diagnostics.fallback_reason = 'TANGENT_LOGLIK_BELOW_FIXED_GRID';
 end
+audit_stage_stop_local(audit_available, 'FINAL_SAFE_SELECTOR', ...
+    selector_clock);
+audit_record_selector_local(audit_available, fixed, profile, result, model);
 result.score_call_count = score_calls;
 result.svd_call_count = svd_calls;
 result.runtime_sec = toc(clock);
@@ -178,4 +210,40 @@ diagnostics = struct('K1_center_deg', k1.angles_hat_deg, ...
     'direct_fallback_count', 0, 'identity_rejection_count', 0, ...
     'manifold_runtime_sec', 0, ...
     'selection_truth_used_flag', false, 'runtime_sec', 0);
+end
+
+function token = audit_stage_start_local(available, stage_id)
+token = [];
+if available && stage8_k2_tcc_audit_state('STAGE_ENABLED')
+    token = stage8_k2_tcc_audit_state('STAGE_START', stage_id);
+end
+end
+
+function audit_stage_stop_local(available, stage_id, token)
+if available && ~isempty(token)
+    stage8_k2_tcc_audit_state('STAGE_STOP', stage_id, token);
+end
+end
+
+function audit_record_center_query_local(available, angles, G, info, model, ...
+    rank_multiplier)
+if ~(available && stage8_k2_tcc_audit_state('QUERY_ENABLED'))
+    return;
+end
+event = struct('stage_id', 'CENTER_MANIFOLD_DERIVATIVES', ...
+    'angles_deg', angles, 'G', G, 'direct_rank', info.rank_Gseq, ...
+    'direct_score', -Inf, 'score_evaluated', false, ...
+    'derivatives_required', true, 'query_class', ...
+    'DERIVATIVES_REQUIRED', 'expect_registered', false, ...
+    'rank_multiplier', rank_multiplier);
+stage8_k2_tcc_audit_state('RECORD_QUERY', event);
+end
+
+function audit_record_selector_local(available, fixed, profile, result, model)
+if ~(available && stage8_k2_tcc_audit_state('QUERY_ENABLED'))
+    return;
+end
+event = struct('fixed', fixed, 'profile', profile, ...
+    'result', result, 'model', model);
+stage8_k2_tcc_audit_state('RECORD_FINAL_SELECTOR', event);
 end

@@ -15,8 +15,20 @@ addpath(frozen_step);
 frozen_cleanup = stage8_runtime_path_scope(); %#ok<NASGU>
 
 clock = tic;
+audit_available = exist('stage8_k2_tcc_audit_state', 'file') == 2;
+audit_previous_stage = '';
+if audit_available
+    audit_previous_stage = stage8_k2_tcc_audit_state( ...
+        'SET_QUERY_STAGE', sprintf('K%d_PUBLIC', K));
+end
+context_clock = audit_stage_start_local(audit_available, ...
+    sprintf('K%d_CONTEXT', K));
 context = build_stage8_known_k_local_context(Y_element, model, ...
     local_domain, stage5_locked, noise_model, opts);
+audit_stage_stop_local(audit_available, sprintf('K%d_CONTEXT', K), ...
+    context_clock);
+core_clock = audit_stage_start_local(audit_available, ...
+    sprintf('K%d_%s', K, opts.mode));
 switch opts.mode
     case 'CORE_LITE'
         outcome = fit_stage8_core_lite(context, K);
@@ -25,6 +37,11 @@ switch opts.mode
     otherwise
         error('estimate_stage8_known_k_local_cell:Mode', ...
             'The normalized mode is unsupported.');
+end
+audit_stage_stop_local(audit_available, sprintf('K%d_%s', K, opts.mode), ...
+    core_clock);
+if audit_available
+    stage8_k2_tcc_audit_state('SET_QUERY_STAGE', audit_previous_stage);
 end
 
 fit = outcome.selected.fit;
@@ -63,6 +80,19 @@ if opts.return_diagnostics
         'truth_used_in_fit_flag', false, ...
         'tracking_input_used_flag', false, ...
         'cross_cpi_data_used_flag', false);
+end
+end
+
+function token = audit_stage_start_local(available, stage_id)
+token = [];
+if available && stage8_k2_tcc_audit_state('STAGE_ENABLED')
+    token = stage8_k2_tcc_audit_state('STAGE_START', stage_id);
+end
+end
+
+function audit_stage_stop_local(available, stage_id, token)
+if available && ~isempty(token)
+    stage8_k2_tcc_audit_state('STAGE_STOP', stage_id, token);
 end
 end
 
