@@ -75,7 +75,8 @@ switch char(spec.noise_profile_id)
         identity = ...
             "e965700fc8d335f6546924993f4e20988aa34b85d5e11899ed0fb3136c3a5c16";
     otherwise
-        error('stage8_k2_tecs_build_screening_schedule:Identity');
+        error('stage8_k2_tecs_build_screening_schedule:Identity', ...
+            'Unsupported frozen noise profile: %s.', spec.noise_profile_id);
 end
 end
 

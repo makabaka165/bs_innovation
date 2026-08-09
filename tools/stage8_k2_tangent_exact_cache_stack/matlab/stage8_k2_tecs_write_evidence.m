@@ -318,12 +318,19 @@ end
 
 function value=git_output_local(repo_dir,command)
 [status,value]=system(sprintf('git -C "%s" %s',repo_dir,command)); ...
-    if status~=0,error('stage8_k2_tecs_write_evidence:Git');end;value=strtrim(value);
+    if status~=0
+        error('stage8_k2_tecs_write_evidence:Git', ...
+            'Git command failed: %s.', command);
+    end
+    value=strtrim(value);
 end
 
 function atomic_write_text_local(path_now,value)
 temporary=[path_now,'.tmp'];fid=fopen(temporary,'w');
-if fid<0,error('stage8_k2_tecs_write_evidence:TextOpen');end
+if fid<0
+    error('stage8_k2_tecs_write_evidence:TextOpen', ...
+        'Unable to open evidence text output: %s.', path_now);
+end
 cleanup=onCleanup(@()fclose(fid));fwrite(fid,unicode2native(char(value),'UTF-8'),'uint8');
 clear cleanup;movefile(temporary,path_now,'f');
 end

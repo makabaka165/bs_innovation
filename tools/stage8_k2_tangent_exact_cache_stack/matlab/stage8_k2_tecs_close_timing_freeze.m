@@ -251,7 +251,10 @@ end
 
 function value = git_output_local(repo_dir, command)
 [status, value] = system(sprintf('git -C "%s" %s', repo_dir, command));
-if status ~= 0, error('stage8_k2_tecs_close_timing_freeze:Git'); end
+if status ~= 0
+    error('stage8_k2_tecs_close_timing_freeze:Git', ...
+        'Git command failed: %s.', command);
+end
 value = strtrim(value);
 end
 
