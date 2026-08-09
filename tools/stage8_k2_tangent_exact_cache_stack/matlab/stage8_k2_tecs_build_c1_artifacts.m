@@ -15,22 +15,23 @@ for index = 1:numel(fixture.identities)
     path_now = fullfile(artifact_dir, ...
         ['C1_', identity.fixed_measurement_hash, '.mat']);
     if isfile(path_now)
-        error('stage8_k2_tecs_build_c1_artifacts:ImmutableExists', ...
-            'Immutable timing artifact already exists: %s', path_now);
+        checked = stage8_k2_tecs_validate_c1_artifact( ...
+            path_now, identity.fixed_measurement_hash);
+    else
+        [dictionary, ~] = stage8_k2_tcc_build_registered_dictionary( ...
+            identity.model, fixture.context.plan.local_domain, struct());
+        artifact = stage8_k2_tecs_promote_c1_artifact(dictionary); %#ok<NASGU>
+        temporary = [path_now, '.tmp'];
+        save(temporary, 'artifact', '-v7.3');
+        movefile(temporary, path_now, 'f');
+        checked = stage8_k2_tecs_validate_c1_artifact( ...
+            path_now, identity.fixed_measurement_hash);
     end
-    [dictionary, ~] = stage8_k2_tcc_build_registered_dictionary( ...
-        identity.model, fixture.context.plan.local_domain, struct());
-    artifact = stage8_k2_tecs_promote_c1_artifact(dictionary); %#ok<NASGU>
-    if ~isequaln(artifact.G, identity.artifact.G) || ...
-            ~strcmp(artifact.artifact_hash, identity.artifact.artifact_hash)
+    if ~isequaln(checked.G, identity.artifact.G) || ...
+            ~strcmp(checked.artifact_hash, identity.artifact.artifact_hash)
         error('stage8_k2_tecs_build_c1_artifacts:Certification', ...
-            'C1 production build differs from the statically certified artifact.');
+            'C1 timing artifact differs from static certification.');
     end
-    temporary = [path_now, '.tmp'];
-    save(temporary, 'artifact', '-v7.3');
-    movefile(temporary, path_now, 'f');
-    checked = stage8_k2_tecs_validate_c1_artifact( ...
-        path_now, identity.fixed_measurement_hash);
     row = rows(index);
     row.fixed_measurement_hash = string(identity.fixed_measurement_hash);
     row.artifact_path = string(strrep(path_now, '\', '/'));
