@@ -55,14 +55,14 @@ paths = struct('cold_raw',fullfile(pass_dir,'cold_raw_samples.csv'), ...
     'process',fullfile(pass_dir,'formal_process_snapshot.json'));
 names = fieldnames(paths);
 for index = 1:numel(names)
+    if strcmp(names{index},'process'),continue;end
     if isfile(paths.(names{index}))
         error('stage8_k2_tecs_run_lifecycle:ImmutableExists', ...
             'Lifecycle aggregate target exists: %s', paths.(names{index}));
     end
 end
-process = process_snapshot_local('COLD_AND_LIFECYCLE');
-assert(process.active_MATLAB_process_count == 1);
-stage8_k2_tecs_atomic_write_json(paths.process, process);
+process=stage8_k2_tecs_open_process_snapshot( ...
+    paths.process,'COLD_AND_LIFECYCLE'); %#ok<NASGU>
 trials = stage8_k2_tecs_prepare_trial_bank(fixture);
 
 batch_rows = repmat(cold_raw_template_local(), height(batch_schedule), 1);
@@ -615,10 +615,6 @@ identity=struct('baseline_canonical_mode_id',char(row.baseline_canonical_mode_id
     'final_candidate_freeze_hash',final.freeze_payload_hash, ...
     'MATLAB_release',version('-release'),'singleCompThread',true, ...
     'cache_reset_lifecycle_rule','FROZEN_COLD_OR_OPERATION_PRISTINE_STATE');
-end
-
-function process=process_snapshot_local(pass_id)
-process=stage8_k2_tecs_process_snapshot(pass_id);
 end
 
 function row=cold_raw_template_local()

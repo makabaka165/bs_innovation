@@ -46,14 +46,14 @@ paths = struct('raw',fullfile(pass_dir,'final_warm_raw_samples.csv'), ...
     'process',fullfile(pass_dir,'formal_process_snapshot.json'));
 names = fieldnames(paths);
 for index = 1:numel(names)
+    if strcmp(names{index}, 'process'), continue; end
     if isfile(paths.(names{index}))
         error('stage8_k2_tecs_run_final_validation:ImmutableExists', ...
             'Final aggregate target exists: %s', paths.(names{index}));
     end
 end
-process = process_snapshot_local('PASS_F_FINAL_WARM');
-assert(process.active_MATLAB_process_count == 1);
-stage8_k2_tecs_atomic_write_json(paths.process, process);
+process = stage8_k2_tecs_open_process_snapshot( ...
+    paths.process, 'PASS_F_FINAL_WARM'); %#ok<NASGU>
 trials = stage8_k2_tecs_prepare_trial_bank(fixture);
 formal_warmup_local(trials, fixture, warmup, ...
     baseline_layers, candidate_layers);
@@ -359,10 +359,6 @@ identity = struct( ...
     'MATLAB_release',version('-release'),'singleCompThread',true, ...
     'cache_reset_lifecycle_rule', ...
         'PRISTINE_SESSION_BEFORE_EACH_PAIR_EDGE');
-end
-
-function process = process_snapshot_local(pass_id)
-process = stage8_k2_tecs_process_snapshot(pass_id);
 end
 
 function row = raw_template_local()
