@@ -15,6 +15,11 @@ if ~(isstruct(provider) && isscalar(provider) && isfield(provider, 'mode'))
     error('stage8_k2_tcc_get_pair_manifold:Provider', ...
         'provider must be a scalar provider struct.');
 end
+if strcmp(upper(char(string(provider.mode))), 'TECS_EXACT_STACK')
+    [G, manifold_info, provider_info] = ...
+        stage8_k2_tecs_provider_pair(angles_deg, model, provider, options);
+    return;
+end
 clock = tic;
 angles = double(angles_deg);
 mode = upper(char(string(provider.mode)));
