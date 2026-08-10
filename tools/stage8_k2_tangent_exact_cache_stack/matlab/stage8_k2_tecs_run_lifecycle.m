@@ -122,8 +122,8 @@ for setting_index = 1:2
         row.time_on_sec = pair.time_b_sec;
         row.paired_difference_sec = pair.time_a_sec - pair.time_b_sec;
         row.output_match = pair.output_match;
-        row.cache_hit_count = pair.candidate.cache_hit_count;
-        row.cache_miss_count = pair.candidate.cache_miss_count;
+        row.cache_hit_count = pair.candidate.hit_count;
+        row.cache_miss_count = pair.candidate.miss_count;
         row.physical_producer_call_count = ...
             pair.candidate.physical_producer_call_count;
         row.entry_count = pair.candidate.entry_count;
