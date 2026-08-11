@@ -1,0 +1,42 @@
+{
+  "schema_version": "STAGE8_K2_TFBC_MANIFEST_V1",
+  "branch": "experiment/stage8-k2-tangent-fixed-backbone-cache-v1",
+  "baseline_commit": "b4424c6d87511ecf8034a61bc5384ba347cb2467",
+  "baseline_branch": "experiment/stage8-k2-tangent-canonical-cache-v1",
+  "prompt_sha256": "9e5de83517e39d878d01978f2e9f2c48461c6065139e56992574916bf9e8b70e",
+  "registered_domain": {
+    "source": "build_common_registered_local_domain via build_stage8_locked_plan",
+    "az_grid_deg": [7.4, 7.6, 7.8, 8.0, 8.2, 8.4, 8.6],
+    "el_grid_deg": [9.8, 10.0, 10.2],
+    "key_count": 21
+  },
+  "baseline_closure_evidence": {
+    "source": "52_stage8_k2_tangent_pipeline_cache_placement_audit.md",
+    "trial_count": 72,
+    "trajectory_mismatch_count": 0,
+    "registered_fixed_path_fraction": 1.0,
+    "t4_registered_hit_count": 0,
+    "t4_registered_miss_count": 5904
+  },
+  "baseline_source_sha256": {
+    "tools/stage8_k2_tangent_profile/matlab/stage8_k2_tp_fit_safe.m": "320bd10b1e5dfedd3195e13611fad34ae8429503039d62bac46574a4580c8d6e",
+    "tools/stage8_k2_tangent_profile/matlab/stage8_k2_tp_projected_direction.m": "36d6b57c25a3ba77d67d47a5e1caf2b3955eda89e4e8a875ac9b28817f35a028",
+    "tools/stage8_k2_tangent_profile/matlab/stage8_k2_tp_profile_scale.m": "ceafe2bec9a720c8db111a991688c540a14269b6918830f3c8cc05491d3aa719",
+    "tools/stage8_k2_tangent_profile/matlab/stage8_k2_tp_constants.m": "cf73015931c0801d71f9d3e4737e3e440c3d9b404455d25afe8a6a376cff60d2",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_7_known_k_local_cell_refinement/common/estimate_stage8_known_k_local_cell.m": "b35ad113f894e86a88f3e48b83d412b8f6f7734068c9a76fe14389b845d10f98",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_7_known_k_local_cell_refinement/common/validate_stage8_known_k_local_cell_input.m": "96d12bc6da49857e2af80e8f453135fd042abf5c1a47eb17e019a46a212160fa",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_7_known_k_local_cell_refinement/common/build_stage8_known_k_local_context.m": "00737157b6d48ea609e3819ee954c1496aa40bc4a3508638cee13920cb320fa4",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_7_known_k_local_cell_refinement/common/fit_stage8_core_lite.m": "17ff95fab92f41f3aeba8859a79b46e0e60fca821b27473312557ea51b642734",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_6_k12_bootstrap_resolution/common/fit_local_model_k.m": "d42c1ca0ee06191ae4c1f87a1391ed2a2de5010d52acfffc2f16e087d37750bb",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_6_k12_bootstrap_resolution/common/build_k1_initializations.m": "94c48f6cbd97a42de14ca6918e86b9793687f136dbf77a99e3d468cbf68aae7d",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_6_k12_bootstrap_resolution/common/build_k2_initializations.m": "2547b27b5f3ec5ebb736dee00c24c8a3eb084ccb43d2e74b898e433deabbd377",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_6_k12_bootstrap_resolution/common/build_stage8_initialization_context_from_data.m": "2f59091825effe897bf3c4aa25a0a41ca04084c07b1db948e174110c6fb80db9",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_3_grouped_conditional_dml/common/refine_joint_sequential_dml.m": "ff3f0c8eed928c8a4e53aee370bc174c5a1bbe59c2807f1e947e0e6f01dc0596",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_3_grouped_conditional_dml/common/build_full_sequential_local_manifold.m": "eb4e14b073f378d8627a889eed44b9a8057f97989a6203f65acb93a203341f36"
+  },
+  "integration_status": "PENDING_IMPLEMENTATION",
+  "correctness_status": "PENDING",
+  "runtime_status": "PENDING",
+  "retention_status": "PENDING",
+  "production_default": "CACHE_OFF"
+}
