@@ -30,25 +30,28 @@ outcome = struct('fixed_grid', fixed_grid, 'continuous', continuous, ...
 end
 
 function candidate = fixed_grid_candidate_local(context, K)
+fixed_options = fixed_options_local(context);
 if K == 1
     previous_stage = audit_set_query_stage_local('K1_FIXED_REFINEMENT');
     fit_clock = audit_stage_start_local('K1_FIXED_FIT');
     [fit, ~] = fit_local_model_k(context.full_data, 1, ...
-        context.local_domain, context.model, context.initialization, struct());
+        context.local_domain, context.model, context.initialization, ...
+        fixed_options);
     audit_stage_stop_local('K1_FIXED_FIT', fit_clock);
     audit_restore_query_stage_local(previous_stage);
 else
     previous_stage = audit_set_query_stage_local('K2_HELPER_K1');
     helper_clock = audit_stage_start_local('K2_HELPER_K1');
     [helper, ~] = fit_local_model_k(context.full_data, 1, ...
-        context.local_domain, context.model, context.initialization, struct());
+        context.local_domain, context.model, context.initialization, ...
+        fixed_options);
     audit_stage_stop_local('K2_HELPER_K1', helper_clock);
     audit_restore_query_stage_local(previous_stage);
     init2 = context.initialization;
     init2.k1_fit = helper;
     previous_stage = audit_set_query_stage_local('K2_REGISTERED_REFINEMENT');
     [fit, ~] = fit_local_model_k(context.full_data, 2, ...
-        context.local_domain, context.model, init2, struct());
+        context.local_domain, context.model, init2, fixed_options);
     audit_restore_query_stage_local(previous_stage);
 end
 [valid, validity] = validate_stage8_fit_for_lrt(fit, K, struct());
@@ -57,6 +60,14 @@ fit.solver_status = 'REGISTERED_STAGE8_FIXED_GRID_BASELINE';
 fit.monotonicity_violation_count = 0;
 candidate = struct('method_id', 'B0_FIXED_GRID_KNOWN_K', 'fit', fit, ...
     'fit_valid', logical(valid), 'fit_status', char(string(validity.status)));
+end
+
+function options = fixed_options_local(context)
+options = struct('fixed_manifold_mode', context.fixed_manifold_mode);
+if ~isempty(context.fixed_registered_manifold_provider)
+    options.fixed_registered_manifold_provider = ...
+        context.fixed_registered_manifold_provider;
+end
 end
 
 function candidate = continuous_k1_candidate_local(context, start)

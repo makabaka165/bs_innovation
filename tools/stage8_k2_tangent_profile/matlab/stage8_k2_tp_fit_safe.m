@@ -13,6 +13,13 @@ constants = context.constants;
 domain = context.plan.local_domain;
 noise_model = model.noise_factorization;
 base_opts = struct('mode', 'CORE_LITE', 'return_diagnostics', true);
+if isfield(context, 'fixed_registered_manifold_provider')
+    base_opts.fixed_registered_manifold_provider = ...
+        context.fixed_registered_manifold_provider;
+end
+if isfield(context, 'fixed_manifold_mode')
+    base_opts.fixed_manifold_mode = context.fixed_manifold_mode;
+end
 k1_clock = audit_stage_start_local(audit_available, 'K1_PUBLIC');
 k1 = estimate_stage8_known_k_local_cell(Y_element, model, domain, ...
     context.stage5_locked, noise_model, 1, base_opts);
@@ -101,8 +108,14 @@ if ~direction.valid
 end
 diagnostics.direction_hat = direction.direction_hat(:).';
 t4_clock = audit_stage_start_local(audit_available, 'T4_PROFILE');
-if isfield(context, 'manifold_provider') && ...
+if isfield(context, 't4_manifold_provider') && ...
+        ~isempty(context.t4_manifold_provider)
+    profile = stage8_k2_tcc_profile_adapter(full_data.Zseq_white, model, ...
+        center, direction.direction_hat, domain, constants, ...
+        context.t4_manifold_provider);
+elseif isfield(context, 'manifold_provider') && ...
         ~isempty(context.manifold_provider)
+    % LEGACY_COMPATIBILITY_ONLY: new formal runners never use this field.
     profile = stage8_k2_tcc_profile_adapter(full_data.Zseq_white, model, ...
         center, direction.direction_hat, domain, constants, ...
         context.manifold_provider);

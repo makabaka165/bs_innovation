@@ -5,9 +5,11 @@ function [starts, debug] = build_k1_initializations( ...
 if nargin < 3 || isempty(opts)
     opts = struct();
 end
-if ~isempty(fieldnames(opts))
+allowed = {'fixed_registered_manifold_provider','fixed_manifold_mode'};
+unknown = setdiff(fieldnames(opts), allowed);
+if ~isempty(unknown)
     error('build_k1_initializations:UnknownOption', ...
-        'K1 initialization has no configurable options.');
+        'Unknown option: %s.', unknown{1});
 end
 starts = repmat(empty_start_local(), 2, 1);
 starts(1) = context_start_local('K1_GROUPED_Q1_KQ1', ...
@@ -36,6 +38,7 @@ if ~(isnumeric(angles) && isequal(size(angles), [1, 2]) && ...
     return;
 end
 start.angles_deg = angles;
+stage8_k2_tfbc_assert_registered_angles(angles, domain, id);
 start.available_flag = true;
 start.initialization_status = 'INITIALIZATION_READY';
 end

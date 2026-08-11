@@ -96,7 +96,8 @@ if ~(isstruct(opts) && isscalar(opts))
     error('build_stage8_initialization_context_from_data:Options', ...
         'opts must be a scalar struct.');
 end
-allowed = {'rank_multiplier'};
+allowed = {'rank_multiplier','fixed_registered_manifold_provider', ...
+    'fixed_manifold_mode'};
 unknown = setdiff(fieldnames(opts), allowed);
 if ~isempty(unknown)
     error('build_stage8_initialization_context_from_data:UnknownOption', ...
@@ -105,6 +106,13 @@ end
 if ~isfield(opts, 'rank_multiplier')
     opts.rank_multiplier = 1;
 end
+if ~isfield(opts, 'fixed_registered_manifold_provider')
+    opts.fixed_registered_manifold_provider = [];
+end
+if ~isfield(opts, 'fixed_manifold_mode')
+    opts.fixed_manifold_mode = 'LEGACY_FULL';
+end
+opts.fixed_manifold_mode = upper(char(string(opts.fixed_manifold_mode)));
 end
 
 function validate_inputs_local(data, model, domain, locked, noise)
@@ -146,9 +154,8 @@ candidates = sortrows(domain.candidate_points_deg, [1, 2]);
 score = -Inf(size(candidates, 1), 1);
 rank_now = zeros(size(candidates, 1), 1);
 for candidate_index = 1:size(candidates, 1)
-    [G_now, ~, info] = build_full_sequential_local_manifold( ...
-        candidates(candidate_index, :), model, ...
-        struct('rank_multiplier', opts.rank_multiplier));
+    [G_now, ~, info] = fixed_manifold_local( ...
+        candidates(candidate_index, :), model, domain, opts);
     rank_now(candidate_index) = info.rank_Gseq;
     if info.rank_Gseq == 1
         score(candidate_index) = beamspace_dml_score_svd( ...
@@ -175,6 +182,20 @@ debug = struct('status', status, 'best_index', best_index, ...
     'candidate_score', score, 'candidate_rank', rank_now, ...
     'num_score_eval', nnz(valid), ...
     'num_svd', size(candidates, 1) + nnz(valid), 'phase_factor', 1);
+end
+
+function [G, dG, info] = fixed_manifold_local(angles, model, domain, opts)
+if strcmp(opts.fixed_manifold_mode, 'LEGACY_FULL') && ...
+        isempty(opts.fixed_registered_manifold_provider)
+    [G, dG, info] = build_full_sequential_local_manifold( ...
+        angles, model, struct('rank_multiplier', opts.rank_multiplier));
+    return;
+end
+[G, dG, info] = stage8_k2_tfbc_get_manifold( ...
+    angles, model, domain, opts.fixed_registered_manifold_provider, ...
+    struct('mode',opts.fixed_manifold_mode, ...
+    'rank_multiplier',opts.rank_multiplier, ...
+    'derivatives_required',false, 'allow_legacy_fallback',false));
 end
 
 function [data, group_model, shared] = prepare_group_data_local( ...
