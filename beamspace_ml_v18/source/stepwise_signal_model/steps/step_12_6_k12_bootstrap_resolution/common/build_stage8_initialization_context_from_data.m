@@ -97,7 +97,7 @@ if ~(isstruct(opts) && isscalar(opts))
         'opts must be a scalar struct.');
 end
 allowed = {'rank_multiplier','fixed_registered_manifold_provider', ...
-    'fixed_manifold_mode'};
+    'fixed_registered_center_adapter','fixed_manifold_mode'};
 unknown = setdiff(fieldnames(opts), allowed);
 if ~isempty(unknown)
     error('build_stage8_initialization_context_from_data:UnknownOption', ...
@@ -108,6 +108,9 @@ if ~isfield(opts, 'rank_multiplier')
 end
 if ~isfield(opts, 'fixed_registered_manifold_provider')
     opts.fixed_registered_manifold_provider = [];
+end
+if ~isfield(opts, 'fixed_registered_center_adapter')
+    opts.fixed_registered_center_adapter = [];
 end
 if ~isfield(opts, 'fixed_manifold_mode')
     opts.fixed_manifold_mode = 'LEGACY_FULL';
@@ -195,6 +198,7 @@ end
     angles, model, domain, opts.fixed_registered_manifold_provider, ...
     struct('mode',opts.fixed_manifold_mode, ...
     'rank_multiplier',opts.rank_multiplier, ...
+    'center_adapter',opts.fixed_registered_center_adapter, ...
     'derivatives_required',false, 'allow_legacy_fallback',false));
 end
 

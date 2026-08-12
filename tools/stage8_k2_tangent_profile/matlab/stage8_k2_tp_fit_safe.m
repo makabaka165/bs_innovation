@@ -17,6 +17,10 @@ if isfield(context, 'fixed_registered_manifold_provider')
     base_opts.fixed_registered_manifold_provider = ...
         context.fixed_registered_manifold_provider;
 end
+if isfield(context, 'fixed_registered_center_adapter')
+    base_opts.fixed_registered_center_adapter = ...
+        context.fixed_registered_center_adapter;
+end
 if isfield(context, 'fixed_manifold_mode')
     base_opts.fixed_manifold_mode = context.fixed_manifold_mode;
 end

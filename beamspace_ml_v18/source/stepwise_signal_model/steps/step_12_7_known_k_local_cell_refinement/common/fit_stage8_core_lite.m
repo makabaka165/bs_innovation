@@ -68,6 +68,11 @@ if ~isempty(context.fixed_registered_manifold_provider)
     options.fixed_registered_manifold_provider = ...
         context.fixed_registered_manifold_provider;
 end
+if isfield(context, 'fixed_registered_center_adapter') && ...
+        ~isempty(context.fixed_registered_center_adapter)
+    options.fixed_registered_center_adapter = ...
+        context.fixed_registered_center_adapter;
+end
 end
 
 function candidate = continuous_k1_candidate_local(context, start)

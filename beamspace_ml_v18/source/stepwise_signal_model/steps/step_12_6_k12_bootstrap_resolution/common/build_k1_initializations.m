@@ -5,7 +5,8 @@ function [starts, debug] = build_k1_initializations( ...
 if nargin < 3 || isempty(opts)
     opts = struct();
 end
-allowed = {'fixed_registered_manifold_provider','fixed_manifold_mode'};
+allowed = {'fixed_registered_manifold_provider', ...
+    'fixed_registered_center_adapter','fixed_manifold_mode'};
 unknown = setdiff(fieldnames(opts), allowed);
 if ~isempty(unknown)
     error('build_k1_initializations:UnknownOption', ...

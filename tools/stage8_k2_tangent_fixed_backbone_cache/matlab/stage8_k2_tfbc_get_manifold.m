@@ -36,18 +36,9 @@ switch mode
         info.direct_g_only_flag = direct_info.direct_g_only_flag;
     case 'REGISTERED_CACHE'
         try
-            validate_cheap_guard_local(provider, model, local_domain);
-            indices = stage8_k2_tfbc_registered_indices( ...
-                angles_deg, provider);
-            if numel(indices) == 1
-                G = provider.G_single_exact_shape(:, indices);
-            elseif numel(indices) == 2
-                G = [provider.G_pair_first_exact_shape(:, indices(1)), ...
-                    provider.G_pair_second_exact_shape(:, indices(2))];
-            else
-                error('stage8_k2_tfbc_get_manifold:TargetCount', ...
-                    'Only the frozen K1/K2 accumulation shapes are certified.');
-            end
+            [G, indices] = registered_lookup_local( ...
+                angles_deg, model, local_domain, provider, ...
+                options.center_adapter);
         catch exception
             contract_miss_local(provider, size(angles_deg, 1), ...
                 contains(exception.identifier, 'OffGrid'));
@@ -65,10 +56,11 @@ switch mode
         [rank_value, singular_values, threshold] = ...
             stage8_k2_tcc_stable_matrix_rank(G, options.rank_multiplier);
         hit_count = size(angles_deg, 1);
+        artifact_hash = char(string(provider.artifact_hash));
         info = base_info_local(angles_deg, model, G, rank_value, ...
-            singular_values, threshold, mode, provider.artifact_hash);
+            singular_values, threshold, mode, artifact_hash);
         info = extend_info_local(info, mode, hit_count, 0, 0, 1, ...
-            provider.artifact_hash);
+            artifact_hash);
         if provider.timed_diagnostics_enabled
             stage8_k2_tfbc_diagnostics_state( ...
                 'RECORD_HIT', size(angles_deg, 1));
@@ -85,14 +77,15 @@ if ~(isstruct(options) && isscalar(options))
         'options must be a scalar struct.');
 end
 allowed = {'mode','rank_multiplier','derivatives_required', ...
-    'allow_legacy_fallback'};
+    'allow_legacy_fallback','center_adapter'};
 unknown = setdiff(fieldnames(options), allowed);
 if ~isempty(unknown)
     error('stage8_k2_tfbc_get_manifold:UnknownOption', ...
         'Unknown option: %s.', unknown{1});
 end
 defaults = struct('mode','LEGACY_FULL', 'rank_multiplier',1, ...
-    'derivatives_required',false, 'allow_legacy_fallback',false);
+    'derivatives_required',false, 'allow_legacy_fallback',false, ...
+    'center_adapter',[]);
 names = fieldnames(defaults);
 for index = 1:numel(names)
     if ~isfield(options, names{index})
@@ -109,6 +102,45 @@ if ~ismember(options.mode, ...
 end
 options.derivatives_required = logical(options.derivatives_required);
 options.allow_legacy_fallback = logical(options.allow_legacy_fallback);
+end
+
+function [G, indices] = registered_lookup_local( ...
+    angles, model, domain, provider, adapter)
+if ~(isstruct(provider) && isscalar(provider) && ...
+        isfield(provider, 'schema_version'))
+    error('stage8_k2_tfbc_get_manifold:ProviderSchema', ...
+        'The registered provider schema is missing.');
+end
+schema = char(string(provider.schema_version));
+switch schema
+    case 'STAGE8_K2_TFBC_PROVIDER_V1'
+        if ~isempty(adapter)
+            error('stage8_k2_tfbc_get_manifold:UnexpectedAdapter', ...
+                'The legacy fixed provider does not accept a center adapter.');
+        end
+        validate_cheap_guard_local(provider, model, domain);
+        indices = stage8_k2_tfbc_registered_indices(angles, provider);
+        if numel(indices) == 1
+            G = provider.G_single_exact_shape(:, indices);
+        elseif numel(indices) == 2
+            G = [provider.G_pair_first_exact_shape(:, indices(1)), ...
+                provider.G_pair_second_exact_shape(:, indices(2))];
+        else
+            error('stage8_k2_tfbc_get_manifold:TargetCount', ...
+                'Only the frozen K1/K2 accumulation shapes are certified.');
+        end
+    case 'STAGE8_K2_MULTICENTER_SHARED_PROVIDER_V1'
+        if isempty(adapter) || ...
+                exist('stage8_k2_mc_get_manifold', 'file') ~= 2
+            error('stage8_k2_tfbc_get_manifold:CenterAdapter', ...
+                'The multicenter provider requires its certified adapter.');
+        end
+        [G, indices] = stage8_k2_mc_get_manifold( ...
+            angles, model, domain, provider, adapter);
+    otherwise
+        error('stage8_k2_tfbc_get_manifold:ProviderSchema', ...
+            'Unsupported registered provider schema: %s.', schema);
+end
 end
 
 function validate_cheap_guard_local(provider, model, domain)

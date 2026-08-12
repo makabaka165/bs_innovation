@@ -11,6 +11,13 @@ if nargin < 1 || isempty(repo_dir)
 end
 repo_dir = char(java.io.File(char(string(repo_dir))).getCanonicalPath());
 old_path = path;
+tfbc_matlab = fullfile(repo_dir, 'tools', ...
+    'stage8_k2_tangent_fixed_backbone_cache', 'matlab');
+if ~isfolder(tfbc_matlab)
+    error('stage8_k2_mc_add_paths:MissingDependency', ...
+        'The fixed-backbone cache dependency is missing.');
+end
+addpath(tfbc_matlab);
 parent_cleanup = stage8_k2_tfbc_add_paths(repo_dir);
 matlab_dir = fullfile(repo_dir, 'tools', ...
     'stage8_k2_cylindrical_multicenter_cache', 'matlab');
