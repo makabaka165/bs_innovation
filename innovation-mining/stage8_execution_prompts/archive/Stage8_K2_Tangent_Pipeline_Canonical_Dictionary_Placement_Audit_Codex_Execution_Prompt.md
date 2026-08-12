@@ -56,17 +56,31 @@ STAGE8_K2_TANGENT_CANONICAL_CACHE_LEVEL_A_COMPLETE
 Level-A closure commit = cf35e37a74366a8d9829de3a1f8b740a788bade1
 ```
 
-不得继续将：
+不得把 Level-A closure commit 与当前 Audit 起点混为同一语义。
+
+### 0.4 Placement Audit 不可变起点
+
+当前已推送并确认的 Audit start commit：
 
 ```text
-current branch HEAD = cf35e37...
+AUDIT_START_COMMIT
+aff3bb42df2b3d9b435cc57eacd3237826e7d87d
 ```
 
-作为阶段身份陈述。
+它满足：
+
+```text
+parent = cf35e37a74366a8d9829de3a1f8b740a788bade1
+origin/experiment/stage8-k2-tangent-canonical-cache-v1 = aff3bb42df2b3d9b435cc57eacd3237826e7d87d
+```
+
+`cf35e37..aff3bb4` 只新增本执行提示词，不修改算法代码。后续 Audit instrumentation、evidence 与提交差异均以 `aff3bb42df2b3d9b435cc57eacd3237826e7d87d` 为不可变起点。
+
+不得再把 Level-A closure commit 误写为当前 branch HEAD。当前 Audit 的阶段身份是 `AUDIT_START_COMMIT = aff3bb42df2b3d9b435cc57eacd3237826e7d87d`；同时也不得用 Audit start commit 替换 Level-A closure commit 的历史语义。
 
 Git tag 可选，不是硬要求。
 
-### 0.4 当前理论状态
+### 0.5 当前理论状态
 
 冻结：
 
@@ -82,7 +96,7 @@ TANGENT_PIPELINE_RUNTIME_DECOMPOSITION_AND
 CANONICAL_REGISTERED_MANIFOLD_DICTIONARY_PLACEMENT_AUDIT
 ```
 
-### 0.5 创新边界冻结
+### 0.6 创新边界冻结
 
 当前创新叙事必须固定为：
 
@@ -117,7 +131,7 @@ cache only accelerates an unrelated legacy method
 本提示词授权 Codex：
 
 1. 检查 Git / branch / worktree；
-2. 审计当前 `cf35e37` 代码；
+2. 审计当前 `aff3bb42df2b3d9b435cc57eacd3237826e7d87d` tree；
 3. 在**当前 branch** 上增加 diagnostic-only runtime/query instrumentation；
 4. 建立 diagnostic 21-key canonical registered-manifold dictionary；
 5. 运行静态有限集合全认证；
@@ -137,7 +151,7 @@ cache only accelerates an unrelated legacy method
 - 修改 `main`；
 - 修改 `experiment/stage8-k2-tangent`；
 - 修改旧 `experiment/stage8-k2-tangent-canonical-cache`；
-- rewrite / rebase / amend `cf35e37`；
+- rewrite / rebase / amend Level-A closure `cf35e37` 或 Audit start `aff3bb4`；
 - force-push；
 - merge；
 - 创建 PR；
@@ -188,18 +202,20 @@ git rev-parse origin/experiment/stage8-k2-tangent
 git rev-parse origin/experiment/stage8-k2-tangent-canonical-cache
 ```
 
-预期：
+不可变起点与执行时关系：
 
 ```text
 branch:
 experiment/stage8-k2-tangent-canonical-cache-v1
 
-HEAD:
-cf35e37a74366a8d9829de3a1f8b740a788bade1
+AUDIT_START_COMMIT:
+aff3bb42df2b3d9b435cc57eacd3237826e7d87d
 
-origin/experiment/stage8-k2-tangent-canonical-cache-v1:
-cf35e37a74366a8d9829de3a1f8b740a788bade1
+HEAD = origin/experiment/stage8-k2-tangent-canonical-cache-v1
+AUDIT_START_COMMIT is ancestor of HEAD
 ```
+
+若尚无 post-anchor 提交，则 HEAD 与远端都精确等于 `aff3bb42df2b3d9b435cc57eacd3237826e7d87d`；若已有已知 fast-forward 文档或 Audit 提交，则允许为其后继，但必须执行下述差异审查。
 
 若存在非本任务产生的修改：
 
@@ -209,22 +225,24 @@ BLOCKED_DIRTY_WORKTREE
 
 不得 reset、clean、stash 用户文件或覆盖未知内容。
 
-若 HEAD 或远端 branch 已超过 `cf35e37`，检查 `cf35e37..HEAD`。若含不明算法修改：
+若 HEAD 或远端 branch 已超过 `aff3bb42df2b3d9b435cc57eacd3237826e7d87d`，检查 `aff3bb42..HEAD`。若含不明算法修改：
 
 ```text
-BLOCKED_POST_LEVEL_A_UNKNOWN_SOURCE_CHANGES
+BLOCKED_POST_AUDIT_START_UNKNOWN_SOURCE_CHANGES
 ```
 
 必须验证：
 
 ```bash
 git merge-base --is-ancestor cf35e37a74366a8d9829de3a1f8b740a788bade1 HEAD
+git merge-base --is-ancestor aff3bb42df2b3d9b435cc57eacd3237826e7d87d HEAD
 ```
 
-失败：
+任一失败：
 
 ```text
 BLOCKED_LEVEL_A_ANCHOR_NOT_ANCESTOR
+BLOCKED_AUDIT_START_NOT_ANCESTOR
 ```
 
 ---
@@ -613,7 +631,7 @@ WHITE / L=8 / SNR=6 / P1-P4
 
 四个 deterministic trials。
 
-必须与 `cf35e37` 比较：
+必须与 Audit start `aff3bb42df2b3d9b435cc57eacd3237826e7d87d` 比较：
 
 ```text
 element_trial_hash
@@ -1958,6 +1976,8 @@ recommended_next_action
 必须：
 
 ```text
+level_a_closure_commit = cf35e37a74366a8d9829de3a1f8b740a788bade1
+audit_start_commit = aff3bb42df2b3d9b435cc57eacd3237826e7d87d
 classical_baseline_rerun = false
 full_new_monte_carlo = false
 level_b_interpolation = false
@@ -2107,7 +2127,8 @@ RECOMMEND_FIXED_PATH_DICTIONARY_INTEGRATION
 ```text
 BLOCKED_DIRTY_WORKTREE
 BLOCKED_LEVEL_A_ANCHOR_NOT_ANCESTOR
-BLOCKED_POST_LEVEL_A_UNKNOWN_SOURCE_CHANGES
+BLOCKED_AUDIT_START_NOT_ANCESTOR
+BLOCKED_POST_AUDIT_START_UNKNOWN_SOURCE_CHANGES
 BLOCKED_REGISTERED_CLOSURE_CONTRACT_CHANGED
 BLOCKED_MEASUREMENT_IDENTITY_SET_CHANGED
 BLOCKED_PROFILING_CHANGED_ESTIMATOR
@@ -2163,6 +2184,7 @@ timing_mode
 
 ```text
 Level-A closure commit
+Audit start commit
 audit code hash
 registry hash
 measurement identity
@@ -2260,8 +2282,8 @@ perf(stage8-k2): profile tangent pipeline cache placement
 ```bash
 git diff --check
 git status --short
-git diff --stat cf35e37a74366a8d9829de3a1f8b740a788bade1...HEAD
-git diff --name-only cf35e37a74366a8d9829de3a1f8b740a788bade1...HEAD
+git diff --stat aff3bb42df2b3d9b435cc57eacd3237826e7d87d...HEAD
+git diff --name-only aff3bb42df2b3d9b435cc57eacd3237826e7d87d...HEAD
 git fetch origin --prune
 ```
 
