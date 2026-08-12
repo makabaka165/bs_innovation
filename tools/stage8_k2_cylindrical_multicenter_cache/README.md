@@ -21,6 +21,8 @@ static = stage8_k2_mc_run_static(fixture);
 semantic = stage8_k2_mc_run_semantics(fixture);
 lifecycle = stage8_k2_mc_run_lifecycle(fixture);
 runtime = stage8_k2_mc_run_runtime_sentinel(fixture);
+tests = stage8_k2_mc_run_tests(repo_dir, runtime_root);
+manifest = stage8_k2_mc_write_evidence(repo_dir, runtime_root);
 ```
 
 The runners write only aggregate CSV/JSON/Markdown evidence to the
