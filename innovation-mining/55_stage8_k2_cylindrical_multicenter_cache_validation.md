@@ -21,8 +21,8 @@ Runtime root: `E:\bs_innovation_runtime\stage8_k2_cylindrical_multicenter_cache_
 8. Two shared providers serve 16 certified adapters; adapters contain no G tables.
 9. Compact semantics passed 24/24; decision and trajectory mismatches are 0 and 0.
 10. T4 finite-cache query count = 0; truth leakage = 0.
-11. WHITE lifecycle build/load/storage reductions = 0.862028 / 0.151024 / 0.819507.
-11. STAGE5_TOEPLITZ_CORRELATED lifecycle build/load/storage reductions = 0.861223 / 0.223375 / 0.820982.
+11.1. WHITE lifecycle build/load/storage reductions = 0.862028 / 0.151024 / 0.819507.
+11.2. STAGE5_TOEPLITZ_CORRELATED lifecycle build/load/storage reductions = 0.861223 / 0.223375 / 0.820982.
 12. 192-center storage reductions are 0.940316 and 0.941861, marked `ANALYTIC_EXTRAPOLATION_FROM_CERTIFIED_ROTATION_CLASS`.
 13. Runtime sentinel is `ONLINE_SENTINEL_POSITIVE`: point 1.002499700 sec, AB 1.026623700 sec, BA 1.035212900 sec, reduction 1.672545%.
 14. The parent approximately 2.15% online reduction is generic registered precomputation/fixed-backbone work, not the multicenter claim.
