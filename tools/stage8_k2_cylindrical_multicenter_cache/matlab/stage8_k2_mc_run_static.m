@@ -79,6 +79,11 @@ output = struct('schema_version','STAGE8_K2_MC_STATIC_V1', ...
     'negative_controls',negative, 'geometry_pass',all([geometry_rows.pass]), ...
     'production_pass',all(production.pass), 'negative_pass',all(negative.pass), ...
     'status','STAGE8_K2_MULTICENTER_STATIC_ROTATION_PASS');
+if ~isempty(fixture.runtime_root)
+    static_dir = fullfile(fixture.runtime_root, 'static');
+    if ~isfolder(static_dir), mkdir(static_dir); end
+    save(fullfile(static_dir, 'static_output.mat'), 'output', '-v7');
+end
 if ~(output.geometry_pass && output.production_pass && output.negative_pass)
     error('stage8_k2_mc_run_static:Failed', ...
         'Gate A static validation failed.');
@@ -118,10 +123,17 @@ end
 function rows = negative_controls_local(fixture)
 ref=fixture.bundles(1,1); c=fixture.centers(2);
 cases={'UNSHIFTED_BEAM', 'REQUESTED_CENTER_AS_PHYSICAL', 'GEOMETRY_PERTURBATION'};
+expected_error_ids = [ ...
+    "stage8_k2_mc_validate_rotation_class:DeclaredIdentity"; ...
+    "stage8_k2_mc_validate_rotation_class:PhysicalCenter"; ...
+    "stage8_k2_mc_validate_rotation_class:DeclaredIdentity"];
 pass=false(3,1); metric=NaN(3,1); messages=strings(3,1);
+admission_rejected=false(3,1); admission_error_id=strings(3,1);
+admission_error_message=strings(3,1);
 for i=1:3
     switch i
         case 1
+            bad=fixture.bundles(2,1);
             [badpool,badcfg]=stage8_k2_mc_build_rotated_candidate_pool( ...
                 fixture.spec,c);
             [~,bad_U]=form_azimuth_dbf_cube(complex(zeros( ...
@@ -132,26 +144,60 @@ for i=1:3
                 badpool.V,bad_U,badpool.array_meta);
             metric(i)=relative_error_local(bad_W(:,ref.model.channels), ...
                 ref.model.Wseq);
-            pass(i)=metric(i)>1e-6;
+            bad.pool.azimuth_beam_deg = ...
+                fixture.spec.reference_pool.azimuth_beam_deg;
+            bad.pool.Uset = bad_U;
+            bad.pool.W0 = bad_W;
+            bad.pool.W0_hash = stage7_stable_hash(bad_W);
+            bad.model.Wseq = bad_W(:,bad.model.channels);
+            bad.model.W_I = bad.model.Wseq;
             messages(i)="BLOCKED_ROTATED_BEAM_LAYOUT_MISMATCH";
         case 2
+            bad=fixture.bundles(2,1);
             metric(i)=abs(c.requested_center_az_deg - ...
                 c.physical_center_az_deg);
-            pass(i)=metric(i)>1e-9;
+            bad.center.physical_center_az_deg = ...
+                bad.center.requested_center_az_deg;
+            bad.center.physical_center_unwrapped_az_deg = ...
+                bad.center.requested_center_az_deg;
             messages(i)="BLOCKED_PHYSICAL_CENTER_SELECTION_MISMATCH";
         case 3
-            bundle=fixture.bundles(2,1); bad_model=bundle.model;
-            bad_model.array_meta.XAct(1)=bad_model.array_meta.XAct(1)+1e-3;
-            bad_model.array_meta.xActVec=bad_model.array_meta.XAct(:);
-            angle=bundle.local_domain.candidate_points_deg(1,:);
-            good=build_full_sequential_local_manifold(angle,bundle.model,struct());
-            wrong=build_full_sequential_local_manifold(angle,bad_model,struct());
+            bad=fixture.bundles(2,1);
+            bad.model.array_meta.XAct(1)=bad.model.array_meta.XAct(1)+1e-3;
+            bad.model.array_meta.xActVec=bad.model.array_meta.XAct(:);
+            bad.pool.array_meta.XAct(1)=bad.pool.array_meta.XAct(1)+1e-3;
+            bad.pool.array_meta.xActVec=bad.pool.array_meta.XAct(:);
+            angle=bad.local_domain.candidate_points_deg(1,:);
+            good=build_full_sequential_local_manifold( ...
+                angle,fixture.bundles(2,1).model,struct());
+            wrong=build_full_sequential_local_manifold(angle,bad.model,struct());
             metric(i)=relative_error_local(wrong,good);
-            pass(i)=metric(i)>1e-9;
             messages(i)="BLOCKED_LOCAL_ELEMENT_ORDER_MISMATCH";
     end
+    [admission_rejected(i),admission_error_id(i), ...
+        admission_error_message(i)] = admission_rejected_local( ...
+        fixture.spec,bad,ref.identity.rotation_class_hash);
+    pass(i)=admission_rejected(i) && ...
+        admission_error_id(i)==expected_error_ids(i) && metric(i)>1e-9;
 end
-rows=table(string(cases(:)),pass,metric,messages,'VariableNames',{'control_id','pass','metric','message'});
+rows=table(string(cases(:)),admission_rejected,admission_error_id, ...
+    expected_error_ids,metric,messages,admission_error_message,pass, ...
+    'VariableNames',{'control_id','admission_rejected', ...
+    'admission_error_id','expected_admission_error_id','metric', ...
+    'message','admission_error_message','pass'});
+end
+
+function [rejected,error_id,error_message] = admission_rejected_local( ...
+    spec,bundle,expected_rotation_hash)
+rejected=false; error_id=""; error_message="";
+try
+    stage8_k2_mc_validate_rotation_class( ...
+        spec,bundle,expected_rotation_hash);
+catch cause
+    rejected=true;
+    error_id=string(cause.identifier);
+    error_message=string(cause.message);
+end
 end
 
 function value=canonical_coordinates_local(meta,delta)
