@@ -1,0 +1,145 @@
+{
+  "status": "STAGE8_K2_TANGENT_WHITE_SNR_MONTE_CARLO_COMPLETE",
+  "terminal_status": "STAGE8_K2_TANGENT_WHITE_SNR_WORKING_REGION_IDENTIFIED",
+  "final_working_region_state": "IDENTIFIED",
+  "protocol": "STAGE8_K2_TANGENT_WHITE_SNR_MONTE_CARLO_AND_CLOSURE_V1",
+  "authorization": "AUTHORIZE_STAGE8_K2_TANGENT_WHITE_SNR_MONTE_CARLO_AND_CLOSURE_V1",
+  "branch": "experiment/stage8-k2-tangent",
+  "starting_head": "5753cd706d139dcc4904ff20b3cef205f5954e7d",
+  "prompt_commit": "feb57b8a9430c6e10aded6de75dd28da7a71b065",
+  "tool_commit": "184af9cd326b00eafa3dd5495a52b1018f4cfee4",
+  "formal_run_head": "72ca788d5c1af3125313bcab92bcf9a6b6910efc",
+  "matlab_release": "2022b",
+  "max_computational_threads": 1,
+  "runtime_root": "E:\\bs_innovation_runtime\\stage8_k2_white_snr_monte_carlo_v1",
+  "test_count": 10,
+  "registry_count": 1680,
+  "snr_row_count": 1680,
+  "method_row_count": 5040,
+  "checkpoint_count": 1680,
+  "unique_trial_hash_count": 1680,
+  "base_realization_count": 240,
+  "unique_source_seed_count": 240,
+  "unique_noise_seed_count": 240,
+  "white_snr_targets_db": [
+    -6,
+    0,
+    6,
+    10,
+    14,
+    18,
+    22
+  ],
+  "replicates_per_exact_cell": 10,
+  "truth_leakage_count": 0,
+  "max_white_target_error_db": 2.1764870920113143E-12,
+  "max_raw_covariance_residual": 1.4520805454453762E-16,
+  "max_whitening_residual": 5.7966605659302925E-9,
+  "registry_hash": "471ca7f4d8b97ea7e25983117411ac6221737c1956c3dc0042fbf39e51691c88",
+  "code_identity": "f28fb75c391d23664c2a679b800c6be86ff3b167316a07f94b696224fd3ec892",
+  "evidence42_identity": "3bd3bfb8dee10337aa179e68049eecf0f830fd0ed2229607302d6a595db65c38",
+  "launch_count": 3,
+  "resume_count": 2,
+  "total_active_runtime_sec": 20439.655024099993,
+  "median_trial_runtime_sec": 11.9531008,
+  "shutdown_anomaly": true,
+  "consistency42_row_count": 216,
+  "tangent_algorithm_modified": false,
+  "production_interface_modified": false,
+  "online_snr_threshold_created": false,
+  "automatic_selector_created": false,
+  "further_stage8_k2_algorithm_work_authorized": false,
+  "next": "THESIS_DOCUMENTATION_ONLY",
+  "artifacts": [
+    {
+      "artifact_id": "registry",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_registry.csv",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_registry.csv",
+      "sha256": "5b6f9658145e86d4a69c925bf976579cff3fac82008a1d4346d144d016afc9c7"
+    },
+    {
+      "artifact_id": "snr_trials",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_snr_trials.csv",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_snr_trials.csv",
+      "sha256": "46fb68e06728367c718cd15cda848532b2af7c8ee18f30a7983d6aa5fbefa4ed"
+    },
+    {
+      "artifact_id": "method_results",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_method_results.csv",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_method_results.csv",
+      "sha256": "96e6a9fb54db3aefbd8e05043070607398b2b70ed0e9aa1cfdc0b36fec5189f2"
+    },
+    {
+      "artifact_id": "summary",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_summary.csv",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_summary.csv",
+      "sha256": "ce6246678bddd7d65728768a92a198e5c8ed6d016f1f9a1e43624d7705409458"
+    },
+    {
+      "artifact_id": "profile_summary",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_profile_summary.csv",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_profile_summary.csv",
+      "sha256": "7a33af21ff2614a5f4dd036bb06eba98707f37472ec3ca329146456a25ea87b0"
+    },
+    {
+      "artifact_id": "exact_cell_summary",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_exact_cell_summary.csv",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_exact_cell_summary.csv",
+      "sha256": "173c6951d7349bf130d81c6c20266c97e3c10cd5404c75fea917f526bc840f81"
+    },
+    {
+      "artifact_id": "transition_summary",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_transition_summary.csv",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_transition_summary.csv",
+      "sha256": "24ecea09e697d2ce6a020e995edbc166a5e72859c4adc650d5ba737e83c0138c"
+    },
+    {
+      "artifact_id": "projected_snr_analysis",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_projected_snr_analysis.csv",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_projected_snr_analysis.csv",
+      "sha256": "732bc977623f697ca44194bda4fc502cbfb7181f801cdc0bc27c90f187e1f909"
+    },
+    {
+      "artifact_id": "consistency42",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_42_consistency.csv",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_42_consistency.csv",
+      "sha256": "f97790cf591e35767f2eaf5d95ce3ec7e3cf11e783e063ee0d0aaee069c1507e"
+    },
+    {
+      "artifact_id": "report",
+      "path": "innovation-mining/44_stage8_k2_white_snr_monte_carlo_and_route_closure.md",
+      "runtime_relative_path": "evidence/innovation-mining/44_stage8_k2_white_snr_monte_carlo_and_route_closure.md",
+      "sha256": "ec42a48156b83d815b0475c930df65c2627a854e5abb2d14869dd561bb289a9a"
+    },
+    {
+      "artifact_id": "figure_rmse",
+      "path": "innovation-mining/figures/44_white_snr_rmse_curve.png",
+      "runtime_relative_path": "evidence/innovation-mining/figures/44_white_snr_rmse_curve.png",
+      "sha256": "06d5ed6777291978cef3fb9075988e3cf81fd379676fc6337c30be9915d201ac"
+    },
+    {
+      "artifact_id": "figure_fallback",
+      "path": "innovation-mining/figures/44_white_snr_fallback_curve.png",
+      "runtime_relative_path": "evidence/innovation-mining/figures/44_white_snr_fallback_curve.png",
+      "sha256": "1a0441d1464f8d821f51f6b2008bdb3bac670d966190d01e967c141e93d95fbf"
+    },
+    {
+      "artifact_id": "figure_pairwise",
+      "path": "innovation-mining/figures/44_white_snr_pairwise_curve.png",
+      "runtime_relative_path": "evidence/innovation-mining/figures/44_white_snr_pairwise_curve.png",
+      "sha256": "0a0df5e17b088ecd093c874c1f5093b8a92ce5a64db6497115ff60e8fc74e868"
+    },
+    {
+      "artifact_id": "figure_profile",
+      "path": "innovation-mining/figures/44_white_snr_profile_curve.png",
+      "runtime_relative_path": "evidence/innovation-mining/figures/44_white_snr_profile_curve.png",
+      "sha256": "50075cab3731fd09ead54c48f8d48a95e76d828adebf8d5e0c1e475bd9fd13e3"
+    },
+    {
+      "artifact_id": "figure_projected",
+      "path": "innovation-mining/figures/44_projected_snr_profile_distribution.png",
+      "runtime_relative_path": "evidence/innovation-mining/figures/44_projected_snr_profile_distribution.png",
+      "sha256": "b875c6704d2694fe2ac1e13799e69976957135df78f601ef36c7eaec603af8cc"
+    }
+  ]
+}

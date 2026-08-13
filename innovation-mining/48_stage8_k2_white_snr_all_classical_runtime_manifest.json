@@ -1,0 +1,239 @@
+{
+  "status": "STAGE8_K2_WHITE_SNR_ALL_CLASSICAL_BASELINE_COMPARISON_COMPLETE",
+  "terminal_status": "STAGE8_K2_WHITE_SNR_ALL_CLASSICAL_BASELINE_COMPARISON_COMPLETE",
+  "protocol": "STAGE8_K2_WHITE_SNR_ALL_CLASSICAL_BASELINE_COMPARISON_V2",
+  "authorization": "AUTHORIZE_STAGE8_K2_WHITE_SNR_ALL_CLASSICAL_BASELINE_WORK_BRANCH_V2",
+  "branch": "work/stage8-k2-white-snr-all-classical-baselines-v1",
+  "source_white_classic_head": "224eedb8282b64fec210e77081bc4fc7748c1fc1",
+  "prompt_commit": "a87a71c78f264f01d69c469fcfa7a9a9667d07e0",
+  "formal_run_head": "bb76974f24e75e953f8591eb6bfff39db709a163",
+  "matlab_release": "2022b",
+  "max_computational_threads": 1,
+  "runtime_root": "E:\\bs_innovation_runtime\\stage8_k2_white_snr_all_classical_baselines_v2",
+  "test_count": 13,
+  "registry_count": 1680,
+  "checkpoint_count": 1680,
+  "new_method_row_count": 6720,
+  "diagnostic_row_count": 6720,
+  "all_method_row_count": 16800,
+  "element_music_applicable_count": 1120,
+  "gfbss_applicable_count": 1260,
+  "root_music_applicable_count": 630,
+  "ls_esprit_applicable_count": 630,
+  "representative_spectra_count": 56,
+  "truth_leakage_count": 0,
+  "profile_leakage_count": 0,
+  "tangent_start_count": 0,
+  "core_start_count": 0,
+  "full4d_start_count": 0,
+  "existing_method_rerun_count": 0,
+  "tangent_rerun_count": 0,
+  "core_rerun_count": 0,
+  "full4d_rerun_count": 0,
+  "beamspace_music_rerun_count": 0,
+  "maximum_white_target_error_db": 2.1764870920113143E-12,
+  "registry_hash": "2c2b8001f9f695c43de2751b500eccec6ba4c7e8d7a105df17c142fa490ffdc5",
+  "code_identity": "015898793eb0d12fc3d0fcffc35b5e89e5206ca653f0907d121166b387fea47e",
+  "evidence44_identity": "c2f8e6b68cca11c894dda5bf7329ebf5f88ef26004257c95e08fae312d471adb",
+  "evidence46_identity": "7cc5b6bfc76cfb95c5c19324a7405bb4dfac38849b0258c4ec2fe30d5a42692b",
+  "evidence44_manifest_sha256": "b97589aa81c70be8d3219299709e568546aefb963bad0af887bd98bbcabae6a0",
+  "evidence46_manifest_sha256": "e9c19dbeeb6b44a45e685dfe8294a88d46ad2b4dd9078b8af520be22a27d70e4",
+  "total_active_runtime_sec": 9356.1173766999982,
+  "median_trial_runtime_sec": 6.9675008999999992,
+  "trial_launch_count": 1,
+  "resume_launch_count": 0,
+  "finalization_launch_count": 2,
+  "audit_launch_count": 0,
+  "interpretation": [
+    {
+      "method_id": "ELEMENT_MUSIC_K2",
+      "scientific_state": "APPLICABILITY_LIMITED",
+      "first_valid_rate_ge_050_snr_db": [],
+      "first_robustly_comparable_snr_db": []
+    },
+    {
+      "method_id": "ELEMENT_VERTICAL_GFBSS_MUSIC_AZ_CML",
+      "scientific_state": "APPLICABILITY_LIMITED",
+      "first_valid_rate_ge_050_snr_db": [],
+      "first_robustly_comparable_snr_db": []
+    },
+    {
+      "method_id": "ELEMENT_VERTICAL_FBSS_ROOT_MUSIC_AZ_CML",
+      "scientific_state": "APPLICABILITY_LIMITED",
+      "first_valid_rate_ge_050_snr_db": [],
+      "first_robustly_comparable_snr_db": []
+    },
+    {
+      "method_id": "ELEMENT_VERTICAL_FBSS_LS_ESPRIT_AZ_CML",
+      "scientific_state": "APPLICABILITY_LIMITED",
+      "first_valid_rate_ge_050_snr_db": [],
+      "first_robustly_comparable_snr_db": []
+    }
+  ],
+  "independent_audit_status": "PASS",
+  "independent_artifact_hash_match_count": 30,
+  "tangent_algorithm_modified": false,
+  "production_modified": false,
+  "merge_back": false,
+  "artifacts": [
+    {
+      "artifact_id": "registry_audit",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_classical_registry_audit.csv",
+      "sha256": "3bd869c52d91d4340ee42f5494a9c0c2fb6490d412f7b6606d298fd07c222f37"
+    },
+    {
+      "artifact_id": "new_method_results",
+      "path": "innovation-mining/48_stage8_k2_white_snr_new_classical_method_results.csv",
+      "sha256": "6bb2e54cd5cfa5fd77e825a09e58461a23213ea9d425a092798f6ae78ab0d0fc"
+    },
+    {
+      "artifact_id": "new_method_diagnostics",
+      "path": "innovation-mining/48_stage8_k2_white_snr_new_classical_diagnostics.csv",
+      "sha256": "e2e81b73963d2daafb47c060a88006323423f5050447517cd278e03dfac0713b"
+    },
+    {
+      "artifact_id": "all_method_plot_data",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_plot_data.csv",
+      "sha256": "6ccb53e752061e3a286d2e90817ce2ff301f2853af5ea7114d0becb1fc4f8ecd"
+    },
+    {
+      "artifact_id": "summary",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_summary.csv",
+      "sha256": "882d1557fa922605f62223d727c50b1707ab035a587208ea04dab6792933327d"
+    },
+    {
+      "artifact_id": "profile_summary",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_profile_summary.csv",
+      "sha256": "338c2566886bbe2fb505085a7e778e01fd4b47a40720e73c8190bcce05fc8bb7"
+    },
+    {
+      "artifact_id": "noise_summary",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_noise_summary.csv",
+      "sha256": "c8979915d47df08a47d35330b16a82b349892b1ef2d1db90d607e51dd9a62abf"
+    },
+    {
+      "artifact_id": "snapshot_summary",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_snapshot_summary.csv",
+      "sha256": "5c131c9ba0b1a7927fe60aa45027010ead61dba9c766c131433d07ad69a39f89"
+    },
+    {
+      "artifact_id": "exact_cell_summary",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_exact_cell_summary.csv",
+      "sha256": "e8828d2d3575951c9b0b4e339d16b4bc5c3cae762211fbbad9436af0a93c07db"
+    },
+    {
+      "artifact_id": "applicability_summary",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_applicability_summary.csv",
+      "sha256": "0c3f8643f13dd1c5d4ef3a40e6550f5445ad81c8942e994efaab996fca44e59f"
+    },
+    {
+      "artifact_id": "failure_summary",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_failure_summary.csv",
+      "sha256": "bf697a82418df00342039f27cbdb89b4b546799470ec234c8170ea106bb108b1"
+    },
+    {
+      "artifact_id": "pairwise_vs_tangent",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_pairwise_vs_tangent.csv",
+      "sha256": "6095d66509dcb44a81017c3dad5053af42657eb0a65064140ac1171dbeb8c3f5"
+    },
+    {
+      "artifact_id": "complexity_summary",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_complexity_summary.csv",
+      "sha256": "6a06afb0b225275601a81b220175fbe0d370783f05b076e83ae82ba403ccbcca"
+    },
+    {
+      "artifact_id": "eigenstructure_summary",
+      "path": "innovation-mining/48_stage8_k2_white_snr_subspace_eigenstructure_summary.csv",
+      "sha256": "bd9ccaf9f7ec2470e97f8f25641dcb71757fc1ab7cb666d3b555e9a3358307eb"
+    },
+    {
+      "artifact_id": "representative_spectra",
+      "path": "innovation-mining/48_stage8_k2_white_snr_representative_spectra.mat",
+      "sha256": "109dfbec04c0bd3027df6f1d0db21066422f48d1d512bb71d8c151cc7b431847"
+    },
+    {
+      "artifact_id": "representative_spectra_index",
+      "path": "innovation-mining/48_stage8_k2_white_snr_representative_spectra_index.csv",
+      "sha256": "5f32134ab11af9e777fc4e3baa4a53f7b39b9b492fad2a356ff9f2625b8c5236"
+    },
+    {
+      "artifact_id": "plot_data_manifest",
+      "path": "innovation-mining/48_stage8_k2_white_snr_plot_data_manifest.json",
+      "sha256": "5b285eea1ac2e77df56634a6469b7cd17207ae769359c17f749c0155cf17bbd2"
+    },
+    {
+      "artifact_id": "comparison_report",
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_classical_comparison.md",
+      "sha256": "8513e82a5055709704e0f37ad40840fd001d1cebc3ef1bf8140c5676d25d95bc"
+    },
+    {
+      "artifact_id": "figure_valid_rate",
+      "path": "innovation-mining/figures/48_white_snr_all_method_valid_rate.png",
+      "sha256": "c731266e6602db83061057c1027c446401f77f1ac1126b414a09ab9b218a3a5e"
+    },
+    {
+      "artifact_id": "figure_rmse_median",
+      "path": "innovation-mining/figures/48_white_snr_all_method_joint_rmse_median.png",
+      "sha256": "664d9d44cad959015a92cfbe1beb885f7cfc3a44d0959af921dc3d8e5d643977"
+    },
+    {
+      "artifact_id": "figure_rmse_p90",
+      "path": "innovation-mining/figures/48_white_snr_all_method_joint_rmse_p90.png",
+      "sha256": "80d60ecf9c6bcfd55bbf9b32b0bb5b66dad541022bc8ea95f3cc51f629566cee"
+    },
+    {
+      "artifact_id": "figure_elevation_valid",
+      "path": "innovation-mining/figures/48_white_snr_subspace_elevation_valid_rate.png",
+      "sha256": "469260a462b1750394d902571268ebcf50d7eade5e7c9e447fb8e40ff642148a"
+    },
+    {
+      "artifact_id": "figure_conditional_valid",
+      "path": "innovation-mining/figures/48_white_snr_conditional_az_cml_valid_rate.png",
+      "sha256": "c9bc2c1d12cd0c7321d7d86671a6def474eba7d12ba1f11e898243ccec353502"
+    },
+    {
+      "artifact_id": "figure_failure",
+      "path": "innovation-mining/figures/48_white_snr_failure_reason_stack.png",
+      "sha256": "19cd999a0925e329603e7160a3dfe174e4215d960b98e31923048bd0d28bd3af"
+    },
+    {
+      "artifact_id": "figure_runtime",
+      "path": "innovation-mining/figures/48_white_snr_runtime_complexity.png",
+      "sha256": "c511e914c949a8fb24642dfc11169bfa1603a8e41c12c74b71eb1013fc1ce512"
+    },
+    {
+      "artifact_id": "figure_pairwise",
+      "path": "innovation-mining/figures/48_white_snr_pairwise_vs_tangent.png",
+      "sha256": "bf7ca4d913aa36ce2d77fcc5312f42e6902eb1ab3fae499e64dde2d1300f99bf"
+    },
+    {
+      "artifact_id": "figure_profile",
+      "path": "innovation-mining/figures/48_white_snr_profile_valid_rate.png",
+      "sha256": "ad6c4ef1ea59624c7ff59faaa5726831f74d79d6138eb74988f405632fb54c23"
+    },
+    {
+      "artifact_id": "figure_element_spectra",
+      "path": "innovation-mining/figures/48_white_snr_element_music_representative_spectra.png",
+      "sha256": "59e31b0d1a94cf5e61d396142c929cfb5165b2b07cf39230815d57adfcf14f0b"
+    },
+    {
+      "artifact_id": "figure_gfbss_spectra",
+      "path": "innovation-mining/figures/48_white_snr_gfbss_representative_spectra.png",
+      "sha256": "6cb78b1d0d1268d81267fe19a68d3c5ade6ec17bfb240f1cb81967ef5a12eb2f"
+    },
+    {
+      "artifact_id": "figure_root_esprit",
+      "path": "innovation-mining/figures/48_white_snr_root_esprit_diagnostics.png",
+      "sha256": "6062f3d93af512d01ffb485192e1f0fa5b19ea1155f00be9d3ccaa290cfecf64"
+    }
+  ],
+  "next": "READY_FOR_GIT_CLOSEOUT",
+  "independent_audit_utc": "2026-08-05T08:48:12.112Z",
+  "independent_reconstruction_match_count": 1680,
+  "independent_checkpoint_count": 1680,
+  "independent_new_method_row_count": 6720,
+  "independent_diagnostic_row_count": 6720,
+  "independent_all_method_row_count": 16800,
+  "independent_representative_spectra_match_count": 56,
+  "independent_existing_method_rerun_count": 0
+}

@@ -1,0 +1,68 @@
+{
+  "protocol": "STAGE8_K2_WHITE_SNR_ALL_CLASSICAL_BASELINE_COMPARISON_V2",
+  "method_display_order": [
+    "CORE_LITE",
+    "CORE_PLUS",
+    "TANGENT_PROFILE_SAFE",
+    "FULL4D_BEAMSPACE_CML_MULTISTART",
+    "BEAMSPACE_MUSIC_K2",
+    "FULL4D_ELEMENT_CML_MULTISTART",
+    "ELEMENT_MUSIC_K2",
+    "ELEMENT_VERTICAL_GFBSS_MUSIC_AZ_CML",
+    "ELEMENT_VERTICAL_FBSS_ROOT_MUSIC_AZ_CML",
+    "ELEMENT_VERTICAL_FBSS_LS_ESPRIT_AZ_CML"
+  ],
+  "comparison_tiers": [
+    "TIER_A_WHITE_SEQUENTIAL_BEAMSPACE",
+    "TIER_B_FULL_ELEMENT_2D_MANIFOLD",
+    "TIER_C_VERTICAL_ULA_PLUS_AZ_CML"
+  ],
+  "valid_rate_denominator": "APPLICABLE_ROWS",
+  "rmse_denominator": "APPLICABLE_AND_FIT_VALID_ROWS",
+  "na_handling": "STRUCTURAL_NA_EXCLUDED_FROM_FAILURE_AND_RMSE",
+  "snr_coordinate": "WHITENED_SEQUENTIAL_BEAMSPACE_EXPECTED_TOTAL_SNR",
+  "representative_trial_count": 56,
+  "plot_data_hashes": [
+    {
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_plot_data.csv",
+      "sha256": "6ccb53e752061e3a286d2e90817ce2ff301f2853af5ea7114d0becb1fc4f8ecd"
+    },
+    {
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_summary.csv",
+      "sha256": "882d1557fa922605f62223d727c50b1707ab035a587208ea04dab6792933327d"
+    },
+    {
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_profile_summary.csv",
+      "sha256": "338c2566886bbe2fb505085a7e778e01fd4b47a40720e73c8190bcce05fc8bb7"
+    },
+    {
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_failure_summary.csv",
+      "sha256": "bf697a82418df00342039f27cbdb89b4b546799470ec234c8170ea106bb108b1"
+    },
+    {
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_pairwise_vs_tangent.csv",
+      "sha256": "6095d66509dcb44a81017c3dad5053af42657eb0a65064140ac1171dbeb8c3f5"
+    },
+    {
+      "path": "innovation-mining/48_stage8_k2_white_snr_all_method_complexity_summary.csv",
+      "sha256": "6a06afb0b225275601a81b220175fbe0d370783f05b076e83ae82ba403ccbcca"
+    },
+    {
+      "path": "innovation-mining/48_stage8_k2_white_snr_subspace_eigenstructure_summary.csv",
+      "sha256": "bd9ccaf9f7ec2470e97f8f25641dcb71757fc1ab7cb666d3b555e9a3358307eb"
+    },
+    {
+      "path": "innovation-mining/48_stage8_k2_white_snr_representative_spectra.mat",
+      "sha256": "109dfbec04c0bd3027df6f1d0db21066422f48d1d512bb71d8c151cc7b431847"
+    },
+    {
+      "path": "innovation-mining/48_stage8_k2_white_snr_representative_spectra_index.csv",
+      "sha256": "5f32134ab11af9e777fc4e3baa4a53f7b39b9b492fad2a356ff9f2625b8c5236"
+    }
+  ],
+  "recommended_recipes": [
+    "VALID_RATE_AND_CONDITIONAL_RMSE",
+    "COMPARISON_TIERS_SEPARATE",
+    "COMMON_VALID_PAIRWISE_ONLY"
+  ]
+}

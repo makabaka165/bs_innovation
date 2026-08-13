@@ -1,0 +1,3 @@
+status,mode,completed_result_rows,mean_score_calls,mean_svd_calls,median_runtime_sec,p90_runtime_sec
+NOT_RUN_F1_FAIL_STOPPED,CORE_LITE,0,,,,
+NOT_RUN_F1_FAIL_STOPPED,CORE_PLUS,0,,,,
