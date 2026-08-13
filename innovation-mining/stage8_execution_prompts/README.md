@@ -2,43 +2,61 @@
 
 ## Stable main
 
-Scientific parent:
-64cd2d6eae0813f8fd9266ec9ffe6bab4f616267
+Accepted Stage8 K2 line:
 
-Role:
-STABLE_STAGE8_1_THRESHOLD_EVIDENCE_BASE
+- Tangent scientific and classical-baseline closure:
+  `3e7153ae11f8a49633a2edd2d2f710673e5d1bad`
+- Exact-cache Level-A and continuous-T4 zero-hit result:
+  `b4424c6d87511ecf8034a61bc5384ba347cb2467`
+- Fixed registered-backbone cache robust-positive result:
+  `b6156655b2d51d5333522166f6509b100ead7d08`
+- Cylindrical multicenter cache final closeout:
+  `c88050b286404336ceb2019f099ec6d5cbfabbd2`
 
-The main branch contains no active Stage8 execution prompt.
+Accepted production behavior:
 
-No prompt under archive/ authorizes execution.
+- `TANGENT_PROFILE_SAFE` remains the K2 estimator;
+- Tangent direction, continuous rho profile, DML score and final selector are unchanged;
+- finite registered cache is retained for the fixed registered backbone;
+- finite registered cache is not used by continuous T4;
+- cylindrical multicenter shared-center reuse is certified in the bounded factor-1 scope.
 
-## Current exploration branch
+## Active execution
 
-experiment/stage8-core-v2
+`NONE`
 
-All unverified Stage8 algorithm development must occur there.
-
-The exploration branch must not be merged into main without:
-1. committed scientific results;
-2. formula/code audit;
-3. explicit user authorization;
-4. a separately reviewed integration commit.
+No prompt under `archive/` authorizes execution.
 
 ## Archived prompts
 
-| Prompt | Status | Result |
-|---|---|---|
-| 001_stage8_1b_threshold_freeze_and_k1_validation.md | COMPLETED/PARTIALLY_SUPERSEDED | Phase A threshold freeze completed; Phase B deferred |
-| stage8_1b_resumable_sharded_execution_prompt_v2.md | DEFERRED | Full 6000-trial validation not executed |
-| 003_stage8_compact_k1_k2_diagnostic_4worker_v2.md | COMPLETED | Compact CLEAR_FAILURE |
-| 004_stage8_r1_continuous_refinement_decisive_v1.md | COMPLETED | Continuous model-order not recovered |
-| stage8_core_v2_known_k_pruning_audit_branch_execution_prompt_v1.md | SUPERSEDED | Branch assumptions obsolete |
+Historical prompts are stored under:
+
+- `archive/completed/`
+- `archive/deferred/`
+- `archive/superseded/`
+- `archive/raw_inputs/`
+
+The Stage8 K2 Tangent/cache prompts are stored under:
+
+`archive/completed/stage8_k2_cache/`
+
+Archive identity and status are recorded in:
+
+`archive/PROMPT_ARCHIVE_MANIFEST.csv`
+
+## Retained independent research
+
+`research/stage8-k2-vincent-anchored`
+
+This branch is not part of the Tangent/cache integration and is not modified by this closeout.
 
 ## Execution rule
 
-There is no currently authorized Stage8 prompt on main.
+A future Stage8 experiment requires:
 
-A new Core-V2 prompt must be created and committed only on:
-experiment/stage8-core-v2
+1. a new short-lived branch;
+2. a newly committed execution prompt;
+3. explicit authorization;
+4. separate integration review.
 
-Archive files are read-only historical records.
+Completed experimental branches are preserved by annotated tags rather than long-lived remote branches.

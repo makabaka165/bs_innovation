@@ -8,7 +8,19 @@ end
 if ~isfield(opts, 'rank_multiplier')
     opts.rank_multiplier = 1;
 end
-unknown = setdiff(fieldnames(opts), {'rank_multiplier'});
+if ~isfield(opts, 'fixed_registered_manifold_provider')
+    opts.fixed_registered_manifold_provider = [];
+end
+if ~isfield(opts, 'fixed_registered_center_adapter')
+    opts.fixed_registered_center_adapter = [];
+end
+if ~isfield(opts, 'fixed_manifold_mode')
+    opts.fixed_manifold_mode = 'LEGACY_FULL';
+end
+opts.fixed_manifold_mode = upper(char(string(opts.fixed_manifold_mode)));
+unknown = setdiff(fieldnames(opts), {'rank_multiplier', ...
+    'fixed_registered_manifold_provider', ...
+    'fixed_registered_center_adapter','fixed_manifold_mode'});
 if ~isempty(unknown)
     error('build_k2_initializations:UnknownOption', ...
         'Unknown option: %s.', unknown{1});
@@ -18,8 +30,12 @@ starts(1) = context_start_local('K2_GROUPED_Q1_KQ2', ...
     'grouped_q1_kq2_angles_deg', init_context, local_domain);
 starts(2) = context_start_local('K2_GROUPED_Q2_KQ1_PLUS_KQ1', ...
     'grouped_q2_kq1_plus_kq1_angles_deg', init_context, local_domain);
+previous_stage = audit_set_query_stage_local('K2_NESTED_ANCHOR');
+nested_clock = audit_stage_start_local('K2_NESTED_ANCHOR');
 [starts(3), nested_debug] = nested_start_local( ...
     full_data, local_domain, model, k1_fit, opts);
+audit_stage_stop_local('K2_NESTED_ANCHOR', nested_clock);
+audit_restore_query_stage_local(previous_stage);
 debug = nested_debug;
 debug.registered_start_ids = string({starts.initialization_id}).';
 debug.registered_start_count = 3;
@@ -43,6 +59,7 @@ if ~(isnumeric(angles) && isequal(size(angles), [2, 2]) && ...
     return;
 end
 start.angles_deg = angles;
+stage8_k2_tfbc_assert_registered_angles(angles, domain, id);
 start.available_flag = true;
 start.initialization_status = 'INITIALIZATION_READY';
 end
@@ -67,19 +84,27 @@ if ~strcmp(fit1.fixed_measurement_hash, model.fixed_measurement_hash) || ...
     return;
 end
 k1_angle = fit1.angles_hat_deg(1, :);
-[g_center, derivatives] = build_full_sequential_local_manifold( ...
+stage8_k2_tfbc_assert_registered_angles(k1_angle, domain, ...
+    'K2_NESTED_K1_FIXED_ESTIMATE');
+[g_center, derivatives, center_info] = build_full_sequential_local_manifold( ...
     k1_angle, model, struct('rank_multiplier', opts.rank_multiplier));
+audit_record_query_local(k1_angle, g_center, center_info, -Inf, false, ...
+    true, 'DERIVATIVES_REQUIRED', model, opts.rank_multiplier);
 [metric, ~] = compute_projected_jacobian_metric(g_center, ...
     [derivatives.azimuth, derivatives.elevation], struct( ...
     'rank_multiplier', opts.rank_multiplier));
 candidates = sortrows(domain.candidate_points_deg, [1, 2]);
+stage8_k2_tfbc_assert_registered_angles(candidates, domain, ...
+    'K2_NESTED_REGISTERED_CANDIDATES');
 debug.num_anchor_candidates = size(candidates, 1);
 distance = -Inf(size(candidates, 1), 1);
 manifolds = cell(size(candidates, 1), 1);
 for index = 1:size(candidates, 1)
     angles = [k1_angle;candidates(index, :)];
-    [G_now, ~, info] = build_full_sequential_local_manifold( ...
-        angles, model, struct('rank_multiplier', opts.rank_multiplier));
+    [G_now, ~, info] = fixed_manifold_local( ...
+        angles, model, domain, opts);
+    audit_record_query_local(angles, G_now, info, -Inf, false, false, ...
+        'G_ONLY_ELIGIBLE', model, opts.rank_multiplier);
     debug.num_svd = debug.num_svd + info.num_svd;
     if info.rank_Gseq == 2
         delta = deg2rad(candidates(index, :) - k1_angle).';
@@ -104,6 +129,7 @@ G_nested = manifolds{anchor_index};
     'compute_projector_checks', false));
 debug.num_score_eval = 1;
 debug.num_svd = debug.num_svd + 1;
+audit_record_nested_score_local();
 rss_tolerance = nested_tolerance_local(fit1.rss, initial_rss, ...
     numel(data.Zseq_white));
 column_error = norm(G_nested(:, 1) - fit1.G_hat(:, 1)) / ...
@@ -112,6 +138,8 @@ nested_pass = initial_rss <= fit1.rss + rss_tolerance && ...
     column_error <= 64 * eps(max(size(G_nested))) && ...
     ~score_debug.is_rank_deficient;
 start.angles_deg = [k1_angle;anchor];
+stage8_k2_tfbc_assert_registered_angles(start.angles_deg, domain, ...
+    'K2_NESTED_REGISTERED_START');
 start.available_flag = nested_pass;
 start.initialization_status = ternary_local(nested_pass, ...
     'INITIALIZATION_READY', 'NESTED_INITIALIZATION_CONTRACT_FAILED');
@@ -123,9 +151,28 @@ start.anchor_metric_distance = distance(anchor_index);
 start.anchor_selection_rule = ...
     'MAX_PROJECTED_FISHER_DISTANCE_LEXICOGRAPHIC_FIRST_FULL_RANK';
 debug.anchor_angles_deg = anchor;
+debug.anchor_index = anchor_index;
 debug.anchor_metric_distance = distance(anchor_index);
 debug.nested_column_error = column_error;
 debug.nested_rss_pass = nested_pass;
+audit_record_nested_replay_local(candidates, distance, anchor_index, ...
+    k1_angle, fit1, data, model, initial_rss, nested_pass, ...
+    rss_tolerance, column_error);
+end
+
+function [G, dG, info] = fixed_manifold_local(angles, model, domain, opts)
+if strcmp(opts.fixed_manifold_mode, 'LEGACY_FULL') && ...
+        isempty(opts.fixed_registered_manifold_provider)
+    [G, dG, info] = build_full_sequential_local_manifold( ...
+        angles, model, struct('rank_multiplier', opts.rank_multiplier));
+    return;
+end
+[G, dG, info] = stage8_k2_tfbc_get_manifold( ...
+    angles, model, domain, opts.fixed_registered_manifold_provider, ...
+    struct('mode',opts.fixed_manifold_mode, ...
+    'rank_multiplier',opts.rank_multiplier, ...
+    'center_adapter',opts.fixed_registered_center_adapter, ...
+    'derivatives_required',false, 'allow_legacy_fallback',false));
 end
 
 function value = nested_tolerance_local(rss1, rss2, count)
@@ -154,4 +201,73 @@ start = struct('initialization_id', '', 'source_field', '', ...
     'nested_column_error', NaN, 'initial_rss', NaN, ...
     'nested_rss_tolerance', NaN, 'nested_rss_pass', false, ...
     'anchor_metric_distance', NaN, 'anchor_selection_rule', 'NOT_APPLICABLE');
+end
+
+function token = audit_stage_start_local(stage_id)
+token = [];
+if exist('stage8_k2_tcc_audit_state', 'file') == 2 && ...
+        stage8_k2_tcc_audit_state('STAGE_ENABLED')
+    token = stage8_k2_tcc_audit_state('STAGE_START', stage_id);
+end
+end
+
+function audit_stage_stop_local(stage_id, token)
+if exist('stage8_k2_tcc_audit_state', 'file') == 2 && ~isempty(token)
+    stage8_k2_tcc_audit_state('STAGE_STOP', stage_id, token);
+end
+end
+
+function previous = audit_set_query_stage_local(stage_id)
+previous = '';
+if exist('stage8_k2_tcc_audit_state', 'file') == 2
+    previous = stage8_k2_tcc_audit_state('SET_QUERY_STAGE', stage_id);
+end
+end
+
+function audit_restore_query_stage_local(previous)
+if exist('stage8_k2_tcc_audit_state', 'file') == 2
+    stage8_k2_tcc_audit_state('SET_QUERY_STAGE', previous);
+end
+end
+
+function audit_record_query_local(angles, G, info, score, scored, ...
+    derivatives_required, query_class, model, rank_multiplier)
+if exist('stage8_k2_tcc_audit_state', 'file') ~= 2 || ...
+        ~stage8_k2_tcc_audit_state('QUERY_ENABLED')
+    return;
+end
+event = struct('stage_id', 'K2_NESTED_ANCHOR', ...
+    'angles_deg', angles, 'G', G, 'direct_rank', info.rank_Gseq, ...
+    'direct_score', score, 'score_evaluated', logical(scored), ...
+    'derivatives_required', logical(derivatives_required), ...
+    'query_class', query_class, 'expect_registered', true, ...
+    'rank_multiplier', rank_multiplier);
+stage8_k2_tcc_audit_state('RECORD_QUERY', event);
+end
+
+function audit_record_nested_score_local()
+if exist('stage8_k2_tcc_audit_state', 'file') ~= 2 || ...
+        ~stage8_k2_tcc_audit_state('QUERY_ENABLED')
+    return;
+end
+stage8_k2_tcc_audit_state('RECORD_AGGREGATE', 'K2_NESTED_ANCHOR', ...
+    struct('dml_score_count', 1));
+end
+
+function audit_record_nested_replay_local(candidates, distance, anchor_index, ...
+    k1_angle, fit1, data, model, initial_rss, nested_pass, tolerance, ...
+    column_error)
+if exist('stage8_k2_tcc_audit_state', 'file') ~= 2 || ...
+        ~stage8_k2_tcc_audit_state('QUERY_ENABLED')
+    return;
+end
+event = struct('stage_id', 'K2_NESTED_ANCHOR', ...
+    'candidates', candidates, 'distance', distance, ...
+    'direct_anchor_index', anchor_index, 'k1_angle', k1_angle, ...
+    'fit1', fit1, 'data', data, 'model', model, ...
+    'direct_initial_rss', initial_rss, ...
+    'direct_nested_pass', logical(nested_pass), ...
+    'rss_tolerance', tolerance, ...
+    'direct_first_column_error', column_error);
+stage8_k2_tcc_audit_state('RECORD_NESTED', event);
 end

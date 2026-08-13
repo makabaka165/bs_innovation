@@ -1,0 +1,16 @@
+function result = stage8_r1_run_gates(repo_dir, gate_root, process_audit_path)
+%STAGE8_R1_RUN_GATES Run the MATLAB-owned R0/R1 gate subset.
+
+repo_dir = char(string(repo_dir));
+gate_root = char(string(gate_root));
+if ~isfolder(gate_root), mkdir(gate_root); end
+r0 = stage8_r1_gate_r0(repo_dir, gate_root, process_audit_path);
+r1 = stage8_r1_gate_r1(repo_dir, gate_root);
+result = struct('gate_r0_pass', logical(r0.gate_r0_pass), ...
+    'gate_r0_status', char(string(r0.status)), ...
+    'gate_r1_pass', logical(r1.gate_r1_pass), ...
+    'gate_r1_status', char(string(r1.status)), ...
+    'generated_utc', char(datetime('now', 'TimeZone', 'UTC', ...
+    'Format', 'yyyy-MM-dd''T''HH:mm:ss.SSS''Z''')));
+stage8_r1_write_json_atomic(fullfile(gate_root, 'r0_r1_result.json'), result);
+end

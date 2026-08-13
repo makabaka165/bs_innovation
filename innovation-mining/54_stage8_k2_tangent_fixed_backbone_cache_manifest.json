@@ -1,0 +1,153 @@
+{
+  "schema_version": "STAGE8_K2_TFBC_MANIFEST_V1",
+  "completion_status": "STAGE8_K2_TANGENT_FIXED_BACKBONE_CACHE_VALIDATION_COMPLETE",
+  "branch": "experiment/stage8-k2-tangent-fixed-backbone-cache-v1",
+  "baseline_branch": "experiment/stage8-k2-tangent-canonical-cache-v1",
+  "baseline_commit": "b4424c6d87511ecf8034a61bc5384ba347cb2467",
+  "integration_code_commit": "de683550cd6eb8002e40a05eb37605ca6595d703",
+  "evidence_write_base_commit": "de683550cd6eb8002e40a05eb37605ca6595d703",
+  "prompt_sha256": "9e5de83517e39d878d01978f2e9f2c48461c6065139e56992574916bf9e8b70e",
+  "environment": {
+    "MATLAB_release": "R2022b",
+    "single_comp_thread": true,
+    "cpu": "AMD Ryzen 7 8845H w/ Radeon 780M Graphics",
+    "os": "Microsoft Windows 11 64-bit 10.0.22631",
+    "working_directory": "E:\\tfbc"
+  },
+  "registered_domain": {
+    "source": "build_common_registered_local_domain via build_stage8_locked_plan",
+    "az_grid_deg": [7.4, 7.6, 7.8, 8.0, 8.2, 8.4, 8.6],
+    "el_grid_deg": [9.8, 10.0, 10.2],
+    "key_count": 21,
+    "domain_hash": "bf63c57146f5bf39615a2d4025cf4cbeeb464d7f76cbc562a9c1afff8bd3029e"
+  },
+  "freeze": {
+    "fixture_hash": "559d3fce9eeb74781f2e8c45ca69bfec5f5550e091713f461c2c198d83844843",
+    "trial_registry_hash": "41af84fcc41fb3c820fd2d635064b03950367a78a36c15a94821c3bb9975f6fe",
+    "timing_schedule_hash": "478a632a6efa8344ed30097c3f1a39c87933d78203aeeb8ea9c8db40bfc5305e",
+    "bootstrap_implementation_hash": "5855d1e65bb5b64b7021cb69c717a496264a290f983f87cf6bfc317554f142e3",
+    "bootstrap_resample_count": 10000,
+    "bootstrap_lower_order_statistic_index": 500,
+    "provider_artifact_hashes": {
+      "208ac1cfafa1a4e0367aa0af9d46f0a362b14343fad97aaa06a7888e73a536fe": "24dc8486edbe08f5c416e9db64b0f827bfb5a5bfb901b74979cd55edb737b25b",
+      "e965700fc8d335f6546924993f4e20988aa34b85d5e11899ed0fb3136c3a5c16": "8fc64add7fb6a90b8b0d6409468d9564e044b1b094536867ec1a03119683c34a"
+    }
+  },
+  "architecture": {
+    "fixed_backbone_integration_status": "FIXED_REGISTERED_BACKBONE_INTEGRATED",
+    "registered_closure_status": "EXACT_GRID_CLOSURE_ENFORCED",
+    "t4_cache_bypass_status": "T4_FINITE_REGISTERED_CACHE_BYPASSED",
+    "fixed_paths": [
+      "K1_INIT_CONVENTIONAL",
+      "K1_FIXED_REGISTERED_REFINEMENT",
+      "K1_FIXED_FINAL_CERTIFICATION",
+      "K2_INIT_CONVENTIONAL",
+      "K2_HELPER_K1",
+      "K2_NESTED_ANCHOR_REGISTERED_CANDIDATES",
+      "K2_REGISTERED_REFINEMENT",
+      "K2_FINAL_CERTIFICATION"
+    ],
+    "legacy_continuous_paths": [
+      "TANGENT_CENTER_MANIFOLD_AND_DERIVATIVES",
+      "TANGENT_PROJECTED_DIRECTION",
+      "T4_CONTINUOUS_PROFILE"
+    ]
+  },
+  "correctness": {
+    "status": "STAGE8_K2_TFBC_CORRECTNESS_PASS",
+    "static_single_pass": 42,
+    "static_canonical_pair_pass": 462,
+    "static_ordered_pair_pass": 882,
+    "semantic_pass_count": 72,
+    "trial_count": 72,
+    "full_checksum_status": "FULL_CHECKSUM_72_OF_72_MATCH",
+    "full_trajectory_status": "FULL_TRAJECTORY_72_OF_72_MATCH",
+    "eligible_registered_call_count": 14280,
+    "eligible_registered_column_count": 22040,
+    "cache_hit_count": 22040,
+    "cache_miss_count": 0,
+    "fallback_count": 0,
+    "identity_rejection_count": 0,
+    "t4_cache_query_count": 0,
+    "truth_leakage_count": 0,
+    "fixed_off_grid_count": 0
+  },
+  "runtime": {
+    "protocol_status": "FORMAL_PAIRED_RUNTIME_COMPLETE",
+    "trial_count": 72,
+    "paired_repeats_per_trial": 20,
+    "AB_repeats_per_trial": 10,
+    "BA_repeats_per_trial": 10,
+    "cache_vs_legacy": {
+      "baseline_runtime_sec": 319.6216157,
+      "registered_cache_runtime_sec": 312.7206508,
+      "paired_point_saving_sec": 6.88042915,
+      "one_sided_95_lower_sec": 6.60548815,
+      "runtime_reduction_pct": 2.15267954732387,
+      "speedup_ratio": 1.02206750619873,
+      "AB_difference_sec": 7.25126975,
+      "BA_difference_sec": 6.50407685
+    },
+    "cache_vs_direct_g": {
+      "direct_G_runtime_sec": 310.8974497,
+      "registered_cache_runtime_sec": 307.63917415,
+      "paired_point_saving_sec": 3.0954294,
+      "one_sided_95_lower_sec": 2.92642865,
+      "runtime_reduction_pct": 0.99564322672538,
+      "speedup_ratio": 1.01059122447264,
+      "AB_difference_sec": 3.16131345,
+      "BA_difference_sec": 3.01086575
+    }
+  },
+  "lifecycle": {
+    "status": "COLD_BUILD_LOAD_MEASUREMENT_COMPLETE",
+    "cold_build_median_sec": [0.3268985, 0.32429465],
+    "cold_load_median_sec": [0.00164865, 0.0016317],
+    "cold_build_break_even_trials": [4, 4],
+    "cold_load_break_even_trials": [1, 1]
+  },
+  "decision": {
+    "final_performance_status": "STAGE8_K2_FIXED_BACKBONE_CACHE_ROBUST_POSITIVE",
+    "final_retention_status": "RETAIN_FIXED_BACKBONE_REGISTERED_CACHE",
+    "certified_scope_default": "REGISTERED_CACHE",
+    "api_fallback_without_certified_provider": "LEGACY_FULL",
+    "cache_only_reduction_pct": 0.99564322672538,
+    "primary_fixed_producer_replacement_reduction_pct": 2.15267954732387,
+    "G_only_engineering_cleanup_status": "NOT_INDEPENDENTLY_MEASURED_IN_THIS_PROTOCOL",
+    "structural_cleanup_status": "NONE"
+  },
+  "source_sha256": {
+    "tools/stage8_k2_tangent_profile/matlab/stage8_k2_tp_fit_safe.m": "88ca9a0f586cf33625018eef3261f9f04593a1318de0e9a9e7648bda0f94571a",
+    "tools/stage8_k2_tangent_profile/matlab/stage8_k2_tp_projected_direction.m": "36d6b57c25a3ba77d67d47a5e1caf2b3955eda89e4e8a875ac9b28817f35a028",
+    "tools/stage8_k2_tangent_profile/matlab/stage8_k2_tp_profile_scale.m": "ceafe2bec9a720c8db111a991688c540a14269b6918830f3c8cc05491d3aa719",
+    "tools/stage8_k2_tangent_profile/matlab/stage8_k2_tp_constants.m": "cf73015931c0801d71f9d3e4737e3e440c3d9b404455d25afe8a6a376cff60d2",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_3_grouped_conditional_dml/common/refine_joint_sequential_dml.m": "c7e0afc11944d299f03d0f8af86859a437c585a9360fb8a67203db60d55d60d0",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_3_grouped_conditional_dml/common/stage8_k2_tfbc_assert_registered_angles.m": "bd421f61ad1486f2b60b55bff45de808923df74f395561013826009fcb71b41e",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_6_k12_bootstrap_resolution/common/build_k1_initializations.m": "0a8181f97af324b1455fc000c58a4469da262e74001c02b0d1377dbe0005426a",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_6_k12_bootstrap_resolution/common/build_k2_initializations.m": "53298062d60e14538fb5d56427f60fcd63e56ae8d949cd522aba9f30f0d255e7",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_6_k12_bootstrap_resolution/common/fit_local_model_k.m": "ca42d5c4776b3195a273be9eb8899d54d1f7f854bb55dcb51d6e81ffe9033d7b",
+    "beamspace_ml_v18/source/stepwise_signal_model/steps/step_12_7_known_k_local_cell_refinement/common/fit_stage8_core_lite.m": "84bddea47f414c7736e7e55e399fd511366d6bc95e8bae2778cfaa3b119c8132",
+    "tools/stage8_k2_tangent_fixed_backbone_cache/matlab/stage8_k2_tfbc_build_provider.m": "70ae6edf58df5000a7a6c0581b7ad4a87469c47c35de0311c7395a975528d60d",
+    "tools/stage8_k2_tangent_fixed_backbone_cache/matlab/stage8_k2_tfbc_get_manifold.m": "95fe2790d680bc143561d9bcaa443b54b2fb8a364111e08c2c60bcf1fa13f9d0",
+    "tools/stage8_k2_tangent_fixed_backbone_cache/matlab/stage8_k2_tfbc_run_correctness.m": "fb696c7e9182748df79b7a8c0db22e318edab786e81654561b6770fc4f77b707",
+    "tools/stage8_k2_tangent_fixed_backbone_cache/matlab/stage8_k2_tfbc_run_runtime.m": "b15d2737e297fd0af38005e6e0ea1b37102b43b9310a7249a3c550b18a1d20b6",
+    "tools/stage8_k2_tangent_fixed_backbone_cache/matlab/stage8_k2_tfbc_run_lifecycle.m": "f487925310e4de91a9528b702077f8b1e06268d26d1edf2d60483fd5dde050f6",
+    "tools/stage8_k2_tangent_fixed_backbone_cache/matlab/stage8_k2_tfbc_run_tests.m": "5c873d8bac4d81b5ae6563fe90e03625fe8a2d3b1a0f1719b75ccc49afc196fb"
+  },
+  "runtime_input_sha256": {
+    "freeze/timing_schedule.csv": "6a57a2c9e1feb5abebf2032945910bf73549f9b24846d12deb681ee8f700f993",
+    "correctness/correctness.csv": "fae7a0825e5d641b404074ebcafaccc29b22a2b30a9e7ebf91a06a7c119f2edf",
+    "correctness/exposure.csv": "71440e8b82b6d5708e25b8eead616210b6ecdd43bc20fa854cb05595fc0f2117",
+    "lifecycle/lifecycle_summary.csv": "48b7db38af805f298bdafece00a486b42a901ef5653f213bfedcede9aeb0e3c9",
+    "runtime/cache_vs_legacy/runtime_summary.csv": "71cd7aa9f2247ba824cea7b4a5b4ad79e6766467db3c48579e2be6c4d2dee569",
+    "runtime/cache_vs_direct_g/runtime_summary.csv": "4cd07caa4095ee90eba833b6af5ae86578a08548bac7137f19948ab1ccaf87bd"
+  },
+  "result_hash_canonicalization": "UTF8_BYTES_WITH_LINE_ENDINGS_NORMALIZED_TO_LF",
+  "result_sha256_canonical_lf": {
+    "54_stage8_k2_tangent_fixed_backbone_cache_validation.md": "c0a828f945ba82b5ffcf8a7bc181b65fd26cacfaab47c963320574c921fe9b03",
+    "54_stage8_k2_tangent_fixed_backbone_cache_correctness.csv": "7e7a9a2b3cdfa9c335faf6ecc41e5b223343cc8782d0e9b11a4b4c2e9646ea51",
+    "54_stage8_k2_tangent_fixed_backbone_cache_exposure.csv": "c16be0bc93a8480d7af3efa35b801902537e4d0bc64d7ddc3a80e35cb26dc271",
+    "54_stage8_k2_tangent_fixed_backbone_cache_runtime_summary.csv": "21905adb3c935f182af11c60fb6de9b74158901878cbfe656fbdfcd98c0fe61f",
+    "54_stage8_k2_tangent_fixed_backbone_cache_lifecycle.csv": "b32d5a6ba19402012109c081185c9fe92bd63e577d8f99d73921248843c1ee15"
+  }
+}

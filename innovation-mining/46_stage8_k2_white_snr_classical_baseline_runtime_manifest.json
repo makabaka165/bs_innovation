@@ -1,0 +1,131 @@
+{
+  "status": "STAGE8_K2_WHITE_SNR_CLASSICAL_BASELINE_COMPARISON_COMPLETE",
+  "terminal_status": "STAGE8_K2_TANGENT_ADVANTAGE_OVER_NUMERICAL_BEAMSPACE_CML_SUPPORTED",
+  "protocol": "STAGE8_K2_WHITE_SNR_CLASSICAL_BASELINE_FINAL_COMPARISON_V1",
+  "authorization": "AUTHORIZE_STAGE8_K2_WHITE_SNR_CLASSICAL_BASELINE_WORK_BRANCH_V1",
+  "branch": "work/stage8-k2-white-snr-classical-baselines-v1",
+  "source_tangent_head": "d2d59fe550d8999dc8589aa76e52e89736539b66",
+  "prompt_commit": "18febc3217f1b4c9ed78c7746e3affcbcf6acff1",
+  "formal_run_head": "a76fb245db22b6e23f1c067659d34e8b232fe2f0",
+  "matlab_release": "2022b",
+  "max_computational_threads": 1,
+  "runtime_root": "E:\\bs_innovation_runtime\\stage8_k2_white_snr_classical_baselines_v1",
+  "test_count": 10,
+  "registry_count": 1680,
+  "existing_method_row_count": 5040,
+  "baseline_row_count": 5040,
+  "checkpoint_count": 1680,
+  "beamspace_full4d_count": 1680,
+  "beamspace_full4d_valid_count": 1680,
+  "beamspace_full4d_incomplete_count": 103,
+  "music_row_count": 1680,
+  "music_applicable_count": 1120,
+  "music_valid_count": 0,
+  "element_cml_applicable_count": 160,
+  "element_cml_valid_count": 160,
+  "truth_leakage_count": 0,
+  "profile_leakage_count": 0,
+  "tangent_start_count": 0,
+  "core_start_count": 0,
+  "maximum_white_target_error_db": 2.1764870920113143E-12,
+  "registry_hash": "7563db6fb165c12c18be05da026274b13b66ec0a60925ad087b61790853f37e2",
+  "code_identity": "638b5be42525a9d41f351dbcb7017e9252f35cb506fc0d6f7cd1cfbfc66fe145",
+  "evidence44_identity": "c2f8e6b68cca11c894dda5bf7329ebf5f88ef26004257c95e08fae312d471adb",
+  "evidence44_manifest_sha256": "b97589aa81c70be8d3219299709e568546aefb963bad0af887bd98bbcabae6a0",
+  "launch_count": 2,
+  "resume_count": 1,
+  "total_active_runtime_sec": 15281.794582900002,
+  "median_trial_runtime_sec": 5.53352615,
+  "full4d_interpretation_state": "STAGE8_K2_TANGENT_ADVANTAGE_OVER_NUMERICAL_BEAMSPACE_CML_SUPPORTED",
+  "qualifying_working_snr_count": 4,
+  "complete_likelihood_pooled_tangent_condition": true,
+  "music_region_state": "MUSIC_TWO_PEAK_REGION_NOT_IDENTIFIED",
+  "first_music_two_peak_snr_db": [],
+  "element_reference_state": "ELEMENT_REFERENCE_DESCRIPTIVE",
+  "independent_audit_status": "PASS",
+  "tangent_algorithm_modified": false,
+  "production_modified": false,
+  "merge_back": false,
+  "artifacts": [
+    {
+      "artifact_id": "registry_audit",
+      "path": "innovation-mining/46_stage8_k2_white_snr_classical_baseline_registry_audit.csv",
+      "sha256": "ebb970507211feb72b01a9ea5fddaac7862e3a7be25cfc5fc264d8a6c2aa3e6c"
+    },
+    {
+      "artifact_id": "baseline_results",
+      "path": "innovation-mining/46_stage8_k2_white_snr_classical_baseline_results.csv",
+      "sha256": "3e3400106901b2616e6fc5f9dd3e61d9eb1192d408a3e480ada01b3ab6f2b6c5"
+    },
+    {
+      "artifact_id": "summary",
+      "path": "innovation-mining/46_stage8_k2_white_snr_classical_baseline_summary.csv",
+      "sha256": "58b7328ec94704834b354e6997e05392d063617f26db7f512de4bd508629c846"
+    },
+    {
+      "artifact_id": "profile_summary",
+      "path": "innovation-mining/46_stage8_k2_white_snr_classical_baseline_profile_summary.csv",
+      "sha256": "f3f2bff5e99bbae9f469897a142d92663001dc6b319fa6bdfe1d3b2a2a8a1d05"
+    },
+    {
+      "artifact_id": "exact_cell_summary",
+      "path": "innovation-mining/46_stage8_k2_white_snr_classical_baseline_exact_cell_summary.csv",
+      "sha256": "0564594f3f90e4a2be85c5016922ce03c7df6451b34d4494d2b7d0a349156b38"
+    },
+    {
+      "artifact_id": "numerical_audit",
+      "path": "innovation-mining/46_stage8_k2_white_snr_classical_baseline_numerical_audit.csv",
+      "sha256": "669ea5b1ec6bbb285a06b9253b500d18d297783356ecd699bb624afe8f488f85"
+    },
+    {
+      "artifact_id": "music_applicability",
+      "path": "innovation-mining/46_stage8_k2_white_snr_music_applicability.csv",
+      "sha256": "51573598bcc5552c63b9a7869374eaf9b4e1e070d58fcda24cab2652ba77b367"
+    },
+    {
+      "artifact_id": "element_reference_summary",
+      "path": "innovation-mining/46_stage8_k2_white_snr_element_reference_summary.csv",
+      "sha256": "9cc20f6a0d19742825bfc4a1be159d07ef791c0a2209f9491e2445aed5c23278"
+    },
+    {
+      "artifact_id": "report",
+      "path": "innovation-mining/46_stage8_k2_white_snr_classical_baseline_comparison.md",
+      "sha256": "71e39daa483d0e73d2d2b7fd8e807bc1812d4f0c27f656ef06b5342a7485e3a4"
+    },
+    {
+      "artifact_id": "figure_rmse",
+      "path": "innovation-mining/figures/46_white_snr_tangent_full4d_rmse.png",
+      "sha256": "eccbc75af4cc6af306b23fce604792118ae0fbe0aa634d3fbc38e3ac91a8f306"
+    },
+    {
+      "artifact_id": "figure_pairwise",
+      "path": "innovation-mining/figures/46_white_snr_tangent_full4d_pairwise.png",
+      "sha256": "29835ddcd106e8b5c91cf83a43b1ad183acc458bfb57a525a2968686b3745435"
+    },
+    {
+      "artifact_id": "figure_numerical_status",
+      "path": "innovation-mining/figures/46_white_snr_full4d_numerical_status.png",
+      "sha256": "06d556eeaf95477977fd5f6103b9c2df976f5d71a7829202564e348c49b3f0ac"
+    },
+    {
+      "artifact_id": "figure_music",
+      "path": "innovation-mining/figures/46_white_snr_music_two_peak_rate.png",
+      "sha256": "5e4e44d6d6ca23194cc07eaff1d2aea377998fb2b988fa444a1e4d4e2bb2f79a"
+    },
+    {
+      "artifact_id": "figure_element",
+      "path": "innovation-mining/figures/46_white_snr_element_reference.png",
+      "sha256": "810c05773475a55ee555ed9d79e61931bf770489d6523d703b00efa6a0609cce"
+    },
+    {
+      "artifact_id": "figure_complexity",
+      "path": "innovation-mining/figures/46_white_snr_complexity.png",
+      "sha256": "b500aac998a197cff6705a817fa9286ec4fdf31e5a770ded7f0fd6346423be1a"
+    }
+  ],
+  "independent_audit_utc": "2026-08-04T13:42:01.788Z",
+  "independent_reconstruction_match_count": 1680,
+  "independent_artifact_hash_match_count": 15,
+  "independent_baseline_rerun_count": 0,
+  "next": "USER_REVIEW"
+}

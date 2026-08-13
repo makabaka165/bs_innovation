@@ -1,0 +1,23 @@
+function result = test_1680_trial_reconstruction(fixture)
+%TEST_1680_TRIAL_RECONSTRUCTION Rebuild identities without estimators.
+
+maximum_error = 0;
+for index = 1:height(fixture.registry)
+    [trial, ~, identity] = stage8_k2_wacb_reconstruct_trial( ...
+        fixture.registry(index, :), fixture.context);
+    assert(trial.element_trial_hash == ...
+        fixture.registry.element_trial_hash(index), ...
+        'test_1680_trial_reconstruction:Hash', ...
+        'An element trial hash changed.');
+    maximum_error = max(maximum_error, identity.white_target_error_db);
+    clear trial
+    if mod(index, 240) == 0
+        fprintf('T2 reconstruction %d/1680\n', index);
+    end
+end
+assert(maximum_error <= fixture.context.constants.snr_db_tolerance, ...
+    'test_1680_trial_reconstruction:WhiteTarget', ...
+    'A reconstructed white-SNR target exceeded tolerance.');
+result = struct('pass', true, 'reconstruction_match_count', 1680, ...
+    'maximum_white_target_error_db', maximum_error);
+end

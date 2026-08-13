@@ -1,0 +1,79 @@
+{
+  "status": "STAGE8_K2_SNR_DOMAIN_VALIDATION_COMPLETE",
+  "protocol": "STAGE8_K2_SNR_DOMAIN_AUDIT_AND_WHITE_BEAMSPACE_REPARAMETERIZATION_V2",
+  "authorization": "AUTHORIZE_STAGE8_K2_SNR_T4_NUMERIC_QUALITY_CORRECTION_AND_COMPLETION_V2",
+  "branch": "experiment/stage8-k2-tangent",
+  "starting_head": "6bc40af7deed09a56683b8c1e4a6398166855336",
+  "prompt_commit": "654b634a1bc19f127aeaa070d844bf2e19156b41",
+  "tool_commit": "6bc40af7deed09a56683b8c1e4a6398166855336",
+  "v1_status": "STAGE8_K2_SNR_DOMAIN_VALIDATION_INVALID",
+  "v1_failure_stage": "T4_WHITENING_NUMERIC_GATE",
+  "v1_phase_b_executed": false,
+  "v2_correction_prompt_commit": "ea1c5810d8e3f9ac791fa687885d1ad59642a831",
+  "v2_tool_correction_commit": "c0489c86715bc7aa12264a980b3b7822fa752da4",
+  "formal_run_head": "c0489c86715bc7aa12264a980b3b7822fa752da4",
+  "matlab_release": "2022b",
+  "max_computational_threads": 1,
+  "runtime_root": "E:\\bs_innovation_runtime\\stage8_k2_snr_domain_validation_v2",
+  "test_count": 10,
+  "original_hash_match_count": 72,
+  "white_registry_count": 72,
+  "white_unique_hash_count": 72,
+  "method_row_count": 216,
+  "truth_leakage_count": 0,
+  "max_white_target_error_db": 9.5212726591853425E-13,
+  "whitening_tolerance": 1E-8,
+  "max_observed_whitening_residual": 5.7966605659302925E-9,
+  "phase_a_runtime_sec": 66.5960388,
+  "smoke_runtime_sec": 43.9719633,
+  "phase_b_runtime_sec": 796.6750022,
+  "total_runtime_sec": 1286.4661554,
+  "tangent_algorithm_modified": false,
+  "whitening_removed": false,
+  "whitener_modified": false,
+  "snr_formula_modified": false,
+  "monte_carlo_executed": false,
+  "next_monte_carlo_authorized": false,
+  "artifacts": [
+    {
+      "artifact_id": "audit_trials",
+      "path": "innovation-mining/42_stage8_k2_original_snr_audit_trials.csv",
+      "sha256": "e58b89329f5dbe23f8a61443f21f1afe4083adc9403d039ccbf1324ac0103f22"
+    },
+    {
+      "artifact_id": "audit_summary",
+      "path": "innovation-mining/42_stage8_k2_original_snr_audit_summary.csv",
+      "sha256": "2c6bc5752cc703ecc8dd9532b4a6a20d1afc19dabd01a221a5f2623bb7d078f6"
+    },
+    {
+      "artifact_id": "white_registry",
+      "path": "innovation-mining/42_stage8_k2_white_beamspace_control_registry.csv",
+      "sha256": "7f49c6d6722b9025682fe0865500234db7f1a335fc25b4e4881b58563675c436"
+    },
+    {
+      "artifact_id": "white_snr_trials",
+      "path": "innovation-mining/42_stage8_k2_white_beamspace_control_snr_trials.csv",
+      "sha256": "b87ff1e116217f4ad9522d66621f1efa3f82421347d05918c911e89d3096a0bb"
+    },
+    {
+      "artifact_id": "method_results",
+      "path": "innovation-mining/42_stage8_k2_white_beamspace_control_method_results.csv",
+      "sha256": "c8f6ad2fcda76df0d0ba1248c86e591f6151167f5ebc613ea628279dbd078582"
+    },
+    {
+      "artifact_id": "white_summary",
+      "path": "innovation-mining/42_stage8_k2_white_beamspace_control_summary.csv",
+      "sha256": "5de1b76184f2514d311cb98e244fd810b276f6422995178800b87c89189741d6"
+    },
+    {
+      "artifact_id": "comparison",
+      "path": "innovation-mining/42_stage8_k2_snr_control_comparison.csv",
+      "sha256": "d215376a1b90c19b35ac37832ab0edcefa1e5116951f14011bce33b1f1582535"
+    },
+    {
+      "artifact_id": "report",
+      "path": "innovation-mining/42_stage8_k2_snr_domain_validation.md",
+      "sha256": "772e05ae024dbcee4e01b574a0a1cf4d254a5fec9ac7714c49ccc0ad0786eea5"
+    }
+  ]
+}
