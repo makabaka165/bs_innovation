@@ -1,0 +1,260 @@
+{
+    "protocol":  "STAGE8_K2_RAW_TANGENT_CORE_NATIVE_SNR_PRUNING_V1",
+    "code_identity":  {
+                          "head":  "1e14e44315031d6a3f76afa254c1be08918221a1",
+                          "source_hash":  "b0df5a7e97ef95f5506c9daf977be21d7c6f644d403c57a65dcced44657175fa"
+                      },
+    "registry_count":  1680,
+    "base_count":  240,
+    "native_observation_count":  3360,
+    "method_row_count":  13440,
+    "beamwidth_hash":  "d526bc1595db8c1c135dbd9e00a26cea6c1909ddbd8ec356d48c00cab6dc00f6",
+    "artifacts":  [
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_beamwidth_contract.csv",
+                          "bytes":  871,
+                          "sha256":  "281ac55e34e07374392f8a2b296b64892ecc244155dceea3f897785ee830ab42"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_checkpoint_inventory.csv",
+                          "bytes":  611558,
+                          "sha256":  "3716a2f182a3b699b7f5f3e6899fe1732e70e05489e86db218845e789f8eff26"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_closeout_recovery.json",
+                          "bytes":  1244,
+                          "sha256":  "ec69124fc1a795b264259b0a237a65fff6f571bb1d21b2feb38c1b2be0c31cd7"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_complexity_summary.csv",
+                          "bytes":  3481,
+                          "sha256":  "154c80908125d66f8c0755200fdc6c5492ca94a287522593e0e474418fa6a697"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_controller_recovery.json",
+                          "bytes":  16746,
+                          "sha256":  "1e3de7b9931b870c22b5e8addd2e0a6b1634034fbc905d14662dabe55a392d2d"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_controller_recovery.md",
+                          "bytes":  4844,
+                          "sha256":  "7a3267f1bdd0ddf95474247d280b3e0d9b6a318705a938e08905627d32ce106c"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_core_diagnostics.csv",
+                          "bytes":  407187,
+                          "sha256":  "f4c2305dd55a5f9fbadc0893d8e889c266456785f36430f8d2dd1e88bc4ef8c0"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_core_native_snr_results.md",
+                          "bytes":  6524,
+                          "sha256":  "355455a8fe8a7ccbf9208d67fbbbec4563d9e9ae680aa93835bb07a077bb06dd"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_domain_snr_trials.csv",
+                          "bytes":  1531749,
+                          "sha256":  "71cef20e7ef2e28db5a275b3e24d1febe6fd4e3728aa5bb1e8122509fed05d74"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_exact_cell_summary.csv",
+                          "bytes":  175701,
+                          "sha256":  "0765421eb77e8700d80ce129b732973224ec9d639060a109c0e13d31c4dc46aa"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_failure_summary.csv",
+                          "bytes":  33546,
+                          "sha256":  "931893dbcd6d4ef45e8e136f499d40030be61066d66a41b7596b85c3da7e9146"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_fixed_tests.json",
+                          "bytes":  3506,
+                          "sha256":  "7e585f6fabacdcb201226b061a986f1b9026edb6eafcbef279be609a5c38e98c"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_method_results.csv",
+                          "bytes":  6464188,
+                          "sha256":  "f72ccd3f2c563bf50fd6926460d58568dbb2ab6ce5277b912b3fab800eaffd87"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_native_domain_comparison.csv",
+                          "bytes":  20028,
+                          "sha256":  "a58adec81117ee3480fcfd2f04790598786621f53b07eedf8c4d0d5cb6355011"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_plot_data.csv",
+                          "bytes":  6464188,
+                          "sha256":  "f72ccd3f2c563bf50fd6926460d58568dbb2ab6ce5277b912b3fab800eaffd87"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_plot_manifest.json",
+                          "bytes":  3343,
+                          "sha256":  "f18207e496b648286f6988b4a8ec7480bbc636170c4f2025210d20ce02075ba2"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_profile_summary.csv",
+                          "bytes":  66616,
+                          "sha256":  "7e0a839e2c7164c1968b89aa96e97763915e7fe9d8e3efd88a5c0cbc81feb5bf"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_pruning_audit.json",
+                          "bytes":  889,
+                          "sha256":  "52a6a52878aee3f0d8b3e6b889af225110273237b2f7f8c4aacc76a14a2579f1"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_realized_snr_summary.csv",
+                          "bytes":  2182,
+                          "sha256":  "bd57fda4dd4d071a25c3c5a0b5773dcca7b22ff053df7bd598e9e170a802c492"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_registry.csv",
+                          "bytes":  138116,
+                          "sha256":  "fa920533420afde353db1da1f774f768487de39166ece2b208bf80ef4f8740ee"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_rho_trace_representatives.mat",
+                          "bytes":  403395,
+                          "sha256":  "6c0808c9583dd2703549c9dc6f0cbfc03eb060b2cc120fe0af5a3dedae9a2119"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_snapshot_summary.csv",
+                          "bytes":  52303,
+                          "sha256":  "25f50d3e64d28a3065a3407efe55d894d6da67d14bc6bced46e83a00ce6895b9"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_snr_summary.csv",
+                          "bytes":  20028,
+                          "sha256":  "a58adec81117ee3480fcfd2f04790598786621f53b07eedf8c4d0d5cb6355011"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_success_summary.csv",
+                          "bytes":  20028,
+                          "sha256":  "a58adec81117ee3480fcfd2f04790598786621f53b07eedf8c4d0d5cb6355011"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_timestamp_recovery.json",
+                          "bytes":  21959,
+                          "sha256":  "1d96052bc6e843eb7ad33f1ce97f05325007533b3ba70a07a0473431b8d5b96e"
+                      },
+                      {
+                          "path":  "innovation-mining/58_stage8_k2_raw_tangent_within_domain_pairing.csv",
+                          "bytes":  1546,
+                          "sha256":  "2db78ba519848c796357534e92123847d377bfb9b657e4abb76a8ce1cdab7d18"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_beamspace_native_methods_success.png",
+                          "bytes":  51790,
+                          "sha256":  "e463a55c29ea999fd779b8243de3575a54aa044589ac43fc51c012d5a299f021"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_element_native_methods_success.png",
+                          "bytes":  70179,
+                          "sha256":  "cea33739039d879b1964107fd4dc2c929c07204ce09f11386deae3e960c96f0a"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_native_domain_rmse_comparison.png",
+                          "bytes":  102025,
+                          "sha256":  "621e211150617f69ff48b71bdb697e869a0ecee3121298e6722d7c2a73237e25"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_raw_tangent_axis_rho_errors.png",
+                          "bytes":  73150,
+                          "sha256":  "092dbd4ebe4cd8f6430f82f4476f05a3e5e3f37ed089dae8bfe0571c3b91e097"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_raw_tangent_failure_reasons.png",
+                          "bytes":  22004,
+                          "sha256":  "be7feaaba338d33a186b4020bc41f243191deb915483547ed8fa12127a2ab477"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_raw_tangent_localization_success_vs_beam_snr.png",
+                          "bytes":  44445,
+                          "sha256":  "f54431b3b8fab9f7ace46ead7b0951bf9da3a7effb29f4915cdf1164ea97678c"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_raw_tangent_representative_profiles.png",
+                          "bytes":  144677,
+                          "sha256":  "a3122065187abd28fa8f8fd1db10273f617c49773b6af84113803711dc3265cb"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_raw_tangent_resolution_success_vs_beam_snr.png",
+                          "bytes":  40660,
+                          "sha256":  "614eafb8e918518b813ba124d9d5d0d61bcef3e013664356f6225c85c22eea04"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_raw_tangent_rmse_vs_beam_snr.png",
+                          "bytes":  57446,
+                          "sha256":  "1f40311dba0234ab964878a1b86880079a3c18909465804b4ea422c8eb380c2d"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_raw_tangent_success_by_L.png",
+                          "bytes":  46922,
+                          "sha256":  "afc7106d549a40f3bce82a44139675eae74af0eec407f994da34b76848154d60"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_raw_tangent_success_by_profile.png",
+                          "bytes":  50933,
+                          "sha256":  "ca837cdc6be25b7090b85f3e0e37cd87ecb4bba390e8aef021cb77328bce203a"
+                      },
+                      {
+                          "path":  "innovation-mining/figures/58_raw_tangent_valid_rate_vs_beam_snr.png",
+                          "bytes":  42221,
+                          "sha256":  "6f14d1add63368114012920d0838a802ce3b800121d6cdedafb03cc567a1fb8d"
+                      }
+                  ],
+    "region_status":  "RAW_TANGENT_NO_HIGH_RELIABILITY_REGION_IDENTIFIED",
+    "first_descriptive_snr_db":  [
+
+                                 ],
+    "plot_only_full_data_regeneration":  true,
+    "within_domain_pair_count":  13,
+    "cross_domain_pair_count":  0,
+    "closeout_code_changed":  false,
+    "closeout_scope":  "Protocol section 41 documentation paths plus 58 result artifacts; frozen tools unchanged.",
+    "active_correlated_noise_count":  0,
+    "documentation_artifacts":  [
+                                    {
+                                        "path":  "innovation-mining/00_DOCUMENT_STATUS_INDEX.md",
+                                        "sha256":  "7799297b18d2437949726c1231f1d5267a98794f61a33b33e3ed94e1891bcafa"
+                                    },
+                                    {
+                                        "path":  "summary/summary.md",
+                                        "sha256":  "c36d4e0676080e89da1315d119bdd2e42ce57c02bbde758920f51ba30de71c93"
+                                    },
+                                    {
+                                        "path":  "summary/tangent_algorithm_full_detailed.md",
+                                        "sha256":  "dd5fcdc745142570196a4be00f3ae600fd9ec93a550a2ac883d3757d4dad1cdd"
+                                    },
+                                    {
+                                        "path":  "innovation-mining/stage8_execution_prompts/README.md",
+                                        "sha256":  "0f7c9bca87dbd9c69205e6b616921988924dc071bd63bcf6d5f8a4ddcdf62de0"
+                                    }
+                                ],
+    "formal_checkpoint_hashes_rechecked":  3360,
+    "supplemental_verification":  {
+                                      "pass":  true,
+                                      "summary_rows_verified":  56,
+                                      "within_domain_pairs_verified":  13,
+                                      "cross_domain_pairs":  0,
+                                      "checkpoint_method_rows":  13440,
+                                      "verification_implementation":  "Independent PowerShell CSV reconstruction",
+                                      "figures_visually_reviewed":  12
+                                  },
+    "nominal_target_max_error_db":  3.5527136788005009E-15,
+    "active_fixed_k2_call_count":  0,
+    "independent_audit_status":  "PASS",
+    "status":  "STAGE8_K2_RAW_TANGENT_CORE_NATIVE_SNR_PRUNING_COMPLETE",
+    "closeout_mode":  "SUPERVISED_FINITE_STATE_TRANSITIONS_AFTER_COMPLETED_COMPUTATION",
+    "closeout_script_sha256":  "fba76a83c87a8d019377636721e811a04322c82791fcb397f73d387615c46695",
+    "protected_path_diff_count":  0,
+    "independent_audit":  {
+                              "complete":  true,
+                              "pass":  true,
+                              "head":  "1e14e44315031d6a3f76afa254c1be08918221a1",
+                              "source_hash":  "b0df5a7e97ef95f5506c9daf977be21d7c6f644d403c57a65dcced44657175fa",
+                              "scenario_count":  1680,
+                              "method_row_count":  13440,
+                              "nominal_max_error_db":  3.5527136788005009E-15
+                          },
+    "active_tangent_cache_count":  0,
+    "shared_compatibility_status":  "DORMANT_SHARED_COMPATIBILITY_NOT_REACHED"
+}

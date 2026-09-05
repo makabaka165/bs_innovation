@@ -2,6 +2,8 @@
 
 本页解释本实验分支的 `TANGENT_PROFILE_CORE`。权威执行合同为 [57 协议](../innovation-mining/57_stage8_k2_raw_tangent_core_native_snr_theory_and_protocol.md)，活跃实现为 [Raw Tangent 工具](../tools/stage8_k2_raw_tangent_core_native_snr/README.md)。旧 Safe 的历史证据保留在 43-48；已删除路线的详细旧说明仍可在 main@644fc6e 的 Git 历史查看。
 
+[正式实验结果](../innovation-mining/58_stage8_k2_raw_tangent_core_native_snr_results.md)已完成 1680 个场景的两域计算、13440 行合并、12 张图生成和独立科学审计。22 dB 时 Core 的有效率、定位成功率、严格分辨成功率分别为 99.1667%、97.0833%、27.5%，整体注册范围内未识别出高可靠区域。全部阈值、估计器和噪声合同保持冻结；本页的公式不因实验性能而调整。
+
 ## 1. 观测与科学问题
 
 已知同一个 CPI、同一个距离-多普勒单元含两个目标，估计各自的 [azimuth, elevation]。本轮不估计 K，不使用跨 CPI 跟踪，不引入在线成功门限。

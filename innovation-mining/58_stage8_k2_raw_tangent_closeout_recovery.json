@@ -1,0 +1,27 @@
+{
+  "status": "CHECKPOINTS_VERIFIED_READY_FOR_FINALIZATION",
+  "user_authorized_closeout_recovery": true,
+  "prior_state": {
+    "state": "HARD_STOPPED",
+    "reason": "Multiple MATLAB launchers or compute workers detected.",
+    "utc": "2026-09-05T11:05:41.2714567Z"
+  },
+  "prior_state_sha256": "70c14534c989aac145e4826847394a24cf0b040070f108d0edf80d2e6f36d85d",
+  "historical_duplicate_process_cause": "UNDETERMINED_NO_PROCESS_INVENTORY_RECORDED",
+  "checkpoint_audit": {
+    "pass": true,
+    "head": "1e14e44315031d6a3f76afa254c1be08918221a1",
+    "source_hash": "b0df5a7e97ef95f5506c9daf977be21d7c6f644d403c57a65dcced44657175fa",
+    "checkpoint_count": 3360,
+    "method_row_count": 13440,
+    "checkpoint_files_modified": false,
+    "strict_code_identity": true,
+    "inventory_sha256": "3716a2f182a3b699b7f5f3e6899fe1732e70e05489e86db218845e789f8eff26"
+  },
+  "checkpoint_identity_validation": "UNCHANGED_EXACT_HEAD_AND_SOURCE_HASH",
+  "checkpoint_rewrites": 0,
+  "algorithm_reruns": 0,
+  "source_changes": 0,
+  "recovered_utc": "2026-09-05T13:48:56.6269205Z",
+  "archive_path": "E:\\bs_innovation_runtime\\experiment_stage8-k2-raw-tangent-core-native-snr-v1\\backup\\completed_compute_stop_20260905T110541"
+}

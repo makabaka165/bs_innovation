@@ -12,6 +12,8 @@ The authoritative [57 protocol](../57_stage8_k2_raw_tangent_core_native_snr_theo
 
 This scientific branch has no fixed-K2 fallback or active cache. The 72-trial Tangent route and corresponding prompts are deleted from this branch after 18/18 fixed tests. All deleted content remains at the frozen source main.
 
+The [formal result report](../58_stage8_k2_raw_tangent_core_native_snr_results.md) contains all 13440 method rows and 12 figures, with a passing fresh-session scientific audit recorded in the [runtime manifest](../58_stage8_k2_raw_tangent_runtime_manifest.json). The registered overall SNR range did not identify a Raw Tangent high-reliability region. Completed results authorize review only; they do not authorize production integration or another experiment.
+
 ## Archive
 
 [Archive manifest](archive/PROMPT_ARCHIVE_MANIFEST.csv) indexes only retained archived prompts. Completed prompts 013, 014, 017 and the former cache prompt directory have been removed from this manifest together with their files. No archived prompt authorizes execution.

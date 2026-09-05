@@ -2,7 +2,9 @@
 
 本分支的科学算法为 `TANGENT_PROFILE_CORE`。源主线固定在 `644fc6e0041e400b6500579bba93d49f45e46990`；实验分支为 `experiment/stage8-k2-raw-tangent-core-native-snr-v1`。生产集成未授权。
 
-本轮研究纯核心算法在各原生观测域相同标称 SNR 下的表现。旧 Safe 的有效率与优越性结论不能直接转用于 Core。正式数值以 `58_stage8_k2_raw_tangent_core_native_snr_results.md`（正式 finalize 后生成） 和 runtime manifest 的独立审计状态为准；正式文件产生前，不宣称实验完成或存在高可靠工作区。
+本轮研究纯核心算法在各原生观测域相同标称 SNR 下的表现。旧 Safe 的有效率与优越性结论不能直接转用于 Core。[正式结果](../innovation-mining/58_stage8_k2_raw_tangent_core_native_snr_results.md)已包含 3360 个 checkpoint 对应的 13440 行方法结果及 12 张图，并通过全新 MATLAB 会话的独立观测重建和指标审计。最终审计、文件身份与收尾状态见 [runtime manifest](../innovation-mining/58_stage8_k2_raw_tangent_runtime_manifest.json)。
+
+在最高注册 SNR 22 dB，Core 有效率为 99.1667%，定位成功率为 97.0833%，严格分辨成功率为 27.5%；有效结果的联合角度 RMSE 中位数为 0.0776367 度、P90 为 0.150867 度。没有整体 SNR 点达到“有效率至少 90% 且严格分辨成功率至少 80%”的条件，结论为 `RAW_TANGENT_NO_HIGH_RELIABILITY_REGION_IDENTIFIED`。高定位成功率不能替代双目标严格分辨成功率；未识别出高可靠区域仍是有效科学结果。
 
 ## 活跃算法
 
