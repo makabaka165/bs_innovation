@@ -1,11 +1,24 @@
 [CmdletBinding()]
-param([Parameter(Mandatory=$true)][ValidateSet('Archive','Resume')][string]$Action)
+param([Parameter(Mandatory=$true)][ValidateSet('Archive','Resume')][string]$Action,
+    [ValidateSet('LauncherCount','Timestamp')][string]$Incident='LauncherCount')
 $ErrorActionPreference='Stop'
 $repo='E:\bs_innovation_worktrees\raw-tangent'
 $runtime='E:\bs_innovation_runtime\experiment_stage8-k2-raw-tangent-core-native-snr-v1'
 $archive=Join-Path $runtime 'backup\launch_incident_d4e2517'
 $branch='experiment/stage8-k2-raw-tangent-core-native-snr-v1'
 $oldHead='d4e2517bf860efeabbf40925af44ba17bff85495'
+$expectedReason='Multiple MATLAB/mwpython processes detected.'
+$expectedCount=45
+$auditName='incident_readonly_audit.json'
+$incidentName='launch_incident.json'
+if ($Incident -eq 'Timestamp') {
+    $archive=Join-Path $runtime 'backup\timestamp_incident_7c4b95a'
+    $oldHead='7c4b95a750875c53d554056bc42b01c54b49408e'
+    $expectedReason='MATLAB launcher identity mismatch.'
+    $expectedCount=61
+    $auditName='timestamp_readonly_audit.json'
+    $incidentName='timestamp_incident.json'
+}
 $controller=Join-Path $runtime 'controller'
 $statePath=Join-Path $controller 'controller_state.json'
 function Write-Atomic([string]$Filename,$Value) {
@@ -27,7 +40,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Scope check failed.' }
     if (@(Get-Process MATLAB,mwpython -ErrorAction SilentlyContinue).Count) { throw 'MATLAB/mwpython must be absent.' }
     $state=Get-Content -LiteralPath $statePath -Raw | ConvertFrom-Json
-    if ($state.state -ne 'HARD_STOPPED' -or $state.reason -ne 'Multiple MATLAB/mwpython processes detected.') {
+    if ($state.state -ne 'HARD_STOPPED' -or $state.reason -ne $expectedReason) {
         throw 'Recovery is restricted to the recorded launcher-count incident.'
     }
     $oldFormal=Get-Content (Join-Path $controller 'formal_identity.json') -Raw | ConvertFrom-Json
@@ -37,11 +50,11 @@ try {
     }
     if ($Action -eq 'Archive') {
         if (Test-Path -LiteralPath $archive) { throw 'Incident archive already exists; do not overwrite.' }
-        $audit=Get-Content (Join-Path $controller 'incident_readonly_audit.json') -Raw | ConvertFrom-Json
-        if (-not $audit.pass -or $audit.checkpoint_count -ne 45 -or -not $audit.checkpoint_bytes_unchanged -or
+        $audit=Get-Content (Join-Path $controller $auditName) -Raw | ConvertFrom-Json
+        if (-not $audit.pass -or $audit.checkpoint_count -ne $expectedCount -or -not $audit.checkpoint_bytes_unchanged -or
             $audit.old_identity.source_hash -ne $oldFormal.source_hash) { throw 'Read-only checkpoint audit missing.' }
         $beam=Join-Path $runtime 'checkpoints\beamspace'
-        if (@(Get-ChildItem -LiteralPath $beam -File).Count -ne 45 -or
+        if (@(Get-ChildItem -LiteralPath $beam -File).Count -ne $expectedCount -or
             @(Get-ChildItem -LiteralPath (Join-Path $runtime 'checkpoints\element') -File).Count) { throw 'Unexpected checkpoint inventory.' }
         foreach ($entry in $audit.checkpoints) { Assert-Hash (Join-Path $beam $entry.name) $entry.sha256 }
         $destination=Join-Path $archive 'checkpoints\beamspace'
@@ -49,7 +62,7 @@ try {
         New-Item -ItemType Directory -Path $destination -ErrorAction Stop | Out-Null
         $metadata=Join-Path $archive 'controller'
         New-Item -ItemType Directory -Path $metadata -ErrorAction Stop | Out-Null
-        foreach ($name in @('controller_state.json','formal_identity.json','gates.json','launch_incident.json','incident_readonly_audit.json')) {
+        foreach ($name in @('controller_state.json','formal_identity.json','gates.json',$incidentName,$auditName)) {
             Copy-Item -LiteralPath (Join-Path $controller $name) -Destination (Join-Path $metadata $name)
             Assert-Hash (Join-Path $metadata $name) (Get-FileHash -LiteralPath (Join-Path $controller $name) -Algorithm SHA256).Hash
         }
@@ -59,14 +72,14 @@ try {
         }
         Write-Atomic (Join-Path $archive 'archive_manifest.json') @{
             pass=$true;policy='ARCHIVE_BYTE_IDENTICAL_THEN_RECOMPUTE_WITH_STRICT_NEW_IDENTITY'
-            old_head=$oldHead;old_source_hash=$oldFormal.source_hash;checkpoint_count=45
+            old_head=$oldHead;old_source_hash=$oldFormal.source_hash;checkpoint_count=$expectedCount
             checkpoints=$audit.checkpoints;archived_utc=[DateTime]::UtcNow.ToString('o')
             user_authorization='User requested fixing the root cause and continuing the protocol after HARD_STOPPED.'
         }
-        'ARCHIVE PASS: 45 byte-identical checkpoints preserved; controller remains HARD_STOPPED.'
+        "ARCHIVE PASS: $expectedCount byte-identical checkpoints preserved; controller remains HARD_STOPPED."
     } else {
         $manifest=Get-Content (Join-Path $archive 'archive_manifest.json') -Raw | ConvertFrom-Json
-        if (-not $manifest.pass -or $manifest.checkpoint_count -ne 45) { throw 'Archive incomplete.' }
+        if (-not $manifest.pass -or $manifest.checkpoint_count -ne $expectedCount) { throw 'Archive incomplete.' }
         foreach ($entry in $manifest.checkpoints) { Assert-Hash (Join-Path $archive ('checkpoints\beamspace\'+$entry.name)) $entry.sha256 }
         Assert-Hash $statePath (Get-FileHash -LiteralPath (Join-Path $archive 'controller\controller_state.json') -Algorithm SHA256).Hash
         Assert-Hash (Join-Path $controller 'formal_identity.json') (Get-FileHash -LiteralPath (Join-Path $archive 'controller\formal_identity.json') -Algorithm SHA256).Hash
@@ -86,7 +99,7 @@ try {
         Write-Atomic (Join-Path $controller 'formal_identity.json') $formal
         Write-Atomic (Join-Path $controller 'recovery_complete.json') @{
             recovered_utc=[DateTime]::UtcNow.ToString('o');old_head=$oldHead;new_head=$head
-            source_hash=$formal.source_hash;archived_checkpoints=45;recompute_count=45
+            source_hash=$formal.source_hash;archived_checkpoints=$expectedCount;recompute_count=$expectedCount
             checkpoint_identity_validation='UNCHANGED_EXACT_HEAD_AND_SOURCE_HASH';archive=$archive
         }
         Write-Atomic $statePath ([ordered]@{state='PREPARED';pid=0;process_start_utc='';batch_expression='';last_mode='';log='';launched=$false})

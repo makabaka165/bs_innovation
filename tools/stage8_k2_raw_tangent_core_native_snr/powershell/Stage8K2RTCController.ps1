@@ -86,7 +86,7 @@ public static class RTCCommandLine {
 }
 '@
     }
-    $started=[DateTime]::Parse($State.process_start_utc).ToUniversalTime()
+    $started=([DateTime]$State.process_start_utc).ToUniversalTime()
     foreach ($process in $Processes) {
         if (-not $process.CommandLine -or -not $process.CreationDate) { throw 'Missing MATLAB command/start identity.' }
         $arguments=[RTCCommandLine]::Parse($process.CommandLine)
@@ -131,7 +131,10 @@ function Invoke-Tick {
     $owned=$false
     try {
         $owned=$mutex.WaitOne(0)
-        if (-not $owned) { return }
+        if (-not $owned) {
+            if ($Action -eq 'TestProbe') { throw 'Actual Tick test could not acquire the controller mutex.' }
+            return
+        }
         Assert-Identity
         $state=Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json
         if ($state.state -in @('COMPLETE','HARD_STOPPED')) { return }
@@ -191,8 +194,9 @@ switch ($Action) {
         if ($inventory.workers -ne 1 -or $inventory.launchers -ne 1) { throw 'Actual launcher/worker pair was not observed.' }
         Invoke-Tick
         if ($before -ne (Get-FileHash -LiteralPath $StatePath -Algorithm SHA256).Hash) { throw 'Tick mutated a live-worker state.' }
-        Write-JsonAtomic (Join-Path $RuntimeRoot 'tests\process_launch_pass.json') @{
+        Write-JsonAtomic (Join-Path $RuntimeRoot "tests\process_launch_${PSEdition}_pass.json") @{
             pass=$true;launchers=$inventory.launchers;compute_workers=$inventory.workers;tick_state_unchanged=$true
+            powershell_edition=$PSEdition
             controller_sha256=(Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()
             observed_utc=[DateTime]::UtcNow.ToString('o')
             processes=@($active | Select-Object ProcessId,ParentProcessId,ExecutablePath,CreationDate,CommandLine)
@@ -204,18 +208,27 @@ switch ($Action) {
         $reportPath=Join-Path $RuntimeRoot 'tests\process_launch_pass.json'
         if ((Test-Path -LiteralPath $testState) -or (Test-Path -LiteralPath $reportPath)) { throw 'Actual-launch test evidence exists; preserve before retesting.' }
         $state=[ordered]@{state='PROCESS_TEST_RUNNING';pid=0;process_start_utc='';batch_expression='';last_mode='TEST';log='';launched=$false}
-        $expression="cd('$($RepoDir.Replace('\','/'))'); addpath('tools/stage8_k2_raw_tangent_core_native_snr/tests'); stage8_k2_rtc_test_process_launch(pwd,'$($RuntimeRoot.Replace('\','/'))')"
+        $pwsh=(Get-Command pwsh.exe -ErrorAction Stop).Source.Replace('\','/')
+        $expression="cd('$($RepoDir.Replace('\','/'))'); addpath('tools/stage8_k2_raw_tangent_core_native_snr/tests'); stage8_k2_rtc_test_process_launch(pwd,'$($RuntimeRoot.Replace('\','/'))','$pwsh')"
         $process=Start-MatlabProcess $expression (Join-Path $RuntimeRoot 'logs\process_launch_test.log') $state $testState
         if (-not $process.WaitForExit(60000)) { throw 'Actual-launch test did not finish within 60 seconds; preserve processes for inspection.' }
-        if (-not (Test-Path -LiteralPath $reportPath)) { throw 'Actual-launch test did not produce evidence.' }
-        $report=Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
+        $editions=@('Desktop','Core')
+        foreach ($edition in $editions) {
+            $report=Get-Content -LiteralPath (Join-Path $RuntimeRoot "tests\process_launch_${edition}_pass.json") -Raw | ConvertFrom-Json
+            if (-not $report.pass -or $report.powershell_edition -ne $edition -or
+                $report.controller_sha256 -ne (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()) {
+                throw 'Actual-launch test did not pass in both PowerShell editions.'
+            }
+        }
         foreach ($entry in $report.processes) {
             $remaining=Get-Process -Id $entry.ProcessId -ErrorAction SilentlyContinue
             if ($remaining -and -not $remaining.WaitForExit(10000)) { throw 'Test process remains active.' }
         }
         if (@(Get-Process MATLAB,mwpython -ErrorAction SilentlyContinue).Count) { throw 'Test process cleanup failed.' }
         if (-not $report.pass) { throw 'Actual-launch test failed.' }
-        'ACTUAL LAUNCH/TICK PASS: one launcher, one compute worker, unchanged state, clean exit.'
+        $report | Add-Member -NotePropertyName powershell_editions -NotePropertyValue $editions
+        Write-JsonAtomic $reportPath $report
+        'ACTUAL LAUNCH/TICK PASS: PowerShell 5.1 and 7, one compute worker, unchanged state, clean exit.'
     }
     'Test' {
         $stamp=[DateTime]::UtcNow
@@ -227,6 +240,10 @@ switch ($Action) {
             $inventory=Get-MatlabInventory $valid $fixture
             if ($inventory.running -ne ($valid.Count -gt 0)) { throw 'Valid process inventory rejected.' }
         }
+        $decoded=$fixture | ConvertTo-Json | ConvertFrom-Json
+        Get-MatlabInventory @($launcher,$worker) $decoded | Out-Null
+        $typed=$fixture.PSObject.Copy(); $typed.process_start_utc=$stamp
+        Get-MatlabInventory @($launcher,$worker) $typed | Out-Null
         $badParent=$worker.PSObject.Copy(); $badParent.ParentProcessId=999
         $badCommand=$worker.PSObject.Copy(); $badCommand.CommandLine='-batch unrelated'
         $unknown=$worker.PSObject.Copy(); $unknown.ExecutablePath=$null
@@ -242,6 +259,7 @@ switch ($Action) {
         }
         $actual=Get-Content (Join-Path $RuntimeRoot 'tests\process_launch_pass.json') -Raw | ConvertFrom-Json
         if (-not $actual.pass -or -not $actual.tick_state_unchanged -or $actual.compute_workers -ne 1 -or
+            @($actual.powershell_editions).Count -ne 2 -or
             $actual.controller_sha256 -ne (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()) {
             throw 'A passing actual-launch test for this controller revision is required.'
         }
@@ -283,7 +301,7 @@ switch ($Action) {
         if ($source -match '(?im)^\s*(while\s*\(|Start-Sleep\b)') { throw 'Polling loop forbidden.' }
         $closeout=Get-Content (Join-Path $PSScriptRoot 'Stage8K2RTCCloseout.ps1') -Raw
         if ($closeout -notmatch 'Unregister-ScheduledTask' -or $closeout -notmatch 'record raw Tangent native-SNR results') { throw 'Closeout contract missing.' }
-        Write-JsonAtomic (Join-Path $RuntimeRoot 'controller\scheduled_test_pass.json') @{pass=$true;cases=$cases.Count;valid_process_cases=4;invalid_process_cases=$invalid.Count;actual_launch=$actual;interval_minutes=15;multiple_instances='IgnoreNew'}
+        Write-JsonAtomic (Join-Path $RuntimeRoot 'controller\scheduled_test_pass.json') @{pass=$true;cases=$cases.Count;valid_process_cases=6;invalid_process_cases=$invalid.Count;actual_launch=$actual;interval_minutes=15;multiple_instances='IgnoreNew'}
         'T18 PASS'
     }
     'InstallAndStart' {
