@@ -1,14 +1,21 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('InstallAndStart','Tick','Status','Test')][string]$Action='Status',
+    [ValidateSet('InstallAndStart','Tick','Status','Test','TestLaunch','TestProbe')][string]$Action='Status',
     [string]$RepoDir='E:\bs_innovation_worktrees\raw-tangent',
     [string]$RuntimeRoot='E:\bs_innovation_runtime\experiment_stage8-k2-raw-tangent-core-native-snr-v1'
 )
 $ErrorActionPreference='Stop'
+# MATLAB can inherit a PowerShell 7 module path before invoking Windows PowerShell.
+if ($PSEdition -eq 'Desktop') {
+    $systemModules=Join-Path $PSHOME 'Modules'
+    $env:PSModulePath=$systemModules+';'+$env:PSModulePath
+    Import-Module (Join-Path $systemModules 'Microsoft.PowerShell.Utility\Microsoft.PowerShell.Utility.psd1')
+}
 $TaskName='BSInnovation-Stage8K2-RawTangentCore-NativeSNR-V1'
 $MatlabExe='E:\MATLABR2022b\bin\matlab.exe'
 $StatePath=Join-Path $RuntimeRoot 'controller\controller_state.json'
 $Branch='experiment/stage8-k2-raw-tangent-core-native-snr-v1'
+if ($Action -eq 'TestProbe') { $StatePath=Join-Path $RuntimeRoot 'tests\process_launch_state.json' }
 
 function Write-JsonAtomic([string]$Filename,$Value) {
     $temporary="$Filename.tmp"
@@ -47,18 +54,77 @@ function Get-Decision([string]$State,[bool]$Running,[bool]$Done,[bool]$Launched)
         default { throw "Unknown state: $State" }
     }
 }
-function Start-MatlabJob([string]$Mode,$State) {
+function Get-MatlabInventory([object[]]$Processes,$State) {
+    if (-not $Processes.Count) { return [pscustomobject]@{running=$false;launchers=0;workers=0} }
+    if (-not $State.launched -or $State.pid -le 0 -or -not $State.batch_expression -or -not $State.log) {
+        throw 'MATLAB exists without a recorded launch identity.'
+    }
+    $launchers=@($Processes | Where-Object { $_.ExecutablePath -ieq $MatlabExe })
+    $workers=@($Processes | Where-Object { $_.ExecutablePath -ieq 'E:\MATLABR2022b\bin\win64\MATLAB.exe' })
+    if ($launchers.Count+$workers.Count -ne $Processes.Count) { throw 'Unrelated or unidentified MATLAB/mwpython process detected.' }
+    if ($launchers.Count -gt 1 -or $workers.Count -gt 1) { throw 'Multiple MATLAB launchers or compute workers detected.' }
+    if (-not ('RTCCommandLine' -as [type])) {
+        Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public static class RTCCommandLine {
+    [DllImport("shell32.dll", SetLastError=true, CharSet=CharSet.Unicode)]
+    private static extern IntPtr CommandLineToArgvW(string command, out int count);
+    [DllImport("kernel32.dll")]
+    private static extern IntPtr LocalFree(IntPtr memory);
+    public static string[] Parse(string command) {
+        int count;
+        IntPtr memory = CommandLineToArgvW(command, out count);
+        if (memory == IntPtr.Zero) throw new System.ComponentModel.Win32Exception();
+        try {
+            string[] args = new string[count];
+            for (int i=0; i<count; i++)
+                args[i] = Marshal.PtrToStringUni(Marshal.ReadIntPtr(memory, i*IntPtr.Size));
+            return args;
+        } finally { LocalFree(memory); }
+    }
+}
+'@
+    }
+    $started=[DateTime]::Parse($State.process_start_utc).ToUniversalTime()
+    foreach ($process in $Processes) {
+        if (-not $process.CommandLine -or -not $process.CreationDate) { throw 'Missing MATLAB command/start identity.' }
+        $arguments=[RTCCommandLine]::Parse($process.CommandLine)
+        if ($arguments.Count -ne 6 -or $arguments[0] -ine $process.ExecutablePath -or
+            $arguments[1] -ine '-singleCompThread' -or $arguments[2] -ine '-batch' -or
+            $arguments[3] -cne $State.batch_expression -or $arguments[4] -ine '-logfile' -or
+            $arguments[5] -cne $State.log) { throw 'MATLAB command identity mismatch.' }
+    }
+    if ($launchers.Count) {
+        $launcher=$launchers[0]
+        if ($launcher.ProcessId -ne $State.pid -or
+            [Math]::Abs(($launcher.CreationDate.ToUniversalTime()-$started).TotalSeconds) -gt 0.1) { throw 'MATLAB launcher identity mismatch.' }
+    }
+    if ($workers.Count) {
+        $worker=$workers[0]
+        if ($worker.ParentProcessId -ne $State.pid -or $worker.CreationDate.ToUniversalTime() -lt $started) {
+            throw 'MATLAB worker parent/start identity mismatch.'
+        }
+    }
+    return [pscustomobject]@{running=$true;launchers=$launchers.Count;workers=$workers.Count}
+}
+function Start-MatlabProcess([string]$Expression,[string]$Log,$State,[string]$TargetStatePath) {
     if (@(Get-Process MATLAB,mwpython -ErrorAction SilentlyContinue).Count) { throw 'Another MATLAB/mwpython process is running.' }
+    $process=Start-Process -FilePath $MatlabExe -ArgumentList @('-singleCompThread','-batch',('"'+$Expression+'"'),'-logfile',('"'+$Log+'"')) -WorkingDirectory $RepoDir -WindowStyle Hidden -PassThru
+    $State.pid=$process.Id
+    $State.process_start_utc=$process.StartTime.ToUniversalTime().ToString('o')
+    $State.batch_expression=$Expression
+    $State.log=$Log
+    $State.launched=$true
+    Write-JsonAtomic $TargetStatePath $State
+    return $process
+}
+function Start-MatlabJob([string]$Mode,$State) {
     $stamp=[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfff')
     $log=Join-Path $RuntimeRoot "logs\${Mode}_${stamp}.log"
     $expression="cd('$($RepoDir.Replace('\','/'))'); addpath('tools/stage8_k2_raw_tangent_core_native_snr/matlab'); stage8_k2_rtc_dispatch('$Mode',pwd,'$($RuntimeRoot.Replace('\','/'))')"
-    $process=Start-Process -FilePath $MatlabExe -ArgumentList @('-singleCompThread','-batch',('"'+$expression+'"'),'-logfile',('"'+$log+'"')) -WorkingDirectory $RepoDir -WindowStyle Hidden -PassThru
-    $State.pid=$process.Id
-    $State.process_start_utc=$process.StartTime.ToUniversalTime().ToString('o')
     $State.last_mode=$Mode
-    $State.log=$log
-    $State.launched=$true
-    Write-JsonAtomic $StatePath $State
+    Start-MatlabProcess $expression $log $State $StatePath | Out-Null
 }
 function Invoke-Tick {
     $mutex=[Threading.Mutex]::new($false,'Local\BSInnovationStage8K2RTCNativeSNRV1')
@@ -72,12 +138,8 @@ function Invoke-Tick {
         $failure=Join-Path $RuntimeRoot 'status\hard_stop.json'
         if (Test-Path -LiteralPath $failure) { throw (Get-Content -LiteralPath $failure -Raw) }
         $active=@(Get-CimInstance Win32_Process -Filter "Name='MATLAB.exe' OR Name='mwpython.exe'")
-        if ($active.Count -gt 1) { throw 'Multiple MATLAB/mwpython processes detected.' }
-        $running=$active.Count -eq 1
-        if ($running) {
-            if ($active[0].CommandLine -notmatch 'stage8_k2_rtc_dispatch') { throw 'Unrelated MATLAB process detected.' }
-            return
-        }
+        $inventory=Get-MatlabInventory $active $state
+        if ($inventory.running) { return }
         $doneName=switch ($state.state) {
             'BEAMSPACE_RUNNING' {'beamspace_done.json'}
             'ELEMENT_RUNNING' {'element_done.json'}
@@ -120,7 +182,69 @@ function Invoke-Tick {
 }
 
 switch ($Action) {
+    'TestProbe' {
+        $before=(Get-FileHash -LiteralPath $StatePath -Algorithm SHA256).Hash
+        $state=Get-Content -LiteralPath $StatePath -Raw | ConvertFrom-Json
+        $active=@(Get-CimInstance Win32_Process -Filter "Name='MATLAB.exe' OR Name='mwpython.exe'")
+        Write-JsonAtomic (Join-Path $RuntimeRoot 'tests\process_launch_observed.json') @($active | Select-Object ProcessId,ParentProcessId,ExecutablePath,CreationDate,CommandLine)
+        $inventory=Get-MatlabInventory $active $state
+        if ($inventory.workers -ne 1 -or $inventory.launchers -ne 1) { throw 'Actual launcher/worker pair was not observed.' }
+        Invoke-Tick
+        if ($before -ne (Get-FileHash -LiteralPath $StatePath -Algorithm SHA256).Hash) { throw 'Tick mutated a live-worker state.' }
+        Write-JsonAtomic (Join-Path $RuntimeRoot 'tests\process_launch_pass.json') @{
+            pass=$true;launchers=$inventory.launchers;compute_workers=$inventory.workers;tick_state_unchanged=$true
+            controller_sha256=(Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()
+            observed_utc=[DateTime]::UtcNow.ToString('o')
+            processes=@($active | Select-Object ProcessId,ParentProcessId,ExecutablePath,CreationDate,CommandLine)
+        }
+    }
+    'TestLaunch' {
+        Assert-Identity
+        $testState=Join-Path $RuntimeRoot 'tests\process_launch_state.json'
+        $reportPath=Join-Path $RuntimeRoot 'tests\process_launch_pass.json'
+        if ((Test-Path -LiteralPath $testState) -or (Test-Path -LiteralPath $reportPath)) { throw 'Actual-launch test evidence exists; preserve before retesting.' }
+        $state=[ordered]@{state='PROCESS_TEST_RUNNING';pid=0;process_start_utc='';batch_expression='';last_mode='TEST';log='';launched=$false}
+        $expression="cd('$($RepoDir.Replace('\','/'))'); addpath('tools/stage8_k2_raw_tangent_core_native_snr/tests'); stage8_k2_rtc_test_process_launch(pwd,'$($RuntimeRoot.Replace('\','/'))')"
+        $process=Start-MatlabProcess $expression (Join-Path $RuntimeRoot 'logs\process_launch_test.log') $state $testState
+        if (-not $process.WaitForExit(60000)) { throw 'Actual-launch test did not finish within 60 seconds; preserve processes for inspection.' }
+        if (-not (Test-Path -LiteralPath $reportPath)) { throw 'Actual-launch test did not produce evidence.' }
+        $report=Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
+        foreach ($entry in $report.processes) {
+            $remaining=Get-Process -Id $entry.ProcessId -ErrorAction SilentlyContinue
+            if ($remaining -and -not $remaining.WaitForExit(10000)) { throw 'Test process remains active.' }
+        }
+        if (@(Get-Process MATLAB,mwpython -ErrorAction SilentlyContinue).Count) { throw 'Test process cleanup failed.' }
+        if (-not $report.pass) { throw 'Actual-launch test failed.' }
+        'ACTUAL LAUNCH/TICK PASS: one launcher, one compute worker, unchanged state, clean exit.'
+    }
     'Test' {
+        $stamp=[DateTime]::UtcNow
+        $fixture=[pscustomobject]@{pid=101;process_start_utc=$stamp.ToString('o');batch_expression='test_expression';log='test.log';launched=$true}
+        $command=' -singleCompThread -batch "test_expression" -logfile "test.log"'
+        $launcher=[pscustomobject]@{ProcessId=101;ParentProcessId=1;ExecutablePath=$MatlabExe;CreationDate=$stamp;CommandLine=('"'+$MatlabExe+'"'+$command)}
+        $worker=[pscustomobject]@{ProcessId=102;ParentProcessId=101;ExecutablePath='E:\MATLABR2022b\bin\win64\MATLAB.exe';CreationDate=$stamp.AddSeconds(1);CommandLine=('"E:\MATLABR2022b\bin\win64\MATLAB.exe"'+$command)}
+        foreach ($valid in @(@(),@($launcher),@($worker),@($launcher,$worker))) {
+            $inventory=Get-MatlabInventory $valid $fixture
+            if ($inventory.running -ne ($valid.Count -gt 0)) { throw 'Valid process inventory rejected.' }
+        }
+        $badParent=$worker.PSObject.Copy(); $badParent.ParentProcessId=999
+        $badCommand=$worker.PSObject.Copy(); $badCommand.CommandLine='-batch unrelated'
+        $unknown=$worker.PSObject.Copy(); $unknown.ExecutablePath=$null
+        $foreign=$worker.PSObject.Copy(); $foreign.ExecutablePath='C:\foreign\MATLAB.exe'
+        $python=$worker.PSObject.Copy(); $python.ExecutablePath='E:\MATLABR2022b\bin\win64\mwpython.exe'
+        $reused=$launcher.PSObject.Copy(); $reused.CreationDate=$stamp.AddSeconds(1)
+        $early=$worker.PSObject.Copy(); $early.CreationDate=$stamp.AddSeconds(-1)
+        $invalid=@(@($launcher,$worker,$worker),@($launcher,$launcher),@($badParent),@($badCommand),@($unknown),@($foreign),@($python),@($reused),@($early))
+        foreach ($bad in $invalid) {
+            $rejected=$false
+            try { Get-MatlabInventory $bad $fixture | Out-Null } catch { $rejected=$true }
+            if (-not $rejected) { throw 'Invalid process inventory accepted.' }
+        }
+        $actual=Get-Content (Join-Path $RuntimeRoot 'tests\process_launch_pass.json') -Raw | ConvertFrom-Json
+        if (-not $actual.pass -or -not $actual.tick_state_unchanged -or $actual.compute_workers -ne 1 -or
+            $actual.controller_sha256 -ne (Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()) {
+            throw 'A passing actual-launch test for this controller revision is required.'
+        }
         $cases=@(
             @('PREPARED',$false,$false,$false,'START_BEAMSPACE'),
             @('BEAMSPACE_RUNNING',$true,$false,$true,'NONE'),
@@ -159,7 +283,7 @@ switch ($Action) {
         if ($source -match '(?im)^\s*(while\s*\(|Start-Sleep\b)') { throw 'Polling loop forbidden.' }
         $closeout=Get-Content (Join-Path $PSScriptRoot 'Stage8K2RTCCloseout.ps1') -Raw
         if ($closeout -notmatch 'Unregister-ScheduledTask' -or $closeout -notmatch 'record raw Tangent native-SNR results') { throw 'Closeout contract missing.' }
-        Write-JsonAtomic (Join-Path $RuntimeRoot 'controller\scheduled_test_pass.json') @{pass=$true;cases=$cases.Count;interval_minutes=15;multiple_instances='IgnoreNew'}
+        Write-JsonAtomic (Join-Path $RuntimeRoot 'controller\scheduled_test_pass.json') @{pass=$true;cases=$cases.Count;valid_process_cases=4;invalid_process_cases=$invalid.Count;actual_launch=$actual;interval_minutes=15;multiple_instances='IgnoreNew'}
         'T18 PASS'
     }
     'InstallAndStart' {
@@ -175,7 +299,7 @@ switch ($Action) {
         $formal=Get-Content (Join-Path $RuntimeRoot 'controller\formal_identity.json') -Raw | ConvertFrom-Json
         if ($formal.head -ne $head -or $formal.source_hash -ne $gates.source_hash) { throw 'Gate/formal code identity mismatch.' }
         if (@(Get-Process MATLAB,mwpython -ErrorAction SilentlyContinue).Count) { throw 'MATLAB/mwpython must be absent.' }
-        $state=[ordered]@{state='PREPARED';pid=0;process_start_utc='';last_mode='';log='';launched=$false}
+        $state=[ordered]@{state='PREPARED';pid=0;process_start_utc='';batch_expression='';last_mode='';log='';launched=$false}
         Write-JsonAtomic $StatePath $state
         $command="-NoProfile -NonInteractive -ExecutionPolicy Bypass -File `"$PSCommandPath`" -Action Tick"
         $taskAction=New-ScheduledTaskAction -Execute "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe" -Argument $command -WorkingDirectory $RepoDir

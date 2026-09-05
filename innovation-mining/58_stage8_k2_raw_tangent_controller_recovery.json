@@ -1,0 +1,376 @@
+{
+  "status": "RECOVERY_GATES_PASSED_PENDING_FORMAL_RESTART",
+  "protocol": "STAGE8_K2_RAW_TANGENT_CORE_NATIVE_SNR_PRUNING_V1",
+  "incident_head": "d4e2517bf860efeabbf40925af44ba17bff85495",
+  "incident_source_hash": "a0907109d220e20ea993fd225ad9513fde2a93f097e33b914014846ac05d75ff",
+  "recovery_source_hash": "ec83baf8e158a8ec705d6d1eee64ba009b77898d45e49e867e3447cfc0d862f0",
+  "cause": "Windows MATLAB launcher and its single compute child were counted as two workers.",
+  "user_authorization": "Fix the root cause and continue the protocol after HARD_STOPPED.",
+  "recovery_policy": "ARCHIVE_BYTE_IDENTICAL_THEN_RECOMPUTE_WITH_STRICT_NEW_IDENTITY",
+  "archive_path": "E:\\bs_innovation_runtime\\experiment_stage8-k2-raw-tangent-core-native-snr-v1\\backup\\launch_incident_d4e2517",
+  "archive_manifest_sha256": "52f3e86d9e51e390d1f626d9dfd73af275a41a14d1bb8b96d2f097a3212bd1a8",
+  "readonly_audit_sha256": "933e1a4da25e76f7e85b2b133415a991bc6790d469d628531cca9c3dba675c58",
+  "archived_checkpoint_count": 45,
+  "reconstructed_observation_count": 45,
+  "recomputed_metric_row_count": 135,
+  "checkpoint_bytes_unchanged": true,
+  "old_checkpoint_identities_rewritten": false,
+  "checkpoint_identity_exceptions": 0,
+  "estimator_noise_metric_kernel_changes": 0,
+  "checkpoint_validator_changes": 0,
+  "fixed_tests_passed": 18,
+  "nominal_target_max_error_db": [
+    1.7763568394002505E-15,
+    1.7763568394002505E-15
+  ],
+  "scheduled_tests": {
+    "cases": 15,
+    "actual_launch": {
+      "processes": [
+        {
+          "ProcessId": 47032,
+          "ParentProcessId": 46372,
+          "ExecutablePath": "E:\\MATLABR2022b\\bin\\matlab.exe",
+          "CreationDate": "2026-09-05T07:43:22.704Z",
+          "CommandLine": "\"E:\\MATLABR2022b\\bin\\matlab.exe\" -singleCompThread -batch \"cd('E:/bs_innovation_worktrees/raw-tangent'); addpath('tools/stage8_k2_raw_tangent_core_native_snr/tests'); stage8_k2_rtc_test_process_launch(pwd,'E:/bs_innovation_runtime/experiment_stage8-k2-raw-tangent-core-native-snr-v1')\" -logfile \"E:\\bs_innovation_runtime\\experiment_stage8-k2-raw-tangent-core-native-snr-v1\\logs\\process_launch_test.log\" "
+        },
+        {
+          "ProcessId": 3536,
+          "ParentProcessId": 47032,
+          "ExecutablePath": "E:\\MATLABR2022b\\bin\\win64\\MATLAB.exe",
+          "CreationDate": "2026-09-05T07:43:22.758Z",
+          "CommandLine": "\"E:\\MATLABR2022b\\bin\\win64\\MATLAB.exe\" \"-singleCompThread\" \"-batch\" \"cd('E:/bs_innovation_worktrees/raw-tangent'); addpath('tools/stage8_k2_raw_tangent_core_native_snr/tests'); stage8_k2_rtc_test_process_launch(pwd,'E:/bs_innovation_runtime/experiment_stage8-k2-raw-tangent-core-native-snr-v1')\" \"-logfile\" \"E:\\bs_innovation_runtime\\experiment_stage8-k2-raw-tangent-core-native-snr-v1\\logs\\process_launch_test.log\" "
+        }
+      ],
+      "observed_utc": "2026-09-05T07:43:28.4879773Z",
+      "pass": true,
+      "tick_state_unchanged": true,
+      "compute_workers": 1,
+      "launchers": 1,
+      "controller_sha256": "94e6634d992add40b14e73566f1267bb2661891dde3201f69f4ef6a4132537fa"
+    },
+    "pass": true,
+    "valid_process_cases": 4,
+    "multiple_instances": "IgnoreNew",
+    "interval_minutes": 15,
+    "invalid_process_cases": 9
+  },
+  "archived_checkpoints": [
+    {
+      "name": "trial_0001_RTC_S01_B001.mat",
+      "sha256": "f1bd9b66e6e909747e4c9f32677da79ee36cf37dcdeb77b8923fc638de8f32a9",
+      "bytes": 21441,
+      "scenario_id": "RTC_S01_B001",
+      "payload_hash": "afc01ee13ab1a3dca8b4e6a11767c39e3700eb04f94d8c775de148580aa849d7"
+    },
+    {
+      "name": "trial_0002_RTC_S01_B002.mat",
+      "sha256": "6876b1cb60bcbb256063152880888ee81aa22e0f4ea76820040647ce0755c1e2",
+      "bytes": 21422,
+      "scenario_id": "RTC_S01_B002",
+      "payload_hash": "be50597fb5f0b8378fdec13e0ec2b6becd8566dbce671c3f25fe7be9025f5ce3"
+    },
+    {
+      "name": "trial_0003_RTC_S01_B003.mat",
+      "sha256": "c2c8d41f8ca33f416cf429b7a5da9cf85a4e9106cc5a29724a81fd9b4af7b55b",
+      "bytes": 21431,
+      "scenario_id": "RTC_S01_B003",
+      "payload_hash": "74cefdd0263e97d0054ba116f3a2ff193dc42556f9056a647f74534562890e2c"
+    },
+    {
+      "name": "trial_0004_RTC_S01_B004.mat",
+      "sha256": "d24b5b507f223f51123b2e229e95382e6f1da799c7d3b56670bf43589c856eb3",
+      "bytes": 21298,
+      "scenario_id": "RTC_S01_B004",
+      "payload_hash": "a2a49f5239ca5b621ad164594e0063837bdb9c2bfaf366475cc94a8fa8c013d6"
+    },
+    {
+      "name": "trial_0005_RTC_S01_B005.mat",
+      "sha256": "42efe3c4dbcc68a2c853424080ba15ba606b696b8818892817513cd48d97fa72",
+      "bytes": 21533,
+      "scenario_id": "RTC_S01_B005",
+      "payload_hash": "b167482bc15c191b3ab1da0308300a1a97d60e64440a97f8a2e7432cfc529129"
+    },
+    {
+      "name": "trial_0006_RTC_S01_B006.mat",
+      "sha256": "6da78179c2ef10bf2fc285d85aea49cdbb118d73e8c7ca7383129c7e337e2fe5",
+      "bytes": 21462,
+      "scenario_id": "RTC_S01_B006",
+      "payload_hash": "2611e1faa02e7cc8703ec82cfc16bb9edfd5d734617584bf2768a6d35409d122"
+    },
+    {
+      "name": "trial_0007_RTC_S01_B007.mat",
+      "sha256": "e41829d08e058eca8b0845ce78d83e7a03a6bf65840fb7925fce7063f7e5eb84",
+      "bytes": 21339,
+      "scenario_id": "RTC_S01_B007",
+      "payload_hash": "d4db7d4a41efd1c84828308d3e6d09a3739186b81be7a7ec15503d442f19d6fd"
+    },
+    {
+      "name": "trial_0008_RTC_S01_B008.mat",
+      "sha256": "f6c4f038b0906cc6ef0326a9a8726b829fd596900d57e885b77f898a6e6a2700",
+      "bytes": 21417,
+      "scenario_id": "RTC_S01_B008",
+      "payload_hash": "6570fe579dd4091bbcc27e660770edd29c2c672842b770609e51aa7661470076"
+    },
+    {
+      "name": "trial_0009_RTC_S01_B009.mat",
+      "sha256": "4834208b1a9894a263c17c4358a0c4387fdf358e8868cf703ee01b1f960361a4",
+      "bytes": 21379,
+      "scenario_id": "RTC_S01_B009",
+      "payload_hash": "76a2cb998193bca7a9d714464aa9c950c3d9e422c9d3ef1d7720474d9b3cfeac"
+    },
+    {
+      "name": "trial_0010_RTC_S01_B010.mat",
+      "sha256": "063e597a2458e66d62e4c4c6e2862afb944ac2224b868559419c7f66f0f29fdb",
+      "bytes": 21508,
+      "scenario_id": "RTC_S01_B010",
+      "payload_hash": "3f32690d7a551aa0c603a0f72535bf9b9b854b280dc5b78a93e4505d10922064"
+    },
+    {
+      "name": "trial_0011_RTC_S01_B011.mat",
+      "sha256": "dfbaaa2d5dd514beee84d44c65c3c6dc6ccb1875c0d62e52678641fba2a9c51b",
+      "bytes": 21367,
+      "scenario_id": "RTC_S01_B011",
+      "payload_hash": "8a7c2d399622cfc8ecd7f62ee95bb7c632a4148522dbe8cdfe8b0a5543c732f4"
+    },
+    {
+      "name": "trial_0012_RTC_S01_B012.mat",
+      "sha256": "f14879b87aad6688d16042e94c1f4d6f646b2318948f18b39d79887d197af24c",
+      "bytes": 21430,
+      "scenario_id": "RTC_S01_B012",
+      "payload_hash": "fb3de195513230e2587dc499d849c12dd33b480c217c5f2266674be74e84f1df"
+    },
+    {
+      "name": "trial_0013_RTC_S01_B013.mat",
+      "sha256": "80ba85f000501a79bc99973472f3ece8173bf248601d6ddf740ae2a517d68234",
+      "bytes": 21524,
+      "scenario_id": "RTC_S01_B013",
+      "payload_hash": "43fa65430b33a2d0b91bfb45217bd2a33e8f4448a63f86b5fdf5f2dff7dd7b8b"
+    },
+    {
+      "name": "trial_0014_RTC_S01_B014.mat",
+      "sha256": "7101f0e962b04d6be26e1a1c8c06237833f0583f6f0decccf1637f9ca4a1ba4d",
+      "bytes": 21465,
+      "scenario_id": "RTC_S01_B014",
+      "payload_hash": "d78042c167174562d9e312dcf89abc3767ec32961ca78e6ac214dc24766694e6"
+    },
+    {
+      "name": "trial_0015_RTC_S01_B015.mat",
+      "sha256": "30908850cf9d9e206219c72333cdc6876c8835cfcdca2fc246b352a57011ebe8",
+      "bytes": 21524,
+      "scenario_id": "RTC_S01_B015",
+      "payload_hash": "bd8cc1ab7a252950d7647f327c98f22de8d1a53ab80ce1c4c8d792a67e569c5a"
+    },
+    {
+      "name": "trial_0016_RTC_S01_B016.mat",
+      "sha256": "f1e6e66fba9e7b9ad3b1c6bb40a46fb82d3b9c97098963b6221f57bf314c0ec1",
+      "bytes": 21462,
+      "scenario_id": "RTC_S01_B016",
+      "payload_hash": "40dffcb567a2109f730d9aa2e6486dd16b02d1e253738914b13e63629d92bacb"
+    },
+    {
+      "name": "trial_0017_RTC_S01_B017.mat",
+      "sha256": "057ead398d277f55630965f04019e3e2ecc3126743baaa830aa9efa4d4ac0442",
+      "bytes": 25516,
+      "scenario_id": "RTC_S01_B017",
+      "payload_hash": "a353bf3072e6139381da833ebe0c2afc57c85a3ce154b4977bcc1a05e3ff3baf"
+    },
+    {
+      "name": "trial_0018_RTC_S01_B018.mat",
+      "sha256": "5f651b7d58d6c7704ec08933ec3faccfea4b6b34638cb49fbebf8da739d5c100",
+      "bytes": 21401,
+      "scenario_id": "RTC_S01_B018",
+      "payload_hash": "d3cf6ff36e562ca8ad207460a16539876627f1d2e05ed55e0ef75a4673fba683"
+    },
+    {
+      "name": "trial_0019_RTC_S01_B019.mat",
+      "sha256": "a7fbb31ba404edd0f334737baf772b63179f12f0d09e2b3c8473c2612096906c",
+      "bytes": 21437,
+      "scenario_id": "RTC_S01_B019",
+      "payload_hash": "e4379205461381f3f4edefe2a420a779f018ade1422f74e3da177fa592bcb29a"
+    },
+    {
+      "name": "trial_0020_RTC_S01_B020.mat",
+      "sha256": "fdc7f92f4eab604e5427ec150cc2fa257f8a6b6360d99f2ff460c351238164b5",
+      "bytes": 21534,
+      "scenario_id": "RTC_S01_B020",
+      "payload_hash": "fff7d1e8aed6d6a24816da819dcd534a769547837d3ddce5f33cba8119d4466a"
+    },
+    {
+      "name": "trial_0021_RTC_S01_B021.mat",
+      "sha256": "52b62da9028b71f937ae9bafcdd0dba6970a8fde219eeeadfd227d780bc6ea9a",
+      "bytes": 21352,
+      "scenario_id": "RTC_S01_B021",
+      "payload_hash": "e472fa270f9258f8cadfdffa51d1804d9beb1fcf1361802d55f5bb10edfcdd59"
+    },
+    {
+      "name": "trial_0022_RTC_S01_B022.mat",
+      "sha256": "0302f2e880200246000a3a96054454867bb91bf017616d3f30680631ebb5d7e5",
+      "bytes": 21425,
+      "scenario_id": "RTC_S01_B022",
+      "payload_hash": "3f8de7c6dcae37bfe7412a2fcf35c2c1fba5fb3654ec245caf29acd5e78b6700"
+    },
+    {
+      "name": "trial_0023_RTC_S01_B023.mat",
+      "sha256": "e601ed5b55d58d2bd321d2c7999927f5b204d1e00631dfa86134c6faaeb7c2ac",
+      "bytes": 25416,
+      "scenario_id": "RTC_S01_B023",
+      "payload_hash": "079f7775ca8ee2bede7e2faf46aa0758e2f3f64d0263ee7d7e70650a9cb24be6"
+    },
+    {
+      "name": "trial_0024_RTC_S01_B024.mat",
+      "sha256": "df3d39113543e602f362ad1a554123dde2ca8bdbdfd13641e543fdf7de0fc356",
+      "bytes": 21268,
+      "scenario_id": "RTC_S01_B024",
+      "payload_hash": "07ee7c58ce817279e56efb582cf703dca66d04ef68f0fc6177f303ee1930ceb1"
+    },
+    {
+      "name": "trial_0025_RTC_S01_B025.mat",
+      "sha256": "3a72226fa348221cf1117285c981aa474bc354b586412ab6fd95e69b5d2699b5",
+      "bytes": 25545,
+      "scenario_id": "RTC_S01_B025",
+      "payload_hash": "12bd7834769e51473ad2e3307adcacd21a5b5b747c07e3109ff8064f9a01f89c"
+    },
+    {
+      "name": "trial_0026_RTC_S01_B026.mat",
+      "sha256": "40857fd77439a1f6b8e69c54b4fa0e106df39f0de00d7d4285edaed1c152fae8",
+      "bytes": 25432,
+      "scenario_id": "RTC_S01_B026",
+      "payload_hash": "42bc83de1a6f78dfb4f9ed313a9b71d1e94dad3c10051f4a353ee8dece0561e4"
+    },
+    {
+      "name": "trial_0027_RTC_S01_B027.mat",
+      "sha256": "2dc6f5349cf9e6f0fc9940d7511aaf7d436c5e2446fd421b305880f71531dff4",
+      "bytes": 21390,
+      "scenario_id": "RTC_S01_B027",
+      "payload_hash": "3df1e0424932447204eb38cab5e0e3f02f2471c4adda971880dc944e5b80b39e"
+    },
+    {
+      "name": "trial_0028_RTC_S01_B028.mat",
+      "sha256": "a3ae998bd09b5829544725dbe3ab4010b5f2984dce3cfdc2f996c01c4d99b110",
+      "bytes": 25416,
+      "scenario_id": "RTC_S01_B028",
+      "payload_hash": "0a7d19e63866dc46f1be43c4131703f3971feb010586363584929422308d1e08"
+    },
+    {
+      "name": "trial_0029_RTC_S01_B029.mat",
+      "sha256": "fe8d673a67e028024c781354ce001bf6a28b106ec73f9c044349c50eb2c2fb28",
+      "bytes": 21433,
+      "scenario_id": "RTC_S01_B029",
+      "payload_hash": "d2b5bd797fe71968118a9ff4071809b3ef4880bd08fee63cea964e588b48e26b"
+    },
+    {
+      "name": "trial_0030_RTC_S01_B030.mat",
+      "sha256": "db4a1f938d08e4368d8b69cba396b89a7f7bb9b417c669edfcdd4192c93dcf54",
+      "bytes": 21533,
+      "scenario_id": "RTC_S01_B030",
+      "payload_hash": "890360186cd6d3d029ba250d1f05dae8282fe2ae9fc62b636d92faecdb5ee18e"
+    },
+    {
+      "name": "trial_0031_RTC_S01_B031.mat",
+      "sha256": "932ba89aabc77d28f0ec6afe1488c49b0dab3931716e1ab96791bba6253a2d00",
+      "bytes": 21333,
+      "scenario_id": "RTC_S01_B031",
+      "payload_hash": "b4b6468da986ec6ea2310b0fccf082cfdb9d2efbc574be2b8211186c6c92cc37"
+    },
+    {
+      "name": "trial_0032_RTC_S01_B032.mat",
+      "sha256": "1d88cd51093ba44e5e11e3afb4172f15a13aa8bc29fd216f42c77c2409a90c70",
+      "bytes": 21383,
+      "scenario_id": "RTC_S01_B032",
+      "payload_hash": "1fe12b5152dc0a4aaadd04e8680f2a80dd07e64f1789212c1a4e29744479eefc"
+    },
+    {
+      "name": "trial_0033_RTC_S01_B033.mat",
+      "sha256": "32dca9111baded93d481f883927be70570dd24586d966a880d4390210b4fe4b6",
+      "bytes": 21345,
+      "scenario_id": "RTC_S01_B033",
+      "payload_hash": "350b4c473663c56efdea5288301b46dfafe605a2d3a130296291336d52272bdc"
+    },
+    {
+      "name": "trial_0034_RTC_S01_B034.mat",
+      "sha256": "dc1f2f99912d0b6d9ebaa0c3a11a0a9b7beaec3bf884c7ea40dee12646419cc8",
+      "bytes": 21524,
+      "scenario_id": "RTC_S01_B034",
+      "payload_hash": "aee8eb815e9b337137bff5c1586e50613643731abea695506cc5d0e77946255a"
+    },
+    {
+      "name": "trial_0035_RTC_S01_B035.mat",
+      "sha256": "3827f1d96050250274030f528ca7ef05f294572a6bee2c93198c299206a77f20",
+      "bytes": 21533,
+      "scenario_id": "RTC_S01_B035",
+      "payload_hash": "715a4993b20e3ae7f41d72c5bc2ad5581a509b2bc64453302a373e98ae999ca2"
+    },
+    {
+      "name": "trial_0036_RTC_S01_B036.mat",
+      "sha256": "94b5e7fad8caedadf64e420a873af72882507835aa1ec92d1a3c272436d8ea62",
+      "bytes": 21359,
+      "scenario_id": "RTC_S01_B036",
+      "payload_hash": "8e104659222e282b91428e1beb8d2e82af65b0616b57dc38d45883c21c113f93"
+    },
+    {
+      "name": "trial_0037_RTC_S01_B037.mat",
+      "sha256": "a4619fb2aaaa3f7b3cd8ed953ab3ee563209efd000580e3f9e43d7b142605ac6",
+      "bytes": 21362,
+      "scenario_id": "RTC_S01_B037",
+      "payload_hash": "3477bd3219c253e57973b5dbd99998030a991f8a7bd70e640ea6f0d9357e6074"
+    },
+    {
+      "name": "trial_0038_RTC_S01_B038.mat",
+      "sha256": "12eb9db561def6d88788ba499ba3d89760b0cc5fd7226e6d1f8dd5d190fc3c74",
+      "bytes": 25783,
+      "scenario_id": "RTC_S01_B038",
+      "payload_hash": "9e78659a60c576eaf8d5983b900dc7b324d8c34fc6eb1480c3001e6db68a7298"
+    },
+    {
+      "name": "trial_0039_RTC_S01_B039.mat",
+      "sha256": "736f5e7b35796d279241bb6f97c4920dba647d42e2608701ff328a4622efda3a",
+      "bytes": 21360,
+      "scenario_id": "RTC_S01_B039",
+      "payload_hash": "014d48504b51e7f86ad6ccd218538487773baece75692434e9faeb5f74477194"
+    },
+    {
+      "name": "trial_0040_RTC_S01_B040.mat",
+      "sha256": "562b93ca5a6d5ecc45c13e920518d9cc295f95689b61dfbe4fb7ffe46bfefd72",
+      "bytes": 21463,
+      "scenario_id": "RTC_S01_B040",
+      "payload_hash": "f0bf33ad952030e4c979bab2606a139430f31a5061eceba52543fff384d09562"
+    },
+    {
+      "name": "trial_0041_RTC_S01_B041.mat",
+      "sha256": "5712039fcf40f24c32c2ce898e0f071a534bc8278cd6e0b84629a13b053fef9b",
+      "bytes": 21269,
+      "scenario_id": "RTC_S01_B041",
+      "payload_hash": "a707d460f7e1ecc5cb781da60dca2e00591d6d77f49c6d48dae797ee47d90b32"
+    },
+    {
+      "name": "trial_0042_RTC_S01_B042.mat",
+      "sha256": "d8679f11427a177e0320846bb9a79bc67fb53104cc8ce5dde59077d2c9718b3c",
+      "bytes": 21520,
+      "scenario_id": "RTC_S01_B042",
+      "payload_hash": "5355aaf90abd20a462f998c20548bfd35a372eba96b00e62ff58a47f4e6e69b1"
+    },
+    {
+      "name": "trial_0043_RTC_S01_B043.mat",
+      "sha256": "354f0f9cdf94bebd9bb6e44b11dc11e85a3bc0b4af260e46826dce3bfa03e7ba",
+      "bytes": 21440,
+      "scenario_id": "RTC_S01_B043",
+      "payload_hash": "c464dbad52f5ae509f81e7cb1a14c638a7ce5282e512d6a8087ed4f08e4dae7e"
+    },
+    {
+      "name": "trial_0044_RTC_S01_B044.mat",
+      "sha256": "660d6ee955316cf8f1f49407b3931c517a2d6288859f20b21740137fb615ea5b",
+      "bytes": 25785,
+      "scenario_id": "RTC_S01_B044",
+      "payload_hash": "1d8a81e211b7680ef1a534cc908ebacfbf7ba758ef6ccbaebbdf50d2e9967605"
+    },
+    {
+      "name": "trial_0045_RTC_S01_B045.mat",
+      "sha256": "aa959b24b4728ad36b277b7f9ddc6e86d175b6367b175ebb0b7bd8ef964d4160",
+      "bytes": 21476,
+      "scenario_id": "RTC_S01_B045",
+      "payload_hash": "2ca9908a9b4a397f1f4ab5649082dd647818c16057d574192cacbb142318001f"
+    }
+  ],
+  "formal_results_complete": false
+}

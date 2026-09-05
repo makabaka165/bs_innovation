@@ -196,13 +196,24 @@ stage8_k2_rtc_checkpoint_validate(filename,spec,'BEAMSPACE',identity,prepared);
 before=stage8_k2_rtc_file_sha256(filename);
 stage8_k2_rtc_checkpoint_validate(filename,spec,'BEAMSPACE',identity,prepared);
 assert(strcmp(before,stage8_k2_rtc_file_sha256(filename)) && ~isfile([filename '.tmp']));
+for field=["head","source_hash"]
+    wrong_identity=identity;
+    wrong_identity.(field)='wrong-identity';
+    rejected=false;
+    try
+        stage8_k2_rtc_checkpoint_validate(filename,spec,'BEAMSPACE',wrong_identity,prepared);
+    catch exception
+        rejected=strcmp(exception.identifier,'RTC:CheckpointCode');
+    end
+    assert(rejected,'RTC:T16','Historical checkpoint identity was accepted.');
+end
 checkpoint=load(filename,'checkpoint'); checkpoint=checkpoint.checkpoint;
 checkpoint.rows.fit_valid(1)=~checkpoint.rows.fit_valid(1);
 corrupt=[tempname(fullfile(runtime,'tests')) '.mat']; save(corrupt,'checkpoint','-v7');
 rejected=false;
 try, stage8_k2_rtc_checkpoint_validate(corrupt,spec,'BEAMSPACE',identity,prepared); catch, rejected=true; end
 assert(rejected);
-record(16,'Atomic checkpoint, read-only resume and corrupt rejection');
+record(16,'Atomic checkpoint, read-only resume, corrupt and wrong-identity rejection');
 clear element_resources elementfits elementdiag
 manifest=stage8_k2_rtc_test_plot_only(repo,fixture_dir,fullfile(runtime,'tests','plot_only'));
 assert(manifest.figure_count==12);
@@ -210,7 +221,7 @@ record(17,'Twelve plot-only figures without estimator paths');
 controller=fullfile(repo,'tools','stage8_k2_raw_tangent_core_native_snr','powershell','Stage8K2RTCController.ps1');
 [status,output]=system(sprintf('powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%s" -Action Test -RepoDir "%s" -RuntimeRoot "%s"',controller,repo,runtime));
 assert(status==0,'RTC:T18','%s',output);
-record(18,'Scheduled controller transition, resume and cleanup contract');
+record(18,'Scheduled controller, real launcher/worker Tick, rejected inventories and cleanup');
 identity=stage8_k2_rtc_code_identity(repo);
 report=struct('pass',true,'test_count',18,'tests',{vertcat(tests{:})}, ...
     'source_hash',identity.source_hash,'nominal_max_error_db',maximum, ...

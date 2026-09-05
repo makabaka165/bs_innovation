@@ -24,6 +24,8 @@ The classical MUSIC kernel retains two legacy cardinality fields solely for runt
 
 MATLAB R2022b, one process, `-singleCompThread`. Run tests from this worktree:
 
+First, with MATLAB absent, run `Stage8K2RTCController.ps1 -Action TestLaunch` in Windows PowerShell. This bounded test launches MATLAB through the production launch helper and executes a real Tick against an isolated test state. T18 requires the resulting evidence to match the controller file hash. The Windows launcher and its verified child count as one compute worker; executable paths, parsed arguments, PID, parent PID and creation time must match the recorded launch.
+
 ```matlab
 addpath('tools/stage8_k2_raw_tangent_core_native_snr/matlab');
 addpath('tools/stage8_k2_raw_tangent_core_native_snr/tests');
@@ -38,6 +40,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/stage8_k2_raw_tang
 ```
 
 Each 15-minute tick takes a mutex, reads state, and launches at most one MATLAB process or performs one transition. Beamspace precedes Element, followed by finalization, a fresh read-only scientific audit, result commit/push, and task removal. Errors preserve the runtime and enter HARD_STOPPED. An interrupted trial process resumes only through validated checkpoints; an existing partial `.tmp` is a hard error. The controller uses the current Windows user's interactive logon, so scheduled ticks require that user to remain logged in.
+
+The first launch at commit `d4e2517` stopped because the controller counted the launcher and compute child separately. User-authorized recovery preserves 45 checkpoint files byte-for-byte under `backup/launch_incident_d4e2517`, together with the old state, identity, gates and read-only audit. Those trials are recomputed under the recovery commit. Checkpoint validation still requires exact HEAD and source hash; old identities are not whitelisted or rewritten. `Stage8K2RTCRecover.ps1` is restricted to this recorded incident and checks the archive, clean pushed commit, 18 gates and existing scheduler before resuming. See the committed 58 controller recovery record for validation evidence.
 
 ## Plot-Only Regeneration
 

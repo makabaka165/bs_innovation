@@ -79,7 +79,7 @@
     },
     {
       "id": "T16",
-      "name": "Atomic checkpoint, read-only resume and corrupt rejection",
+      "name": "Atomic checkpoint, read-only resume, corrupt and wrong-identity rejection",
       "pass": true
     },
     {
@@ -89,11 +89,11 @@
     },
     {
       "id": "T18",
-      "name": "Scheduled controller transition, resume and cleanup contract",
+      "name": "Scheduled controller, real launcher/worker Tick, rejected inventories and cleanup",
       "pass": true
     }
   ],
-  "source_hash": "a0907109d220e20ea993fd225ad9513fde2a93f097e33b914014846ac05d75ff",
+  "source_hash": "ec83baf8e158a8ec705d6d1eee64ba009b77898d45e49e867e3447cfc0d862f0",
   "nominal_max_error_db": [
     1.7763568394002505E-15,
     1.7763568394002505E-15
@@ -155,11 +155,5 @@
     ]
   ],
   "scale_valid_count": 8,
-  "runtime_sec": 82.6571797,
-  "targeted_recheck": {
-    "test": "T17",
-    "reason": "Add Median/P90 legends; scientific and controller code unchanged from final full gate run",
-    "previous_source_hash": "578575906ae411b46e26b7e479db8da327a1c74be98be75b34748155d2191bdf",
-    "pass": true
-  }
+  "runtime_sec": 87.2587982
 }
