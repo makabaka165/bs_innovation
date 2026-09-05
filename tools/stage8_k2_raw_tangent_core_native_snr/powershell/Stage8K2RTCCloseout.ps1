@@ -5,6 +5,8 @@ $ErrorActionPreference='Stop'
 $branch='experiment/stage8-k2-raw-tangent-core-native-snr-v1'
 $task='BSInnovation-Stage8K2-RawTangentCore-NativeSNR-V1'
 if ($RepoDir -ne 'E:\bs_innovation_worktrees\raw-tangent') { throw 'Wrong worktree.' }
+git -C $RepoDir fetch origin --prune --tags
+if ($LASTEXITCODE -ne 0) { throw 'Final remote identity refresh failed.' }
 if (@(Get-Process MATLAB,mwpython -ErrorAction SilentlyContinue).Count) { throw 'MATLAB/mwpython still active.' }
 $audit=Get-Content (Join-Path $RuntimeRoot 'status\audit_done.json') -Raw | ConvertFrom-Json
 if (-not $audit.complete -or -not $audit.pass) { throw 'Independent audit missing.' }

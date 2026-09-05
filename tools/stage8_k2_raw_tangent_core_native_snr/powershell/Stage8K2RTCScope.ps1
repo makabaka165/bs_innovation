@@ -18,7 +18,7 @@ foreach ($item in $manifest) {
     $deletions[$item.path]=$true
     if ($RequirePruned -and (Test-Path -LiteralPath (Join-Path $RepoDir $item.path))) { throw "Pruned path remains: $($item.path)" }
 }
-$changes=@(git -C $RepoDir diff --name-status $base)
+$changes=@(git -C $RepoDir diff --no-renames --name-status $base)
 foreach ($line in $changes) {
     $parts=$line -split "`t"
     if ($parts[0] -eq 'D' -and $deletions.ContainsKey($parts[1])) { continue }

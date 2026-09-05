@@ -1,4 +1,6 @@
 # Tangent-Profile 算法答辩理解版  
+> 分支状态说明：本文保留的是 main@644fc6e 的历史推导与代码定位。文中旧 Safe 包装、旧 runner 和 cache 路径在本实验分支已删除，相关代码仅在源主线历史中可查。本分支的当前算法与原生域 SNR、分辨评价以 [Raw Core 详解](tangent_algorithm_full_detailed.md) 为准；旧 Safe 结论不作为新 Core 结果。
+
 ## 从物理直觉、变量含义到完整公式与代码实现
 
 > **适用对象**：希望真正理解 Tangent 算法、但不以复杂数学推导为主要基础的硕士答辩准备者。  

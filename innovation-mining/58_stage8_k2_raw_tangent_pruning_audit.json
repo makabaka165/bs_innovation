@@ -1,0 +1,25 @@
+{
+  "status": "PRUNED_AFTER_TOOL_GATES",
+  "source_main": "644fc6e0041e400b6500579bba93d49f45e46990",
+  "research_ref": "a7139204d717923cb89d0d629b67f1b3ab7ae94d",
+  "design_commit": "925c38fd043fdc550364456535ff36e22d71fe31",
+  "tool_commit": "912311b0cba422c1c197917e47813b75c97c1ea9",
+  "deleted_path_count": 429,
+  "categories": {
+    "LEGACY_72_EVIDENCE": 25,
+    "LEGACY_72_PROMPT": 3,
+    "LEGACY_TANGENT_SAFE": 19,
+    "LEGACY_SAFE_RUNNER": 171,
+    "LEGACY_CACHE_TOOL": 175,
+    "LEGACY_CACHE_EVIDENCE": 33,
+    "LEGACY_CACHE_PROMPT": 3
+  },
+  "retained_in_main": true,
+  "protected_path_diff_count": 0,
+  "active_core_cache_count": 0,
+  "active_core_fixed_k2_count": 0,
+  "scope_audit": "PASS",
+  "link_and_prompt_index_audit": "PASS",
+  "pruning_manifest_sha256": "f8a39589e1f1f23a209e3fe6fa6397cc9063550e17591f3ef4e8cd9f2435b05b",
+  "next": "FORMAL_NATIVE_DOMAIN_EXPERIMENT"
+}

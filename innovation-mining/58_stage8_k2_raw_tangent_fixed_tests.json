@@ -93,7 +93,7 @@
       "pass": true
     }
   ],
-  "source_hash": "950d718d838efd7d193e68cebf05f3c3cf7b5693f8a0ac8449f536d5905ee9cc",
+  "source_hash": "a0907109d220e20ea993fd225ad9513fde2a93f097e33b914014846ac05d75ff",
   "nominal_max_error_db": [
     1.7763568394002505E-15,
     1.7763568394002505E-15
@@ -155,5 +155,11 @@
     ]
   ],
   "scale_valid_count": 8,
-  "runtime_sec": 82.1762766
+  "runtime_sec": 82.6571797,
+  "targeted_recheck": {
+    "test": "T17",
+    "reason": "Add Median/P90 legends; scientific and controller code unchanged from final full gate run",
+    "previous_source_hash": "578575906ae411b46e26b7e479db8da327a1c74be98be75b34748155d2191bdf",
+    "pass": true
+  }
 }

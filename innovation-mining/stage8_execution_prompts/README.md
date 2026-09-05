@@ -1,62 +1,23 @@
 # Stage8 Execution Prompt Index
 
-## Stable main
+## Active Experiment
 
-Accepted Stage8 K2 line:
+Protocol: STAGE8_K2_RAW_TANGENT_CORE_NATIVE_SNR_PRUNING_V1.
 
-- Tangent scientific and classical-baseline closure:
-  `3e7153ae11f8a49633a2edd2d2f710673e5d1bad`
-- Exact-cache Level-A and continuous-T4 zero-hit result:
-  `b4424c6d87511ecf8034a61bc5384ba347cb2467`
-- Fixed registered-backbone cache robust-positive result:
-  `b6156655b2d51d5333522166f6509b100ead7d08`
-- Cylindrical multicenter cache final closeout:
-  `c88050b286404336ceb2019f099ec6d5cbfabbd2`
+Authorization: AUTHORIZE_STAGE8_K2_RAW_TANGENT_CORE_NATIVE_SNR_PRUNING_V1, supplied by the user with the Downloads protocol document.
 
-Accepted production behavior:
+Branch: `experiment/stage8-k2-raw-tangent-core-native-snr-v1`, based on main@`644fc6e0041e400b6500579bba93d49f45e46990`.
 
-- `TANGENT_PROFILE_SAFE` remains the K2 estimator;
-- Tangent direction, continuous rho profile, DML score and final selector are unchanged;
-- finite registered cache is retained for the fixed registered backbone;
-- finite registered cache is not used by continuous T4;
-- cylindrical multicenter shared-center reuse is certified in the bounded factor-1 scope.
+The authoritative [57 protocol](../57_stage8_k2_raw_tangent_core_native_snr_theory_and_protocol.md) is committed before pruning. [Active tools](../../tools/stage8_k2_raw_tangent_core_native_snr/README.md) implement Raw Core, native-domain IID noise, frozen beamwidth evaluation, checkpoints and scheduled execution.
 
-## Active execution
+This scientific branch has no fixed-K2 fallback or active cache. The 72-trial Tangent route and corresponding prompts are deleted from this branch after 18/18 fixed tests. All deleted content remains at the frozen source main.
 
-`NONE`
+## Archive
 
-No prompt under `archive/` authorizes execution.
+[Archive manifest](archive/PROMPT_ARCHIVE_MANIFEST.csv) indexes only retained archived prompts. Completed prompts 013, 014, 017 and the former cache prompt directory have been removed from this manifest together with their files. No archived prompt authorizes execution.
 
-## Archived prompts
+Retained 43-48 evidence is read-only historical Safe reference. Historical prompts can describe paths that existed at source-main; they do not identify active tools in this branch.
 
-Historical prompts are stored under:
+## Scope
 
-- `archive/completed/`
-- `archive/deferred/`
-- `archive/superseded/`
-- `archive/raw_inputs/`
-
-The Stage8 K2 Tangent/cache prompts are stored under:
-
-`archive/completed/stage8_k2_cache/`
-
-Archive identity and status are recorded in:
-
-`archive/PROMPT_ARCHIVE_MANIFEST.csv`
-
-## Retained independent research
-
-`research/stage8-k2-vincent-anchored`
-
-This branch is not part of the Tangent/cache integration and is not modified by this closeout.
-
-## Execution rule
-
-A future Stage8 experiment requires:
-
-1. a new short-lived branch;
-2. a newly committed execution prompt;
-3. explicit authorization;
-4. separate integration review.
-
-Completed experimental branches are preserved by annotated tags rather than long-lived remote branches.
+The independent research branch `research/stage8-k2-vincent-anchored` and main are unchanged. Formal results are committed and pushed only to this experiment branch after independent audit. No production integration, automatic merge or worktree/runtime removal is authorized.

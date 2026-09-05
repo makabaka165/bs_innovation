@@ -61,8 +61,8 @@ for figure_index=1:12
             xlabel('Trial count');
         case 11
             tiledlayout(1,2,'Padding','compact');
-            nexttile; curve(core,'axis_error_deg','median','Median'); curve(core,'axis_error_deg','p90','P90'); ylabel('Axis error (deg)');
-            nexttile; curve(core,'rho_error_deg','median','Median'); curve(core,'rho_error_deg','p90','P90'); ylabel('Separation error (deg)');
+            nexttile; curve(core,'axis_error_deg','median','Median'); curve(core,'axis_error_deg','p90','P90'); ylabel('Axis error (deg)'); legend('Location','best');
+            nexttile; curve(core,'rho_error_deg','median','Median'); curve(core,'rho_error_deg','p90','P90'); ylabel('Separation error (deg)'); legend('Location','best');
         case 12
             tiledlayout(2,2,'Padding','compact');
             for p=1:4

@@ -1,23 +1,7 @@
 # Stage8 Prompt Archive
 
-This directory contains audit and historical records only. No prompt under
-`archive/` grants execution authority.
+This directory contains historical records only. No archived prompt grants execution authority.
 
-Categories:
+The current branch's authority is the [57 Raw Tangent Core protocol](../../57_stage8_k2_raw_tangent_core_native_snr_theory_and_protocol.md). The previous 72-trial Tangent prompts 013, 014 and 017, and the cache prompt directory, are physically deleted from this branch and retained at main@644fc6e.
 
-- `completed/`: executed protocols retained without content changes.
-- `deferred/`: work that was not executed and remains inactive.
-- `superseded/`: obsolete protocols retained for traceability.
-- `raw_inputs/`: reserved for preserved branch-specific user inputs; empty on this branch.
-
-Branch role:
-`TANGENT_PRIMARY_AND_CLASSICAL_BASELINES`
-
-Default K2:
-`TANGENT_PROFILE_SAFE`
-
-The Tangent algorithm is frozen. Future work is limited to separately
-authorized classical or external baseline comparisons on a temporary branch.
-
-See `PROMPT_ARCHIVE_MANIFEST.csv` for paths, SHA-256 values, related evidence,
-and archive status.
+See [PROMPT_ARCHIVE_MANIFEST.csv](PROMPT_ARCHIVE_MANIFEST.csv) for retained paths and original SHA-256 identities. Historical related-evidence references describe the source-main snapshot and are not active execution paths.
