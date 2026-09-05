@@ -1,0 +1,159 @@
+{
+  "pass": true,
+  "test_count": 18,
+  "tests": [
+    {
+      "id": "T1",
+      "name": "Git/worktree identity",
+      "pass": true
+    },
+    {
+      "id": "T2",
+      "name": "Beamspace nominal variance and common random numbers",
+      "pass": true
+    },
+    {
+      "id": "T3",
+      "name": "Element nominal variance and independent seeds",
+      "pass": true
+    },
+    {
+      "id": "T4",
+      "name": "Eight scale-equivalence fixtures",
+      "pass": true
+    },
+    {
+      "id": "T5",
+      "name": "No correlated-noise active construction",
+      "pass": true
+    },
+    {
+      "id": "T6",
+      "name": "Repeatable mechanical beamwidths and crossings",
+      "pass": true
+    },
+    {
+      "id": "T7",
+      "name": "Endpoint permutation invariance",
+      "pass": true
+    },
+    {
+      "id": "T8",
+      "name": "P1-P4 center collapse rejection",
+      "pass": true
+    },
+    {
+      "id": "T9",
+      "name": "Truth endpoint success",
+      "pass": true
+    },
+    {
+      "id": "T10",
+      "name": "21-point K1 and monotone continuous refinement",
+      "pass": true
+    },
+    {
+      "id": "T11",
+      "name": "Runtime public fixed-K2 call count zero",
+      "pass": true
+    },
+    {
+      "id": "T12",
+      "name": "Direct-only Core reachable route",
+      "pass": true
+    },
+    {
+      "id": "T13",
+      "name": "Every valid scale node scores the full K2 manifold",
+      "pass": true
+    },
+    {
+      "id": "T14",
+      "name": "Seven classical wrappers match unchanged direct kernels",
+      "pass": true
+    },
+    {
+      "id": "T15",
+      "name": "Scenario truth, SNR and thresholds isolated from fitting",
+      "pass": true
+    },
+    {
+      "id": "T16",
+      "name": "Atomic checkpoint, read-only resume and corrupt rejection",
+      "pass": true
+    },
+    {
+      "id": "T17",
+      "name": "Twelve plot-only figures without estimator paths",
+      "pass": true
+    },
+    {
+      "id": "T18",
+      "name": "Scheduled controller transition, resume and cleanup contract",
+      "pass": true
+    }
+  ],
+  "source_hash": "950d718d838efd7d193e68cebf05f3c3cf7b5693f8a0ac8449f536d5905ee9cc",
+  "nominal_max_error_db": [
+    1.7763568394002505E-15,
+    1.7763568394002505E-15
+  ],
+  "scale_tolerances": {
+    "center_deg": 0.0001,
+    "axis_vector": 1E-6,
+    "rho_deg": 0.001,
+    "angles_fro_deg": 0.001
+  },
+  "scale_fixture_errors": [
+    [
+      5.7806204267762951E-11,
+      1.2754232152766348E-12,
+      6.6394461595287169E-9,
+      4.6955146601261278E-9
+    ],
+    [
+      1.5183742263502609E-8,
+      4.5894300129939415E-9,
+      5.1559275307533348E-7,
+      3.65211833675788E-7
+    ],
+    [
+      1.7829826504112134E-10,
+      3.5745417423749063E-11,
+      3.6121255986287792E-10,
+      3.5899525580090311E-10
+    ],
+    [
+      2.8444590682852322E-8,
+      2.2576593645659136E-9,
+      5.519447676682887E-10,
+      4.0231297562394781E-8
+    ],
+    [
+      1.0512288746156173E-6,
+      2.1576187127289822E-8,
+      5.5808962950987251E-8,
+      1.4871953413000158E-6
+    ],
+    [
+      7.1793566647215812E-8,
+      8.58477008509198E-9,
+      9.81762172308498E-7,
+      7.0159772261540584E-7
+    ],
+    [
+      1.9982219434666604E-8,
+      4.4081393087681521E-10,
+      0.0004131741710814347,
+      0.00029215825954912573
+    ],
+    [
+      3.0659919048048323E-12,
+      1.2167832437265538E-11,
+      2.5514088619615904E-9,
+      1.804125419255698E-9
+    ]
+  ],
+  "scale_valid_count": 8,
+  "runtime_sec": 82.1762766
+}
