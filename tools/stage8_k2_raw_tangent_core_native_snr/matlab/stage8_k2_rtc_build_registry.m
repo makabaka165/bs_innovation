@@ -4,16 +4,15 @@ rows = cell(c.scenario_count, 1);
 i = 0;
 for s = 1:numel(c.snr_db_values)
     for l = 1:numel(c.snapshot_counts)
-        for p = 1:4
+        for p = 1:numel(c.profile_ids)
             for replicate = 1:c.replicates
                 i = i + 1;
-                base = ((l - 1) * 4 + p - 1) * c.replicates + replicate;
+                base = ((l - 1) * numel(c.profile_ids) + p - 1) * c.replicates + replicate;
                 v = c.profile_values(p, :);
                 correlation = v(6);
-                if c.snapshot_counts(l) == 1, correlation = 1; end
                 rows{i} = struct('scenario_index', i, ...
-                    'scenario_id', string(sprintf('RTC_S%02d_B%03d', s, base)), ...
-                    'base_realization_index', base, 'profile_id', "P" + p, ...
+                    'scenario_id', string(sprintf('RTC2L8_S%02d_B%03d', s, base)), ...
+                    'base_realization_index', base, 'profile_id', c.profile_ids(p), ...
                     'L', c.snapshot_counts(l), 'replicate_id', replicate, ...
                     'nominal_snr_db', c.snr_db_values(s), ...
                     'center_az_deg', v(1), 'center_el_deg', v(2), ...
@@ -27,5 +26,5 @@ for s = 1:numel(c.snr_db_values)
     end
 end
 registry = struct2table(vertcat(rows{:}));
-assert(height(registry) == 1680 && numel(unique(registry.base_realization_index)) == 240);
+assert(height(registry) == c.scenario_count && numel(unique(registry.base_realization_index)) == c.base_count);
 end

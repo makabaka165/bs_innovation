@@ -1,10 +1,10 @@
-# Raw Tangent Core 原生域 SNR 实验
+# Raw Tangent Core 两场景 L8 原生域 SNR 实验
 
-本分支的科学算法为 `TANGENT_PROFILE_CORE`。源主线固定在 `644fc6e0041e400b6500579bba93d49f45e46990`；实验分支为 `experiment/stage8-k2-raw-tangent-core-native-snr-v1`。生产集成未授权。
+本分支算法为 `TANGENT_PROFILE_CORE`。父提交固定为 `f1b13422a91540073ecf417c3b25f5cac552b9d6`，新分支为 `experiment/stage8-k2-raw-tangent-two-scenarios-l8-v1`。场景仅 SC_A/SC_B，L=8，五种方法，每格20次。生产集成未授权。
 
-本轮研究纯核心算法在各原生观测域相同标称 SNR 下的表现。旧 Safe 的有效率与优越性结论不能直接转用于 Core。[正式结果](../innovation-mining/58_stage8_k2_raw_tangent_core_native_snr_results.md)已包含 3360 个 checkpoint 对应的 13440 行方法结果及 12 张图，并通过全新 MATLAB 会话的独立观测重建和指标审计。最终审计、文件身份与收尾状态见 [runtime manifest](../innovation-mining/58_stage8_k2_raw_tangent_runtime_manifest.json)。
+本轮共280个场景、40个基础 realization、560个原生域观测与checkpoint、1400行方法结果。[当前结果](../innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_results.md)在计算完成后生成，最终完整性以 [runtime manifest](../innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_runtime_manifest.json) 的独立审计状态为准。未审计前不宣称最终PASS。
 
-在最高注册 SNR 22 dB，Core 有效率为 99.1667%，定位成功率为 97.0833%，严格分辨成功率为 27.5%；有效结果的联合角度 RMSE 中位数为 0.0776367 度、P90 为 0.150867 度。没有整体 SNR 点达到“有效率至少 90% 且严格分辨成功率至少 80%”的条件，结论为 `RAW_TANGENT_NO_HIGH_RELIABILITY_REGION_IDENTIFIED`。高定位成功率不能替代双目标严格分辨成功率；未识别出高可靠区域仍是有效科学结果。
+SC_A/SC_B几何相同：中心[8,10]度，分离0.45度，轴角30度；SC_A次源功率0 dB、相关幅度0，SC_B为-3 dB和0.7。相关相位沿用source seed生成。这是查看父实验结果后设计的代表场景验证，并非盲holdout；SC_B同时改变功率与相关性，不能单独解释任一因素的因果作用。不预先保证Tangent更优。
 
 ## 活跃算法
 
@@ -44,24 +44,24 @@ $$
 
 Beamspace 的 n=15L，Element 的 n=2080L。E_R 和 E_I 为 IID 标准实高斯样本。每次实际 SNR 为 clean energy / noise energy，不按当次噪声范数重新归一化。
 
-注册 SNR 为 -6、0、6、10、14、18、22 dB；L 为 1、4、8；Profile 为 P1-P4；每格 20 次重复。总计 1680 个场景、240 个基础 realization、3360 个原生域观测及 13440 个方法结果行。每个基础 realization 在七个 SNR 点上复用源矩阵及两域各自的标准噪声样本。
+注册SNR为-6、0、6、10、14、18、22 dB；L仅为8；SC_A/SC_B每格20次。40个基础realization在七个SNR点复用同一源矩阵和各域标准噪声，只缩放噪声方差。
 
 ## 评价与公平性
 
-各 Profile 中心的方位/俯仰 3 dB 宽度由现有 analyze_reference_beam 和 measure_scan_3db_width 机械测量，保存在 [波束宽度合同](../innovation-mining/58_stage8_k2_raw_tangent_beamwidth_contract.csv)。波束宽度只用于离线评价。
+各 Profile 中心的方位/俯仰 3 dB 宽度由现有 analyze_reference_beam 和 measure_scan_3db_width 机械测量，保存在 [波束宽度合同](../innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_beamwidth_contract.csv)。波束宽度只用于离线评价。
 
 d_max_bw 分别评价两个端点排列，再取最大端点误差的最小值。它不复用最小平方误差排列。定位成功要求 d_max_bw <= 0.1；严格分辨成功要求 d_max_bw <= min(0.1, 0.4 rho_true_bw)。因此两个估计都塌缩到中心不能算分辨成功。
 
-三种 Beamspace 方法共用相同 Z，五种 Element 方法共用相同 Y_e。跨域比较仅为 SCENARIO_MATCHED_NATIVE_DOMAIN_SNR_REFERENCE，不计算跨域逐 trial 胜负，也不声称观测或物理噪声 realization 相同。
+三种Beamspace方法共用同一Z，两种Element方法共用同一Y_e。跨域仅作各原生域等标称SNR参考，使用不同观测，不计算跨域逐trial胜负。
 
-有效率与成功率以 applicable trial 为分母；误差分位数只计算 valid 子集。N/A 与算法失败分开统计。每个 exact cell 的 N=20，只作描述，不宣称稳健尾部置信界。若 valid rate >= 0.90 且 resolution success rate >= 0.80，可报告描述性高可靠区域；未达到也属于有效科学结果。
+五种方法在两场景全部结构适用。每个精确条件的分母固定20；无有效峰、根或rho仍算算法失败。误差分位数仅用valid样本并旁列有效数。一次样本对应5个百分点。valid>=0.90且strict resolution>=0.80仅为按场景描述规则；单个达标SNR点不构成连续稳定区间，也不是在线阈值或实验有效性门。
 
 ## 代码与证据
 
-活跃入口位于 [新工具目录](../tools/stage8_k2_raw_tangent_core_native_snr/README.md)。[57 协议](../innovation-mining/57_stage8_k2_raw_tangent_core_native_snr_theory_and_protocol.md) 是执行合同，[删除清单](../innovation-mining/57_stage8_k2_raw_tangent_pruning_manifest.csv) 保存旧文件路径、blob SHA 和大小。
+活跃入口为 [工具README](../tools/stage8_k2_raw_tangent_core_native_snr/README.md)。[59协议](../innovation-mining/59_stage8_k2_raw_tangent_two_scenarios_l8_protocol.md)是本轮执行合同，[删除清单](../innovation-mining/59_stage8_k2_raw_tangent_two_scenarios_deletions.tsv)仅记录path/reason/preserved_at_parent_commit。
 
-本分支物理删除旧 72-trial Tangent 证据、对应提示词、Safe/SNR runner 以及 cache 路线。所有删除文件仍保存在 main@644fc6e、Git 历史和本地备份 bundle 中。
+本轮删除旧57/58输出、旧四场景入口、事故恢复专用脚本、退役方法与关联旧测试。它们均保留在父提交f1b1342，不创建额外归档树或bundle。保留方法的共享内核不变。
 
 43-44 为 LEGACY_SAFE_WHITE_SNR_REFERENCE；45-46 为 LEGACY_SAFE_CLASSICAL_REFERENCE；47-48 为 LEGACY_SAFE_ALL_CLASSICAL_REFERENCE。其文件字节保持不变，不进入新 Core 合并结果。
 
-正式运行使用单进程 MATLAB R2022b 和每 15 分钟一次的 Windows 计划任务。按 Beamspace、Element、finalize、独立只读 audit、结果 commit/push 的顺序推进。错误保留现场并 HARD_STOPPED，完成后注销任务，仅推送实验分支，等待 USER_REVIEW。
+正式运行使用MATLAB R2022b、-singleCompThread和一个核实的计算worker。新Windows任务每15分钟依次接续Beamspace、Element、finalize、独立只读audit和结果commit/push。Git失败复用已有结果提交，完成后注销任务，保留worktree/runtime并等待USER_REVIEW。

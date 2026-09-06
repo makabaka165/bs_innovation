@@ -27,13 +27,12 @@ for k = 1:height(registry)
         observation = stage8_k2_rtc_generate_beamspace_observation(clean.Xw,spec.nominal_snr_db,spec.beam_noise_seed);
         [fits,diagnostics] = stage8_k2_rtc_fit_beamspace_methods(observation.data,context.model, ...
             context.domain,resources,c.core,c.classical);
-        ids = c.method_ids(1:3);
+        ids = c.beamspace_method_ids;
     else
         observation = stage8_k2_rtc_generate_element_observation(clean.Xe,spec.nominal_snr_db,spec.element_noise_seed);
-        applicable = repmat(spec.profile_id~="P2",1,3);
         [fits,diagnostics] = stage8_k2_rtc_fit_element_methods(observation.data,context.model, ...
-            context.domain,resources,c.classical,c.structured,applicable);
-        ids = c.method_ids(4:8);
+            context.domain,c.classical,c.structured,true);
+        ids = c.element_method_ids;
     end
     rows = cell(numel(fits),1);
     for j = 1:numel(fits)

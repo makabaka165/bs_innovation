@@ -1,57 +1,70 @@
-# Raw Tangent Core Native-SNR Experiment
+# Raw Tangent: Two Scenarios, L=8
 
-Protocol: `STAGE8_K2_RAW_TANGENT_CORE_NATIVE_SNR_PRUNING_V1`.
+Protocol: STAGE8_K2_RAW_TANGENT_TWO_SCENARIOS_L8_V1.
+Branch: experiment/stage8-k2-raw-tangent-two-scenarios-l8-v1.
+Parent: f1b13422a91540073ecf417c3b25f5cac552b9d6.
+Worktree: E:/bs_innovation_worktrees/raw-tangent-two-scenarios-l8.
+Runtime: E:/bs_innovation_runtime/experiment_stage8-k2-raw-tangent-two-scenarios-l8-v1.
 
-Branch: `experiment/stage8-k2-raw-tangent-core-native-snr-v1`.
+[Protocol](../../innovation-mining/59_stage8_k2_raw_tangent_two_scenarios_l8_protocol.md) /
+[deletion plan](../../innovation-mining/59_stage8_k2_raw_tangent_two_scenarios_deletions.tsv) /
+[preflight record](../../innovation-mining/59_stage8_k2_raw_tangent_two_scenarios_preflight.json).
+The current [results](../../innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_results.md) and [runtime manifest](../../innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_runtime_manifest.json) are generated after all checkpoints exist. Completion requires independent audit PASS; performance is never an integrity gate.
 
-Status: FIXED_TESTS_18_OF_18_PASS. Formal launch requires the matching source hash, a pushed tool commit, and manifest-controlled pruning. See the committed 58 fixed-tests JSON for the complete gate record.
+## Registration
 
-The active scientific target is `TANGENT_PROFILE_CORE`: white Beamspace K1 DML center, projected derivative direction and full two-target manifold scale search. Both native domains use IID circular complex Gaussian noise with nominal variance equal to clean signal energy divided by linear SNR and sample count. Realized noise power is unconstrained.
+SC_A: center [8,10] deg, separation 0.45 deg, axis 30 deg, secondary power 0 dB, correlation magnitude 0.
+SC_B: identical geometry, secondary power -3 dB, correlation magnitude 0.7.
+Both use the parent's source construction and source-seeded correlation phase.
+L=8 only; SNR [-6,0,6,10,14,18,22] dB; 20 replicates per exact cell.
+280 scenarios / 40 common bases / 560 native observations and checkpoints / 1400 method rows / 14 representative Tangent traces.
 
-The registration is 1680 scenarios (7 SNR values, 3 snapshot counts, 4 profiles, 20 replicates), 240 common base realizations and 13440 method rows. Three Beamspace methods share Z; five Element methods share Y. Cross-domain comparisons are scenario-matched native-SNR references.
+Same Beamspace Z: TANGENT_PROFILE_CORE, FULL4D_BEAMSPACE_CML_MULTISTART, BEAMSPACE_MUSIC_K2.
+Same Element Y_e: FULL4D_ELEMENT_CML_MULTISTART, ELEMENT_VERTICAL_FBSS_ROOT_MUSIC_AZ_CML.
+All five methods are structurally applicable in both scenarios. Invalid peaks, roots or rho remain algorithmic failures.
 
-See [the protocol](../../innovation-mining/57_stage8_k2_raw_tangent_core_native_snr_theory_and_protocol.md) and [the pre-deletion manifest](../../innovation-mining/57_stage8_k2_raw_tangent_pruning_manifest.csv). Existing 43-48 evidence is historical Safe reference only. Production integration is not authorized.
+These representative scenarios were designed after the parent results were viewed. They are not a blind holdout. SC_B changes both source power and correlation; neither causal effect is isolated.
 
-## Numerical Contract
+## Frozen Science
 
-The frozen physical WHITE model has 15 beams and whitening rank 15; its measured whitening residual is recorded without changing the existing builder. Noise is generated directly after whitening, so its covariance is IID by construction.
+Physical WHITE context: PRIMARY_RECT_E14_A31, 2080 elements, 15 whitened beams, the original local domain and 21 coarse points.
+Native IID complex Gaussian noise variance is clean energy / (linear SNR * sample count). Signal is fixed while noise scales; the observed noise norm is not forced.
+Core center normalization, projected Jacobian direction, full-manifold rho profile and all optimizer budgets remain unchanged.
+Full4D, Beamspace MUSIC, Root/FBSS/conditional azimuth and physical/DML kernels preserve parent Git blob bytes. Windows checkout CRLF conversion is not a scientific edit.
+Default baseline constants retain scientific budgets but lose obsolete experiment registration. The Element wrapper mechanically extracts Root plus conditional azimuth; unused Element MUSIC resources are removed.
+MUSIC preparation time is amortized over the actual 280 applicable trials.
 
-Core internally divides Z by its Frobenius norm for scale-consistent floating-point comparisons, then restores RSS, concentrated likelihood and trace scores to the original observation scale. This changes no exact DML maximizer and does not use truth or SNR. T4 requires center differences <= 1e-4 degrees, axis-vector differences <= 1e-6, and rho/endpoint differences <= 1e-3 degrees, consistent with the frozen inner and outer optimizer tolerances. The observation scaling identity must hold to relative error <= 1e-12. Development failure logs remain in the new runtime; no formal result is used to tune these tolerances.
-
-The classical MUSIC kernel retains two legacy cardinality fields solely for runtime amortization. The adapter supplies literal zero placeholders, containing no SNR value or profile identity, and records dictionary preparation time over the correct 1120 applicable trials. The original scientific kernel stays byte-identical. Structural equal-elevation applicability is decided by the runner before fitting and passed as booleans; no profile label enters an estimator.
+Localization: d_max_bw <= 0.1. Strict resolution: d_max_bw <= min(0.1,0.4*rho_true_bw).
+RMSE and d_max retain separate label assignments. Error quantiles use valid fits with valid counts alongside them.
+Every exact cell has 20 trials; one outcome represents 5 percentage points. Pooled SNR tables are supplementary to scenario tables.
+No active Tangent cache, fixed-K2 fallback, Toeplitz path or cross-domain paired wins/losses.
 
 ## Execution
 
-MATLAB R2022b, one process, `-singleCompThread`. Run tests from this worktree:
+MATLAB R2022b, -singleCompThread, one verified compute worker. Its launcher and engine child count as one worker.
+Four preflight groups reuse 18 inherited checks: configuration/dependencies, SNR/metrics, four smoke scenarios and output wiring, and controller wiring.
+Smoke uses SC_A/SC_B x {-6,22} dB x replicate 1, writes only runtime/tests/smoke, and never becomes formal checkpoints.
+Static analysis uses MATLAB checkcode; all resolved source paths must be in this worktree. Parent numerical tolerances are retained.
 
-First, with MATLAB absent, run `Stage8K2RTCController.ps1 -Action TestLaunch` in Windows PowerShell, with `pwsh.exe` also available on PATH. This bounded test launches MATLAB through the production launch helper and executes a real Tick in both PowerShell 5.1 and 7 against an isolated test state. T18 requires the resulting evidence to match the controller file hash. The Windows launcher and its verified child count as one compute worker; executable paths, parsed arguments, PID, parent PID and creation time must match the recorded launch. Timestamp identity preserves UTC and fractional seconds for both JSON strings and typed DateTime values.
+With MATLAB absent, run the bounded Stage8K2RTCController.ps1 -Action TestLaunch once. Then run stage8_k2_rtc_run_tests from this worktree.
+Commit/push implementation B after all four groups pass, freeze formal_identity.json using stage8_k2_rtc_code_identity, and run Stage8K2RTCController.ps1 -Action InstallAndStart.
+Only the new branch is pushed.
 
-```matlab
-addpath('tools/stage8_k2_raw_tangent_core_native_snr/matlab');
-addpath('tools/stage8_k2_raw_tangent_core_native_snr/tests');
-stage8_k2_rtc_run_tests(pwd, ...
-    'E:/bs_innovation_runtime/experiment_stage8-k2-raw-tangent-core-native-snr-v1');
-```
-
-After tool/pruning commits are pushed, freeze `controller/formal_identity.json` using `stage8_k2_rtc_code_identity`. Its source hash must equal the gate report. Then install the controller:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/stage8_k2_raw_tangent_core_native_snr/powershell/Stage8K2RTCController.ps1 -Action InstallAndStart
-```
-
-Each 15-minute tick takes a mutex, reads state, and launches at most one MATLAB process or performs one transition. Beamspace precedes Element, followed by finalization, a fresh read-only scientific audit, result commit/push, and task removal. Errors preserve the runtime and enter HARD_STOPPED. An interrupted trial process resumes only through validated checkpoints; an existing partial `.tmp` is a hard error. The controller uses the current Windows user's interactive logon, so scheduled ticks require that user to remain logged in.
-
-The first launch at commit `d4e2517` stopped because the controller counted the launcher and compute child separately. User-authorized recovery preserves 45 checkpoint files byte-for-byte under `backup/launch_incident_d4e2517`, together with the old state, identity, gates and read-only audit. Those trials are recomputed under the recovery commit. Checkpoint validation still requires exact HEAD and source hash; old identities are not whitelisted or rewritten. `Stage8K2RTCRecover.ps1` is restricted to this recorded incident and checks the archive, clean pushed commit, 18 gates and existing scheduler before resuming. See the committed 58 controller recovery record for validation evidence.
-
-The follow-up timestamp incident at `7c4b95a` preserves another 61 checkpoints under `backup/timestamp_incident_7c4b95a`. Its recovery uses `-Incident Timestamp` and the same archive/recompute policy. Both incident archives remain intact; formal completion is separate from these recovery test records.
+The Windows task BSInnovation-Stage8K2-RawTangent-TwoScenarios-L8-V1 runs every 15 minutes using the current user's interactive logon, IgnoreNew and an experiment mutex.
+Each Tick reads state once and exits. It advances Beamspace -> Element -> Finalize -> fresh read-only audit -> Git closeout.
+Logout or offline periods do not guarantee execution; a later eligible Tick resumes valid checkpoints.
+Errors preserve process snapshots and runtime evidence. Unknown temporary checkpoints stop writes. Git failures retry closeout without rerunning estimators or creating duplicate result commits.
+Successful closeout archives execution authority, marks NO_ACTIVE_STAGE8_EXECUTION / NEXT=USER_REVIEW, removes the task and preserves worktree/runtime. Merge is not authorized.
 
 ## Plot-Only Regeneration
 
-Only the plotting directory is needed. No runtime or estimator path is required:
+Add only tools/stage8_k2_raw_tangent_core_native_snr/plotting to MATLAB's path, then call:
+stage8_k2_rtc_plot_from_committed_data('innovation-mining','regenerated_figures')
 
-```matlab
-addpath('tools/stage8_k2_raw_tangent_core_native_snr/plotting');
-stage8_k2_rtc_plot_from_committed_data('innovation-mining','regenerated_figures');
-```
+The only inputs are 60_stage8_k2_raw_tangent_two_scenarios_plot_data.csv and 60_stage8_k2_raw_tangent_two_scenarios_rho_trace_representatives.mat.
+Eight scenario-specific figures contain rates, valid sample counts, errors, Element-native references and Tangent diagnostics. No runtime or estimator call is needed.
 
-The two inputs are the committed `58_stage8_k2_raw_tangent_plot_data.csv` and `58_stage8_k2_raw_tangent_rho_trace_representatives.mat`. CSV angles are JSON matrices. Rates use applicable trials as their denominator; error quantiles use valid fits. Structural N/A is reported separately. Representative traces cover replicate 1 at each registered SNR/Profile/L. Fixture files under `tests/fixtures` are labeled test data and are never merged into formal evidence.
+## Historical Evidence
+
+[Parent experiment](https://github.com/makabaka165/bs_innovation/tree/f1b13422a91540073ecf417c3b25f5cac552b9d6) preserves deleted 57/58 evidence, fixtures and retired entry points.
+Earlier 43-48 evidence is historical only and remains unchanged. It is never read into this experiment.

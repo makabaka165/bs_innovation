@@ -1,25 +1,10 @@
 # Stage8 Execution Prompt Index
 
-## Active Experiment
+Active protocol: STAGE8_K2_RAW_TANGENT_TWO_SCENARIOS_L8_V1.
+Branch: experiment/stage8-k2-raw-tangent-two-scenarios-l8-v1, from f1b13422a91540073ecf417c3b25f5cac552b9d6.
 
-Protocol: STAGE8_K2_RAW_TANGENT_CORE_NATIVE_SNR_PRUNING_V1.
+[Authoritative execution prompt](../59_stage8_k2_raw_tangent_two_scenarios_l8_protocol.md) / [active tools](../../tools/stage8_k2_raw_tangent_core_native_snr/README.md).
+SC_A/SC_B only, L=8, five methods, 20 replicates. Current results use prefix 60.
 
-Authorization: AUTHORIZE_STAGE8_K2_RAW_TANGENT_CORE_NATIVE_SNR_PRUNING_V1, supplied by the user with the Downloads protocol document.
-
-Branch: `experiment/stage8-k2-raw-tangent-core-native-snr-v1`, based on main@`644fc6e0041e400b6500579bba93d49f45e46990`.
-
-The authoritative [57 protocol](../57_stage8_k2_raw_tangent_core_native_snr_theory_and_protocol.md) is committed before pruning. [Active tools](../../tools/stage8_k2_raw_tangent_core_native_snr/README.md) implement Raw Core, native-domain IID noise, frozen beamwidth evaluation, checkpoints and scheduled execution.
-
-This scientific branch has no fixed-K2 fallback or active cache. The 72-trial Tangent route and corresponding prompts are deleted from this branch after 18/18 fixed tests. All deleted content remains at the frozen source main.
-
-The [formal result report](../58_stage8_k2_raw_tangent_core_native_snr_results.md) contains all 13440 method rows and 12 figures, with a passing fresh-session scientific audit recorded in the [runtime manifest](../58_stage8_k2_raw_tangent_runtime_manifest.json). The registered overall SNR range did not identify a Raw Tangent high-reliability region. Completed results authorize review only; they do not authorize production integration or another experiment.
-
-## Archive
-
-[Archive manifest](archive/PROMPT_ARCHIVE_MANIFEST.csv) indexes only retained archived prompts. Completed prompts 013, 014, 017 and the former cache prompt directory have been removed from this manifest together with their files. No archived prompt authorizes execution.
-
-Retained 43-48 evidence is read-only historical Safe reference. Historical prompts can describe paths that existed at source-main; they do not identify active tools in this branch.
-
-## Scope
-
-The independent research branch `research/stage8-k2-vincent-anchored` and main are unchanged. Formal results are committed and pushed only to this experiment branch after independent audit. No production integration, automatic merge or worktree/runtime removal is authorized.
+After computation and independent audit, closeout commits and pushes results, archives execution authority here and sets NO_ACTIVE_STAGE8_EXECUTION / NEXT=USER_REVIEW. MERGE_BACK=NOT_AUTHORIZED.
+Earlier archive prompts have no current execution authority.

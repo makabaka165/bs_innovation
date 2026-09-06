@@ -1,0 +1,3 @@
+profile_id,center_az_deg,center_el_deg,az_bw_3db_deg,el_bw_3db_deg,az_left_cross_deg,az_right_cross_deg,el_left_cross_deg,el_right_cross_deg,configuration_hash,beamwidth_contract_hash
+SC_A,8,10,2.48,3.55,6.76,9.24,8.25,11.8,c0ba591256e5f03ea5c5c7622476810adc3a1be34daff537a2e9e4bdfc536c8a,4691ee88b1be48c73627c2bd169313b3c0765d82319b052b7f88473b586f6e55
+SC_B,8,10,2.48,3.55,6.76,9.24,8.25,11.8,c0ba591256e5f03ea5c5c7622476810adc3a1be34daff537a2e9e4bdfc536c8a,4691ee88b1be48c73627c2bd169313b3c0765d82319b052b7f88473b586f6e55

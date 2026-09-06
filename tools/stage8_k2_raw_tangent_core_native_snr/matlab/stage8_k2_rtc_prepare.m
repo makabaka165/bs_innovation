@@ -21,8 +21,8 @@ else
     save([filename '.tmp'],'prepared','-v7');
     movefile([filename '.tmp'],filename);
 end
-writetable(registry,fullfile(repo,'innovation-mining','58_stage8_k2_raw_tangent_registry.csv'));
-writetable(beamwidth,fullfile(repo,'innovation-mining','58_stage8_k2_raw_tangent_beamwidth_contract.csv'));
+writetable(registry,fullfile(repo,'innovation-mining',[c.output_prefix 'registry.csv']));
+writetable(beamwidth,fullfile(repo,'innovation-mining',[c.output_prefix 'beamwidth_contract.csv']));
 writetable(registry,fullfile(runtime,'registry','registry.csv'));
 writetable(beamwidth,fullfile(runtime,'beamwidth','beamwidth.csv'));
 end

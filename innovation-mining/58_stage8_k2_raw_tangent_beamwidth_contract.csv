@@ -1,5 +1,0 @@
-profile_id,center_az_deg,center_el_deg,az_bw_3db_deg,el_bw_3db_deg,az_left_cross_deg,az_right_cross_deg,el_left_cross_deg,el_right_cross_deg,configuration_hash,beamwidth_contract_hash
-P1,8,10,2.48,3.55,6.76,9.24,8.25,11.8,c0ba591256e5f03ea5c5c7622476810adc3a1be34daff537a2e9e4bdfc536c8a,d526bc1595db8c1c135dbd9e00a26cea6c1909ddbd8ec356d48c00cab6dc00f6
-P2,8.2,10,2.48,3.55,6.96,9.44,8.25,11.8,c0ba591256e5f03ea5c5c7622476810adc3a1be34daff537a2e9e4bdfc536c8a,d526bc1595db8c1c135dbd9e00a26cea6c1909ddbd8ec356d48c00cab6dc00f6
-P3,7.9,10.1,2.48,3.55,6.66,9.14,8.35,11.9,c0ba591256e5f03ea5c5c7622476810adc3a1be34daff537a2e9e4bdfc536c8a,d526bc1595db8c1c135dbd9e00a26cea6c1909ddbd8ec356d48c00cab6dc00f6
-P4,8.1,9.95,2.48,3.55,6.86,9.34,8.2,11.75,c0ba591256e5f03ea5c5c7622476810adc3a1be34daff537a2e9e4bdfc536c8a,d526bc1595db8c1c135dbd9e00a26cea6c1909ddbd8ec356d48c00cab6dc00f6

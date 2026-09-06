@@ -15,8 +15,9 @@ assert(strcmp(checkpoint.registry_hash,prepared.registry_hash) && ...
     strcmp(checkpoint.beamwidth_hash,prepared.beamwidth_hash) && ...
     strcmp(checkpoint.configuration_hash,prepared.configuration_hash),'RTC:CheckpointContract','Frozen contract mismatch.');
 c = stage8_k2_rtc_constants();
-if string(domain)=="BEAMSPACE", expected = c.method_ids(1:3); else, expected = c.method_ids(4:8); end
+if string(domain)=="BEAMSPACE", expected = c.beamspace_method_ids; else, expected = c.element_method_ids; end
 assert(height(checkpoint.rows)==numel(expected) && isequal(checkpoint.rows.method_id,expected));
+assert(all(checkpoint.rows.applicable));
 assert(all(checkpoint.rows.scenario_id==spec.scenario_id) && ...
     all(checkpoint.rows.observation_hash==string(checkpoint.observation_hash)));
 assert(abs(checkpoint.snr.nominal_snr_db-spec.nominal_snr_db)<=1e-12);

@@ -1,8 +1,8 @@
 # Raw Tangent Core 算法与评价合同详解
 
-本页解释本实验分支的 `TANGENT_PROFILE_CORE`。权威执行合同为 [57 协议](../innovation-mining/57_stage8_k2_raw_tangent_core_native_snr_theory_and_protocol.md)，活跃实现为 [Raw Tangent 工具](../tools/stage8_k2_raw_tangent_core_native_snr/README.md)。旧 Safe 的历史证据保留在 43-48；已删除路线的详细旧说明仍可在 main@644fc6e 的 Git 历史查看。
+本页解释两场景 L8 实验的 `TANGENT_PROFILE_CORE`。权威执行合同为 [59 协议](../innovation-mining/59_stage8_k2_raw_tangent_two_scenarios_l8_protocol.md)，活跃实现为 [Raw Tangent 工具](../tools/stage8_k2_raw_tangent_core_native_snr/README.md)。
 
-[正式实验结果](../innovation-mining/58_stage8_k2_raw_tangent_core_native_snr_results.md)已完成 1680 个场景的两域计算、13440 行合并、12 张图生成和独立科学审计。22 dB 时 Core 的有效率、定位成功率、严格分辨成功率分别为 99.1667%、97.0833%、27.5%，整体注册范围内未识别出高可靠区域。全部阈值、估计器和噪声合同保持冻结；本页的公式不因实验性能而调整。
+本轮共280个场景、40个基础 realization、560个原生域观测与checkpoint、1400行方法结果。[当前结果](../innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_results.md)在计算完成后生成，最终完整性以 [runtime manifest](../innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_runtime_manifest.json) 的独立审计状态为准。未审计前不宣称最终PASS。
 
 ## 1. 观测与科学问题
 
@@ -26,7 +26,7 @@ $$
 
 两域分别生成 IID circular complex Gaussian 噪声，每个复样本的总方差为 sigma^2。标称 SNR 的最大误差要求不超过 1e-12 dB。实际 SNR 由信号与当次噪声能量之比得出，自然波动。
 
-每个 L x Profile x replicate 具有唯一 base_realization_index。source、Beamspace noise、Element noise 使用不同 seed base，跨七个 SNR 点复用相同底样本。源相关幅度与次目标功率保持 P1-P4 合同；L=1 的相关幅度为 1。
+每个SC_A/SC_B与replicate组合对应唯一base_realization_index，范围1至40。source、Beamspace noise、Element noise保留独立seed基数，跨七个SNR复用底样本。两场景源参数和随机相关相位严格采用59协议。
 
 ## 3. 完整流形集中 DML
 
@@ -122,22 +122,22 @@ $$
 
 ## 9. 经典方法及适用性
 
-Beamspace 组：Core、Full4D Beamspace CML、Beamspace MUSIC。Element 组：Full4D Element CML、Element MUSIC、Vertical GFBSS-MUSIC + azimuth CML、FBSS Root-MUSIC + azimuth CML、FBSS LS-ESPRIT + azimuth CML。
+Beamspace组：TANGENT_PROFILE_CORE、FULL4D_BEAMSPACE_CML_MULTISTART、BEAMSPACE_MUSIC_K2。Element组：FULL4D_ELEMENT_CML_MULTISTART、ELEMENT_VERTICAL_FBSS_ROOT_MUSIC_AZ_CML。
 
-Full4D 保留完整 210 个无序 coarse pair、top 6 starts、12 sweeps、每坐标 9 个扫描点及现有 fminbnd 合同。MUSIC 采用 0.005 度二维网格，必须找到两个独立局部峰。MUSIC 在 L=1 为结构 N/A。三个垂直结构方法在 P2 等俯仰为结构 N/A，本轮不再有 colored-noise N/A。
+Full4D保留210个无序coarse pair、6起点、12 sweeps、每坐标9节点和原连续预算。Beamspace MUSIC采用0.005度网格与原两峰规则。Root保留N_el=32、M_s=31、P=2、原选根和条件方位CML。两场景俯仰差均为0.225度，因此五种方法全部结构适用；真值不传入拟合器。
 
-经典科学内核保持字节不变。新 wrapper 只调用内核，不读取旧证据或 Tangent 输出。旧 MUSIC 的两个 cardinality 元数据字段填字面零，仅为未修改内核的运行时摊销兼容，不包含 Profile 身份或 SNR 数值；新 wrapper 按 1120 个 applicable trial 重新摊销字典构造时间。
+经典科学内核保留父提交Git文件字节。wrapper不读旧结果或Tangent估计。MUSIC兼容计数字段为字面零，字典准备时间按本轮280个applicable trial摊销。Element wrapper从原case 2机械提取Root路径；默认常量删除旧实验元数据但保留科学预算。
 
 组内共享相同 observation hash，允许严格逐 trial 配对。跨域只比较相同 nominal native-domain SNR 下的曲线、分位数、失败组成和计算量，不计算跨域逐 trial 胜负。
 
 ## 10. 验证、剪枝与交付
 
-T1-T18 覆盖 Git 身份、两域 SNR、八个尺度等价样本、WHITE-only 路径、波束宽度、标签交换、中心塌缩、真值输入成功、K1、无 fixed K2、无 cache、完整 K2 profile、基线直接调用、真值隔离、checkpoint、plot-only 与计划任务。
+预检分四组：配置依赖、SNR与评价、四个五方法smoke与输出接线、单次控制器启动接线。复用18项原检查，并把配置绑定部分适配为SC_A/SC_B和L8。smoke仅SC_A/SC_B × {-6,22} dB × replicate1，独立写runtime/tests，不并入正式checkpoint或用于调参。
 
 T4 的矩阵尺度恒等式误差 <=1e-12；中心容差为1e-4度，方向向量1e-6，rho/端点1e-3度。它们对应既有求解器内外精度，开发阶段失败日志保留，正式运行不再调整。
 
-429 个旧文件按 [剪枝清单](../innovation-mining/57_stage8_k2_raw_tangent_pruning_manifest.csv) 删除，前提是工具提交前18项门检通过。main/research refs、EI_paper、物理流形、完整流形 builder、DML 数学、经典科学内核及43-48结果字节保持不变。
+本轮93个文件按 [删除清单](../innovation-mining/59_stage8_k2_raw_tangent_two_scenarios_deletions.tsv)移除。main、research和父分支refs、EI_paper、物理流形、完整流形builder、DML数学以及43-48历史证据不变。
 
-单个 MATLAB R2022b 进程按两个观测域依次运行。每个场景两个原子 checkpoint，共3360个；有效 checkpoint 可跳过，损坏或遗留临时 checkpoint 硬停止。全部结果表和代表 rho traces 提交后，12张图可在无runtime和无fit路径情况下重画。
+MATLAB R2022b以-singleCompThread、单计算worker逐域执行；launcher与核实的engine子进程视为一个worker。正式数据共560个原子checkpoint，14个代表trace。八张图仅凭提交CSV/MAT重绘。15分钟Windows Tick读取一次状态并退出，当前用户交互登录时接续运行。
 
 科学审计不以算法成功率高低为实验有效性条件。计划任务在完整审计通过后提交结果、仅推送实验分支并注销，保留 worktree 与 runtime，等待 USER_REVIEW。

@@ -1,6 +1,13 @@
 {
   "pass": true,
   "test_count": 18,
+  "group_count": 4,
+  "groups": [
+    "A_CONFIGURATION_DEPENDENCIES",
+    "B_SNR_METRICS",
+    "C_FOUR_SMOKE_OUTPUTS",
+    "D_CONTROLLER_WIRING"
+  ],
   "tests": [
     {
       "id": "T1",
@@ -19,7 +26,7 @@
     },
     {
       "id": "T4",
-      "name": "Eight scale-equivalence fixtures",
+      "name": "Two scale-equivalence fixtures",
       "pass": true
     },
     {
@@ -39,7 +46,7 @@
     },
     {
       "id": "T8",
-      "name": "P1-P4 center collapse rejection",
+      "name": "SC_A/SC_B center collapse rejection",
       "pass": true
     },
     {
@@ -69,7 +76,7 @@
     },
     {
       "id": "T14",
-      "name": "Seven classical wrappers match unchanged direct kernels",
+      "name": "Four five-method smoke cases and retained wrappers match direct kernels",
       "pass": true
     },
     {
@@ -84,7 +91,7 @@
     },
     {
       "id": "T17",
-      "name": "Twelve plot-only figures without estimator paths",
+      "name": "Eight plot-only figures without estimator paths",
       "pass": true
     },
     {
@@ -93,10 +100,15 @@
       "pass": true
     }
   ],
-  "source_hash": "b0df5a7e97ef95f5506c9daf977be21d7c6f644d403c57a65dcced44657175fa",
+  "source_hash": "4f483ade0969a1f6dda9a400149fa2cd8b959981f41754b21f524af5ba805efe",
   "nominal_max_error_db": [
     1.7763568394002505E-15,
     1.7763568394002505E-15
+  ],
+  "snr_base_count": 40,
+  "realized_snr_spread_db": [
+    0.42979976995659364,
+    0.028233286562737988
   ],
   "scale_tolerances": {
     "center_deg": 0.0001,
@@ -106,54 +118,18 @@
   },
   "scale_fixture_errors": [
     [
-      5.7806204267762951E-11,
-      1.2754232152766348E-12,
-      6.6394461595287169E-9,
-      4.6955146601261278E-9
+      5.4559095019612869E-9,
+      5.1477915537903672E-11,
+      2.3508752775014408E-6,
+      1.6623377574792985E-6
     ],
     [
-      1.5183742263502609E-8,
-      4.5894300129939415E-9,
-      5.1559275307533348E-7,
-      3.65211833675788E-7
-    ],
-    [
-      1.7829826504112134E-10,
-      3.5745417423749063E-11,
-      3.6121255986287792E-10,
-      3.5899525580090311E-10
-    ],
-    [
-      2.8444590682852322E-8,
-      2.2576593645659136E-9,
-      5.519447676682887E-10,
-      4.0231297562394781E-8
-    ],
-    [
-      1.0512288746156173E-6,
-      2.1576187127289822E-8,
-      5.5808962950987251E-8,
-      1.4871953413000158E-6
-    ],
-    [
-      7.1793566647215812E-8,
-      8.58477008509198E-9,
-      9.81762172308498E-7,
-      7.0159772261540584E-7
-    ],
-    [
-      1.9982219434666604E-8,
-      4.4081393087681521E-10,
-      0.0004131741710814347,
-      0.00029215825954912573
-    ],
-    [
-      3.0659919048048323E-12,
-      1.2167832437265538E-11,
-      2.5514088619615904E-9,
-      1.804125419255698E-9
+      1.7824124398657659E-9,
+      3.7391181471064375E-11,
+      2.8682500430310398E-8,
+      2.0439729248745425E-8
     ]
   ],
-  "scale_valid_count": 8,
-  "runtime_sec": 85.2498941
+  "scale_valid_count": 2,
+  "runtime_sec": 143.7468823
 }

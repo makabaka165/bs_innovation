@@ -1,8 +1,8 @@
 [CmdletBinding()]
 param(
     [ValidateSet('InstallAndStart','Tick','Status','Test','TestLaunch','TestProbe')][string]$Action='Status',
-    [string]$RepoDir='E:\bs_innovation_worktrees\raw-tangent',
-    [string]$RuntimeRoot='E:\bs_innovation_runtime\experiment_stage8-k2-raw-tangent-core-native-snr-v1'
+    [string]$RepoDir='E:\bs_innovation_worktrees\raw-tangent-two-scenarios-l8',
+    [string]$RuntimeRoot='E:\bs_innovation_runtime\experiment_stage8-k2-raw-tangent-two-scenarios-l8-v1'
 )
 $ErrorActionPreference='Stop'
 # MATLAB can inherit a PowerShell 7 module path before invoking Windows PowerShell.
@@ -11,10 +11,10 @@ if ($PSEdition -eq 'Desktop') {
     $env:PSModulePath=$systemModules+';'+$env:PSModulePath
     Import-Module (Join-Path $systemModules 'Microsoft.PowerShell.Utility\Microsoft.PowerShell.Utility.psd1')
 }
-$TaskName='BSInnovation-Stage8K2-RawTangentCore-NativeSNR-V1'
+$TaskName='BSInnovation-Stage8K2-RawTangent-TwoScenarios-L8-V1'
 $MatlabExe='E:\MATLABR2022b\bin\matlab.exe'
 $StatePath=Join-Path $RuntimeRoot 'controller\controller_state.json'
-$Branch='experiment/stage8-k2-raw-tangent-core-native-snr-v1'
+$Branch='experiment/stage8-k2-raw-tangent-two-scenarios-l8-v1'
 if ($Action -eq 'TestProbe') { $StatePath=Join-Path $RuntimeRoot 'tests\process_launch_state.json' }
 
 function Write-JsonAtomic([string]$Filename,$Value) {
@@ -29,13 +29,16 @@ function Invoke-CheckedGit([string[]]$GitArgs) {
     return ($value | Out-String).Trim()
 }
 function Assert-Identity {
-    if ([IO.Path]::GetFullPath($RepoDir) -ne 'E:\bs_innovation_worktrees\raw-tangent' -or
-        [IO.Path]::GetFullPath($RuntimeRoot) -ne 'E:\bs_innovation_runtime\experiment_stage8-k2-raw-tangent-core-native-snr-v1') { throw 'Wrong experiment paths.' }
+    if ([IO.Path]::GetFullPath($RepoDir) -ne 'E:\bs_innovation_worktrees\raw-tangent-two-scenarios-l8' -or
+        [IO.Path]::GetFullPath($RuntimeRoot) -ne 'E:\bs_innovation_runtime\experiment_stage8-k2-raw-tangent-two-scenarios-l8-v1') { throw 'Wrong experiment paths.' }
     if ((Invoke-CheckedGit @('branch','--show-current')) -ne $Branch) { throw 'Wrong branch.' }
     foreach ($ref in @('main','origin/main')) {
         if ((Invoke-CheckedGit @('rev-parse',$ref)) -ne '644fc6e0041e400b6500579bba93d49f45e46990') { throw 'Main anchor moved.' }
     }
     if ((Invoke-CheckedGit @('rev-parse','research/stage8-k2-vincent-anchored')) -ne 'a7139204d717923cb89d0d629b67f1b3ab7ae94d') { throw 'Research anchor moved.' }
+    foreach ($ref in @('experiment/stage8-k2-raw-tangent-core-native-snr-v1','origin/experiment/stage8-k2-raw-tangent-core-native-snr-v1')) {
+        if ((Invoke-CheckedGit @('rev-parse',$ref)) -ne 'f1b13422a91540073ecf417c3b25f5cac552b9d6') { throw 'Source parent moved.' }
+    }
     $original=& git -C 'E:\bs_innovation' status --porcelain=v1 --untracked-files=all
     if ($LASTEXITCODE -ne 0 -or @($original).Count) { throw 'Original main worktree is dirty.' }
 }
@@ -127,7 +130,7 @@ function Start-MatlabJob([string]$Mode,$State) {
     Start-MatlabProcess $expression $log $State $StatePath | Out-Null
 }
 function Invoke-Tick {
-    $mutex=[Threading.Mutex]::new($false,'Local\BSInnovationStage8K2RTCNativeSNRV1')
+    $mutex=[Threading.Mutex]::new($false,'Local\BSInnovationStage8K2RTCTwoScenariosL8V1')
     $owned=$false
     try {
         $owned=$mutex.WaitOne(0)
@@ -175,7 +178,17 @@ function Invoke-Tick {
             'HARD_STOPPED' { throw 'Finalization/audit process exited without a valid completion marker.' }
         }
     } catch {
-        $halt=[ordered]@{state='HARD_STOPPED';reason=$_.Exception.Message;utc=[DateTime]::UtcNow.ToString('o')}
+        $reason=$_.Exception.Message
+        $snapshot=Join-Path $RuntimeRoot ('controller\process_stop_'+[DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfff')+'.json')
+        $processes=@(Get-CimInstance Win32_Process -Filter "Name='MATLAB.exe' OR Name='mwpython.exe'" |
+            Select-Object ProcessId,ParentProcessId,ExecutablePath,CommandLine,CreationDate)
+        Write-JsonAtomic $snapshot $processes
+        if ($reason.StartsWith('RTC_GIT_RETRY:') -and $state.state -eq 'READY_FOR_GIT_CLOSEOUT') {
+            $state | Add-Member -NotePropertyName last_closeout_error -NotePropertyValue $reason -Force
+            Write-JsonAtomic $StatePath $state
+            return
+        }
+        $halt=[ordered]@{state='HARD_STOPPED';reason=$reason;process_snapshot=$snapshot;utc=[DateTime]::UtcNow.ToString('o')}
         Write-JsonAtomic $StatePath $halt
         throw
     } finally {
@@ -300,7 +313,7 @@ switch ($Action) {
         $source=Get-Content -LiteralPath $PSCommandPath -Raw
         if ($source -match '(?im)^\s*(while\s*\(|Start-Sleep\b)') { throw 'Polling loop forbidden.' }
         $closeout=Get-Content (Join-Path $PSScriptRoot 'Stage8K2RTCCloseout.ps1') -Raw
-        if ($closeout -notmatch 'Unregister-ScheduledTask' -or $closeout -notmatch 'record raw Tangent native-SNR results') { throw 'Closeout contract missing.' }
+        if ($closeout -notmatch 'Unregister-ScheduledTask' -or $closeout -notmatch 'record two-scenario L8 results') { throw 'Closeout contract missing.' }
         Write-JsonAtomic (Join-Path $RuntimeRoot 'controller\scheduled_test_pass.json') @{pass=$true;cases=$cases.Count;valid_process_cases=6;invalid_process_cases=$invalid.Count;actual_launch=$actual;interval_minutes=15;multiple_instances='IgnoreNew'}
         'T18 PASS'
     }
@@ -312,7 +325,7 @@ switch ($Action) {
         $head=Invoke-CheckedGit @('rev-parse','HEAD')
         if ($head -ne (Invoke-CheckedGit @('rev-parse',"origin/$Branch"))) { throw 'Branch is not pushed.' }
         $gates=Get-Content (Join-Path $RuntimeRoot 'controller\gates.json') -Raw | ConvertFrom-Json
-        if (-not $gates.pass -or $gates.test_count -ne 18) { throw '18/18 gates required.' }
+        if (-not $gates.pass -or $gates.group_count -ne 4) { throw 'Four preflight groups required.' }
         if (-not (Test-Path (Join-Path $RuntimeRoot 'controller\formal_identity.json'))) { throw 'Formal identity missing.' }
         $formal=Get-Content (Join-Path $RuntimeRoot 'controller\formal_identity.json') -Raw | ConvertFrom-Json
         if ($formal.head -ne $head -or $formal.source_hash -ne $gates.source_hash) { throw 'Gate/formal code identity mismatch.' }
@@ -325,7 +338,7 @@ switch ($Action) {
         $settings=New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 10) -StartWhenAvailable
         $userIdentity=[System.Security.Principal.WindowsIdentity]::GetCurrent().Name
         $principal=New-ScheduledTaskPrincipal -UserId $userIdentity -LogonType Interactive -RunLevel Limited
-        Register-ScheduledTask -TaskName $TaskName -Action $taskAction -Trigger $trigger -Settings $settings -Principal $principal -Description 'Stage8 K2 raw Tangent native-SNR protocol; one transition or MATLAB launch per tick.' | Out-Null
+        Register-ScheduledTask -TaskName $TaskName -Action $taskAction -Trigger $trigger -Settings $settings -Principal $principal -Description 'Stage8 K2 raw Tangent two-scenario L8 protocol; one transition or MATLAB launch per tick.' | Out-Null
         Invoke-Tick
     }
     'Tick' { Invoke-Tick }

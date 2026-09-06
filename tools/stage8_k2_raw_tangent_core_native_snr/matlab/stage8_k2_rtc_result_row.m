@@ -10,7 +10,20 @@ row = struct('scenario_id',spec.scenario_id,'scenario_index',spec.scenario_index
     'applicable',true,'fit_valid',logical(fit.fit_valid),'fit_status',string(fit.fit_status), ...
     'angles_hat_deg',string(jsonencode(fit.angles_hat_deg)), ...
     'runtime_sec',fit.runtime_sec,'score_call_count',fit.score_call_count, ...
-    'SVD_call_count',fit.svd_call_count,'eig_call_count',0);
+    'SVD_call_count',fit.svd_call_count,'eig_call_count',0, ...
+    'elevation_valid',false,'elevation_status',"NOT_A_STAGE", ...
+    'conditional_valid',false,'conditional_status',"NOT_A_STAGE", ...
+    'rho_lower_bound_hit',false);
+for field = ["elevation_valid","elevation_status","conditional_valid","conditional_status"]
+    if isfield(fit,field), row.(field) = fit.(field); end
+end
+row.elevation_status = string(row.elevation_status);
+row.conditional_status = string(row.conditional_status);
+if string(method)=="TANGENT_PROFILE_CORE" && fit.fit_valid
+    c = stage8_k2_rtc_constants();
+    rho = norm(diff(fit.angles_hat_deg,1,1));
+    row.rho_lower_bound_hit = abs(rho-c.core.rho_min_deg)<=c.core.fminbnd_TolX_deg;
+end
 if isfield(fit,'applicable'), row.applicable = logical(fit.applicable); end
 if isfield(fit,'eig_call_count'), row.eig_call_count = fit.eig_call_count; end
 assert(row.applicable || ~row.fit_valid);
