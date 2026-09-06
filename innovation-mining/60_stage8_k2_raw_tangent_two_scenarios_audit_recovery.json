@@ -1,0 +1,40 @@
+{
+  "protocol": "STAGE8_K2_RAW_TANGENT_TWO_SCENARIOS_L8_V1",
+  "status": "PASS",
+  "original_fault": "MATLAB:badsubscript at frozen stage8_k2_rtc_summarize.m line 6 during AUDIT; CSV 0/1 flags imported as doubles.",
+  "recovery": "Mechanically retained the frozen independent verifier and all assertions/tolerances. Restored seven declared logical columns from exact 0/1 values immediately after CSV reads.",
+  "logical_columns": [
+    "applicable",
+    "fit_valid",
+    "elevation_valid",
+    "conditional_valid",
+    "rho_lower_bound_hit",
+    "localization_success_01bw",
+    "resolution_success"
+  ],
+  "frozen_code_identity": {
+    "head": "d31737f1dc4d37cb3c3c9dd4b5c6136a5eed9eff",
+    "source_hash": "4f483ade0969a1f6dda9a400149fa2cd8b959981f41754b21f524af5ba805efe",
+    "identity_origin": "Passed MATLAB preflight source hash, committed unchanged in implementation B; dispatch recomputes and validates before the first checkpoint"
+  },
+  "verifier_path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_audit_recovery/stage8_k2_rtc_verify_csv_logical_recovery.m",
+  "verifier_sha256": "025baad951e934c14091184ebc798a916a011167beab841773a87468ccd27909",
+  "checkpoint_count": 560,
+  "checkpoint_bytes_unchanged": true,
+  "checkpoint_inventory": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_audit_recovery/checkpoint_sha256.json",
+  "original_artifact_hashes_unchanged": true,
+  "estimator_reruns": 0,
+  "scientific_source_changed": false,
+  "tolerance_changed": false,
+  "independent_audit": {
+    "complete": true,
+    "pass": true,
+    "head": "d31737f1dc4d37cb3c3c9dd4b5c6136a5eed9eff",
+    "source_hash": "4f483ade0969a1f6dda9a400149fa2cd8b959981f41754b21f524af5ba805efe",
+    "scenario_count": 280,
+    "method_row_count": 1400,
+    "nominal_max_error_db": 1.7763568394002505E-15
+  },
+  "incident_evidence": "E:\\bs_innovation_runtime\\experiment_stage8-k2-raw-tangent-two-scenarios-l8-v1\\controller\\csv_logical_audit_recovery",
+  "verified_utc": "2026-09-06T07:34:39.1951467Z"
+}

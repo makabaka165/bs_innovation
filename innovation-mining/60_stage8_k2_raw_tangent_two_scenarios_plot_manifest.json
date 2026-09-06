@@ -1,0 +1,57 @@
+{
+  "title": "SC_A / SC_B, L=8, native-domain SNR",
+  "plot_only": true,
+  "input_data_sha256": "497d9c3877c6259f6a0a85725801d596729fab9464d645b094092421574caa9f",
+  "input_trace_sha256": "df12274785359f42590047fd1300717fd7482e5f8e6c9eac4078c137b1160edd",
+  "figure_count": 8,
+  "figures": [
+    {
+      "path": "60_SC_A_beamspace_rates.png",
+      "sha256": "f14b9546bf656d2fa03d2625c3277cd8931296f827f08ba08fb91e4e25fb0fec",
+      "width": 1920,
+      "height": 1252
+    },
+    {
+      "path": "60_SC_A_beamspace_errors.png",
+      "sha256": "f8f0d6670f8690d3d395f94bfd3b1dfdcc3a4565dc264b9ad483ab3242c8335d",
+      "width": 1932,
+      "height": 1252
+    },
+    {
+      "path": "60_SC_A_element_reference.png",
+      "sha256": "81d79f9f56355e383d2f1b5ca04a40298b92d62e8aa859eedbbe9175d2f8b5e2",
+      "width": 1932,
+      "height": 1252
+    },
+    {
+      "path": "60_SC_A_tangent_diagnostics.png",
+      "sha256": "9c960c9f5a30019bd5c9aa3ba040a16239a0bb57e514fb8957f40aa3e695c8a0",
+      "width": 1965,
+      "height": 1252
+    },
+    {
+      "path": "60_SC_B_beamspace_rates.png",
+      "sha256": "651fb7b72cf7939a12cd9864cb0250d230b61b233e8cf9015ea66c5cbddd7547",
+      "width": 1920,
+      "height": 1252
+    },
+    {
+      "path": "60_SC_B_beamspace_errors.png",
+      "sha256": "abf0ee3438491079283298a3c9ce7221d315e6af2fc2c68de3f492c32d24add4",
+      "width": 1932,
+      "height": 1252
+    },
+    {
+      "path": "60_SC_B_element_reference.png",
+      "sha256": "f955504c10d94e9e7e428b6cdb2a3d4de0bb021d041303b1fc124402f1a857e6",
+      "width": 1932,
+      "height": 1252
+    },
+    {
+      "path": "60_SC_B_tangent_diagnostics.png",
+      "sha256": "ac2101505b8662cbcb1f21af4393007fd3a0fb081db85491acbc3796f5f21b4c",
+      "width": 1965,
+      "height": 1252
+    }
+  ]
+}

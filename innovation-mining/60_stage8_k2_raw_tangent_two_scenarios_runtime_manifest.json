@@ -1,0 +1,162 @@
+{
+  "protocol": "STAGE8_K2_RAW_TANGENT_TWO_SCENARIOS_L8_V1",
+  "code_identity": {
+    "head": "d31737f1dc4d37cb3c3c9dd4b5c6136a5eed9eff",
+    "source_hash": "4f483ade0969a1f6dda9a400149fa2cd8b959981f41754b21f524af5ba805efe"
+  },
+  "source_parent": "f1b13422a91540073ecf417c3b25f5cac552b9d6",
+  "registry_count": 280,
+  "base_count": 40,
+  "native_observation_count": 560,
+  "checkpoint_count": 560,
+  "method_row_count": 1400,
+  "representative_count": 14,
+  "beamwidth_hash": "4691ee88b1be48c73627c2bd169313b3c0765d82319b052b7f88473b586f6e55",
+  "artifacts": [
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_beamwidth_contract.csv",
+      "bytes": 527,
+      "sha256": "cfb6081aedb421a4505c420ad2208b6d04a12bd212e9dcfcf0865c7c217374f1"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_complexity_summary.csv",
+      "bytes": 4101,
+      "sha256": "1a94568880d0e8e0d4dcee9c5c9ee0f219873520949aeff391524edaec5b98ef"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_core_diagnostics.csv",
+      "bytes": 71386,
+      "sha256": "7d317916d75ce31eee4cf347fa23abc3bc9bb50f185c55be76a4b6ce2f2dd40b"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_domain_snr_trials.csv",
+      "bytes": 257612,
+      "sha256": "05bd3c75d80a7ed74d0af371508374fa27bc48e5c5b12fb3cd396ca2b8e848c2"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_failure_summary.csv",
+      "bytes": 28962,
+      "sha256": "e3205ae1f67934aa6dc7070d15af317690fe6090fd529227597bae23f0de741a"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_method_results.csv",
+      "bytes": 817480,
+      "sha256": "497d9c3877c6259f6a0a85725801d596729fab9464d645b094092421574caa9f"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_plot_data.csv",
+      "bytes": 817480,
+      "sha256": "497d9c3877c6259f6a0a85725801d596729fab9464d645b094092421574caa9f"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_plot_manifest.json",
+      "bytes": 1783,
+      "sha256": "e0087d5b9646e4889c22db7f4b927606aad6970cd011cad66148df93123975a2"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_registry.csv",
+      "bytes": 23798,
+      "sha256": "89964cf2c401a8faa2a84592718bf07d0139d76e68ce4466b78bb031f023a68f"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_results.md",
+      "bytes": 15879,
+      "sha256": "3686bc1e13a215d091c1f233d10f9c13b9d240b7aa592b0f6e4f43e4ce02cad5"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_rho_trace_representatives.mat",
+      "bytes": 71868,
+      "sha256": "df12274785359f42590047fd1300717fd7482e5f8e6c9eac4078c137b1160edd"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_scenario_summary.csv",
+      "bytes": 21246,
+      "sha256": "53541691fda1b41cd98ac87d2e6961165005b7fef1148c3fd7d47252ee94240d"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_snr_summary.csv",
+      "bytes": 10899,
+      "sha256": "5700b66ac53065c9875ceff6c4d7eb9e812fa3b84167ca0307a9a14f2dc8206d"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_within_domain_pairing.csv",
+      "bytes": 7074,
+      "sha256": "58ab40524a7aa16557648cc415021d98298d382450fc98d1ca641d927d503928"
+    },
+    {
+      "path": "innovation-mining/figures/60_SC_A_beamspace_errors.png",
+      "bytes": 118955,
+      "sha256": "f8f0d6670f8690d3d395f94bfd3b1dfdcc3a4565dc264b9ad483ab3242c8335d"
+    },
+    {
+      "path": "innovation-mining/figures/60_SC_A_beamspace_rates.png",
+      "bytes": 117673,
+      "sha256": "f14b9546bf656d2fa03d2625c3277cd8931296f827f08ba08fb91e4e25fb0fec"
+    },
+    {
+      "path": "innovation-mining/figures/60_SC_A_element_reference.png",
+      "bytes": 136838,
+      "sha256": "81d79f9f56355e383d2f1b5ca04a40298b92d62e8aa859eedbbe9175d2f8b5e2"
+    },
+    {
+      "path": "innovation-mining/figures/60_SC_A_tangent_diagnostics.png",
+      "bytes": 133145,
+      "sha256": "9c960c9f5a30019bd5c9aa3ba040a16239a0bb57e514fb8957f40aa3e695c8a0"
+    },
+    {
+      "path": "innovation-mining/figures/60_SC_B_beamspace_errors.png",
+      "bytes": 122412,
+      "sha256": "abf0ee3438491079283298a3c9ce7221d315e6af2fc2c68de3f492c32d24add4"
+    },
+    {
+      "path": "innovation-mining/figures/60_SC_B_beamspace_rates.png",
+      "bytes": 110304,
+      "sha256": "651fb7b72cf7939a12cd9864cb0250d230b61b233e8cf9015ea66c5cbddd7547"
+    },
+    {
+      "path": "innovation-mining/figures/60_SC_B_element_reference.png",
+      "bytes": 145975,
+      "sha256": "f955504c10d94e9e7e428b6cdb2a3d4de0bb021d041303b1fc124402f1a857e6"
+    },
+    {
+      "path": "innovation-mining/figures/60_SC_B_tangent_diagnostics.png",
+      "bytes": 145374,
+      "sha256": "ac2101505b8662cbcb1f21af4393007fd3a0fb081db85491acbc3796f5f21b4c"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_audit_recovery/stage8_k2_rtc_verify_csv_logical_recovery.m",
+      "bytes": 9522,
+      "sha256": "025baad951e934c14091184ebc798a916a011167beab841773a87468ccd27909"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_audit_recovery.json",
+      "bytes": 2057,
+      "sha256": "98440542b071e6c0692709b89ff43f85df8b223ce4b9056cbd87c8563eb13808"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_audit_recovery/checkpoint_sha256.json",
+      "bytes": 101923,
+      "sha256": "9bd51aac7b1c077b192df6c19b122cb966b77d5f05252b1b92411528cebf11e8"
+    },
+    {
+      "path": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_audit_recovery/README.md",
+      "bytes": 1557,
+      "sha256": "d893be7741b0d454243dfdb65006d123524ded48487dd7031ea9dbded5903960"
+    }
+  ],
+  "audit_recovery": "innovation-mining/60_stage8_k2_raw_tangent_two_scenarios_audit_recovery.json",
+  "audit_report_amendment": {
+    "reason": "Added interpretation and audit recovery documentation after the successful independent audit.",
+    "scientific_tables_changed": false,
+    "checkpoint_bytes_changed": false,
+    "artifact_hashes_refreshed": true
+  },
+  "status": "STAGE8_K2_RAW_TANGENT_TWO_SCENARIOS_L8_COMPLETE",
+  "independent_audit_status": "PASS",
+  "nominal_target_max_error_db": 1.7763568394002505E-15,
+  "active_tangent_cache_count": 0,
+  "active_fixed_k2_call_count": 0,
+  "active_correlated_noise_count": 0,
+  "next": "USER_REVIEW",
+  "merge_back": "NOT_AUTHORIZED"
+}
